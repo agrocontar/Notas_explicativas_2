@@ -40,8 +40,23 @@ export const getUsers = async (_: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
 
   try {
-    const data = loginSchema.parse(req.body)
-    const result = await userService.loginUser(data.email, data.password)
+    const {email, password} = loginSchema.parse(req.body)
+    const result = await userService.loginUser(email, password)
+
+    // Send token in cookies
+    res.cookie("token", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000 // 1h
+    });
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
+    });
+
     res.json(result)
   }catch(err) {
     if (err instanceof z.ZodError) {
@@ -50,3 +65,31 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(400).json({error: err instanceof Error ? err.message : err})
   }
 }
+
+
+export const logoutUser = (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.clearCookie("refreshToken");
+  res.json({ message: "Logout realizado com sucesso" });
+};
+
+
+export const refreshUserToken = (req: Request, res: Response) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (!token) return res.status(401).json({ error: "Refresh token não fornecido" });
+
+    const newToken = userService.refreshToken(token);
+
+    res.cookie("token", newToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000, // 1h
+    });
+
+    res.json({ message: "Token renovado" });
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
+  }
+};

@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  app:
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/notas_explicativas?schema=public"

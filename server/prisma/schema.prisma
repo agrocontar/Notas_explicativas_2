@@ -36,5 +36,22 @@ model Company {
   createdAt DateTime     @default(now())
 
   groups    GroupCompanies[] @relation("CompanyGroup")
+  balancetes BalanceteData[] 
 }
 
+
+model BalanceteData {
+  id          String   @id @default(uuid())
+  uploadedAt  DateTime @default(now())
+  referenceDate DateTime 
+  accountingAccount String
+  accountName String
+  previousBalance Decimal @db.Decimal(20,2)
+  debit Decimal @db.Decimal(20,2)
+  credit Decimal @db.Decimal(20,2)
+  monthBalance Decimal @db.Decimal(20,2)
+  currentBalance Decimal @db.Decimal(20,2)
+
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+}

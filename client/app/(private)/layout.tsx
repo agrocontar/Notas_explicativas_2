@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: 'website',
         title: 'Notas Explicativas',
-        url: 'https://sakai.primereact.org/',
+        url: 'https://agrocontar.com.br',
         description: 'Seu sistema de notas explicativas!',
         images: ['https://www.primefaces.org/static/social/sakai-react.png'],
         ttl: 604800

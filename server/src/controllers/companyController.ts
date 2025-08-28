@@ -28,3 +28,11 @@ export const listCompanies = async(_: Request, res: Response)=> {
   const companies = await companyService.listCompanies()
   res.json(companies)
 }
+
+export const listUserCompanies = async(req: Request, res: Response) => {
+
+  const userId = req.params.userId
+  const groupCompanies = await companyService.listUserCompanies(userId)
+
+  res.json(groupCompanies)
+}

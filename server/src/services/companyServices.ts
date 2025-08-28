@@ -19,3 +19,34 @@ export const createCompany = async (data: CreateCompanyInput) => {
 export const listCompanies = async() => {
   return prisma.company.findMany()
 }
+
+
+// List Companies per user group
+export const listUserCompanies = async( userId: string) => {
+
+  const user = await prisma.user.findUnique({where: {id: userId}})
+  if(!user) throw new Error('Usuário não encontrado!')
+
+  const groupCompanies = await prisma.groupCompanies.findMany({where: {
+    users: {
+      some: {
+        id: userId
+      }
+    }
+    
+  }, include: {
+    companies: true
+  }})
+
+  // Flatter and remove duplicateds
+  const companyMap = new Map<string, typeof groupCompanies[0]['companies'][0]>();
+  groupCompanies.forEach(group => {
+    group.companies.forEach(company => {
+      companyMap.set(company.id, company);
+    });
+  });
+
+  const uniqueCompanies = Array.from(companyMap.values());
+
+  return uniqueCompanies
+}

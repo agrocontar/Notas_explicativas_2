@@ -7,8 +7,8 @@ interface SimpleLayoutProps {
 }
 
 export const metadata: Metadata = {
-    title: 'PrimeReact Sakai',
-    description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.'
+    title: 'Notas Explicativas',
+    description: 'Seu sistema de notas explicativas'
 };
 
 export default function SimpleLayout({ children }: SimpleLayoutProps) {

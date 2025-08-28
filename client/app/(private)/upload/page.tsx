@@ -4,38 +4,76 @@ import { Card } from 'primereact/card';
 import { FileUpload } from 'primereact/fileupload';
 import { Calendar } from 'primereact/calendar';
 import { SelectCompany } from './components/selectCompany';
+import { Toast } from 'primereact/toast';
+import { ExcelData, readExcelFile } from './services/readExcel';
+import api from '@/app/api/api';
 
 export interface Company {
     id: string;
     name: string;
 }
 
+const uploadBalanceteData = async (data: ExcelData): Promise<{ success: boolean; inserted: number }> => {
+  try {
+    const response = await api.post('/upload');
+    const data = response.data
+
+    if (response.status != 200) {
+      throw new Error(`Erro no servidor: ${response.status}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Erro ao enviar dados:', error);
+    throw error;
+  }
+};
+
 const UploadPage = () => {
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
     const [date, setDate] = useState<any>(null);
+    const [uploading, setUploading] = useState(false);
+    const toast = React.useRef<Toast>(null);
 
-    const handleUpload = (event: any) => {
+    const handleUpload = async (event: any) => {
         const file: File = event.files[0];
 
-        if (file && date && selectedCompany) {
-            const formData: any = new FormData();
-            formData.append('file', file);
-            formData.append('ano', date.getFullYear());
-            formData.append('mes', date.getMonth() + 1);
-            formData.append('empresaId', selectedCompany.id);
-            
-
+        if (!file || !date || !selectedCompany) {
+            showToast('error', 'Erro', 'Selecione empresa, data e arquivo antes de enviar');
+            return;
         }
+
+        setUploading(true);
+
+        try {
+            // Ler o arquivo Excel
+            const excelData = await readExcelFile(file, selectedCompany.id, date);
+            
+            // Enviar para o backend
+            const result = await uploadBalanceteData(excelData);
+            
+            showToast('success', 'Sucesso', `Dados enviados com sucesso! ${result.inserted} registros inseridos.`);
+            
+        } catch (error) {
+            console.error('Erro no upload:', error);
+            showToast('error', 'Erro', 'Falha ao processar o arquivo. Verifique o formato.');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const showToast = (severity: 'success' | 'error', summary: string, detail: string) => {
+        toast.current?.show({ severity, summary, detail, life: 3000 });
     };
 
     return (
         <div className="grid">
+            <Toast ref={toast} />
             <div className="col-12">
                 <Card title="Upload de Balancetes" className="p-shadow-5">
                     <div className="grid">
                         <div className="col-12">
                             <div className="flex flex-row gap-3 mb-3">
-
                                 <div className="flex align-items-center gap-2">
                                     <span>Empresa</span>
                                     <SelectCompany
@@ -52,6 +90,8 @@ const UploadPage = () => {
                                         view="year"
                                         dateFormat="yy"
                                         showIcon
+                                        yearNavigator
+                                        yearRange="2020:2030"
                                     />
                                 </div>
                             </div>
@@ -61,9 +101,12 @@ const UploadPage = () => {
                                 customUpload
                                 uploadHandler={handleUpload}
                                 multiple={false}
-                                accept=".xlsx"
-                                maxFileSize={1000000}
-                                disabled={!selectedCompany}
+                                accept=".xlsx,.xls"
+                                maxFileSize={10000000}
+                                disabled={!selectedCompany || !date || uploading}
+                                mode="basic"
+                                chooseLabel={uploading ? 'Processando...' : 'Selecionar Arquivo'}
+                                auto
                             />
                         </div>
                     </div>

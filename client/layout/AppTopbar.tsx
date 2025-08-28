@@ -2,15 +2,20 @@
 
 import Link from 'next/link';
 import { classNames } from 'primereact/utils';
-import React, { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useContext, useImperativeHandle, useRef, useState } from 'react';
 import { AppTopbarRef } from '@/types';
 import { LayoutContext } from './context/layoutcontext';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import api from '@/app/api/api';
+
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
-    const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
+    const { layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
     const menubuttonRef = useRef(null);
     const topbarmenuRef = useRef(null);
     const topbarmenubuttonRef = useRef(null);
+    const [logoutDialog, setLogoutDialog] = useState(false);
 
     useImperativeHandle(ref, () => ({
         menubutton: menubuttonRef.current,
@@ -18,11 +23,28 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         topbarmenubutton: topbarmenubuttonRef.current
     }));
 
+    const logout = () => {
+        try {
+            api.post('/users/logout')
+            window.location.href = '/auth/login';
+        } catch (err: any) {
+            console.error('Erro ao fazer logout:', err);
+
+        }
+    }
+
+    const logoutDialogFooter = (
+        <>
+            <Button label="Não" icon="pi pi-times" text onClick={() => setLogoutDialog(false)} />
+            <Button label="Sim" icon="pi pi-check" text onClick={logout} />
+        </>
+    );
+
+
     return (
         <div className="layout-topbar">
             <Link href="/" className="layout-topbar-logo">
-                <img src={`/layout/images/logo-${layoutConfig.colorScheme !== 'light' ? 'white' : 'dark'}.svg`} width="47.22px" height={'35px'} alt="logo" />
-                <span>SAKAI</span>
+                <img src={`/layout/images/logo-agrocontar.webp`} width="auto" height={'35px'} alt="logo" />
             </Link>
 
             <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
@@ -34,21 +56,33 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             </button>
 
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-                <button type="button" className="p-link layout-topbar-button">
-                    <i className="pi pi-calendar"></i>
-                    <span>Calendar</span>
+
+                <button
+                    type="button"
+                    onClick={() => {
+                        window.open('/docs/ajuda.pdf', '_blank')
+                    }}
+                    className="p-link layout-topbar-button"
+                >
+                    <i className="pi pi-question-circle"></i>
+                    <span>Ajuda</span>
                 </button>
-                <button type="button" className="p-link layout-topbar-button">
-                    <i className="pi pi-user"></i>
-                    <span>Profile</span>
+
+                {/* LOGOUT BUTTON */}
+                <button type="button" className="p-link layout-topbar-button" onClick={() => setLogoutDialog(true)}>
+                    <i className="pi pi-sign-out"></i>
+                    <span>Logout</span>
                 </button>
-                <Link href="/documentation">
-                    <button type="button" className="p-link layout-topbar-button">
-                        <i className="pi pi-cog"></i>
-                        <span>Settings</span>
-                    </button>
-                </Link>
+
+
             </div>
+
+            <Dialog visible={logoutDialog} style={{ width: '450px' }} header="Sair do Sistema" modal footer={logoutDialogFooter} onHide={() => setLogoutDialog(false)}>
+                <div className="confirmation-content">
+                    <i className="pi pi-exclamation-triangle mr-3" />
+                    <span>Deseja sair do sistema?</span>
+                </div>
+            </Dialog>
         </div>
     );
 });
@@ -56,3 +90,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
 AppTopbar.displayName = 'AppTopbar';
 
 export default AppTopbar;
+
+
+
+

@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtDecode } from 'jwt-decode';
 
-const protectedRoutes = ['/', '/dashboard', '/profile', '/companies'];
-const publicRoutes = ['/auth/login', '/auth/register'];
+const protectedRoutes = ['/', '/upload'];
+const publicRoutes = ['/auth/login'];
 
 // Verify if token is expired
 function isTokenExpired(token: string): boolean {

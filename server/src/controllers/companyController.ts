@@ -2,6 +2,9 @@ import z from "zod";
 import * as companyService from '../services/companyServices'
 import { handleZodError } from "../utils/handleZodError";
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
 const companySchema = z.object({
   name: z.string()
@@ -24,15 +27,29 @@ export const createCompany = async (req: Request, res: Response) => {
   }
 }
 
-export const listCompanies = async(_: Request, res: Response)=> {
+export const listCompanies = async (_: Request, res: Response) => {
   const companies = await companyService.listCompanies()
   res.json(companies)
 }
 
-export const listUserCompanies = async(req: Request, res: Response) => {
+export const listUserCompanies = async (req: Request, res: Response) => {
 
-  const userId = req.params.userId
-  const groupCompanies = await companyService.listUserCompanies(userId)
+  try {
+    const token = req.cookies?.token;
 
-  res.json(groupCompanies)
+    if (!token) {
+      return res.status(401).json({ error: "Token não fornecido" });
+    }
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+
+    const groupCompanies = await companyService.listUserCompanies(decoded.userId)
+
+    res.json(groupCompanies)
+
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : err });
+
+  }
 }
+
+

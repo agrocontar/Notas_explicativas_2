@@ -44,7 +44,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     return (
         <div className="layout-topbar">
             <Link href="/" className="layout-topbar-logo">
-                <img src={`/layout/images/logo-agrocontar.webp`} width="auto" height={'35px'} alt="logo" />
+                <img src={`/logo.ico`} width="auto" height={'35px'} alt="logo" />
             </Link>
 
             <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>

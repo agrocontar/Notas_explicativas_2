@@ -8,6 +8,14 @@ interface CreateUserInput {
   password: string;
 }
 
+interface UpdateUserInput {
+  userId: string
+  name?: string,
+  email?: string,
+  password?: string
+
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || 'secret'
 
 // Login
@@ -78,3 +86,28 @@ export const createUser = async (data: CreateUserInput) => {
 export const getAllUsers = async () => {
   return prisma.user.findMany();
 };
+
+
+
+const updateUser = async ({userId, email, name, password}: UpdateUserInput) => {
+
+  if(!email && !name && !password) throw new Error('Sem dados para atualizar')
+
+  const user = await prisma.user.findFirst({where: {id: userId}})
+  if (!user) throw new Error('Usuário inexiste!')
+
+  const data: any = {}
+
+    if (name) data.name = name;
+    if (password) data.password = password;
+    if (email) data.email = email;
+
+
+  const updateUser = await prisma.user.update({
+    where: { id: userId },
+    data,
+  });
+
+  return updateUser
+
+}

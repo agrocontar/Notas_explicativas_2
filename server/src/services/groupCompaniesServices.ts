@@ -37,7 +37,7 @@ export const listGroups = async () => {
 
 //Atribute user to group
 export const updateGroup = async ({ userIds, companyIds, name, groupId }: UpdateGroupCompaniesInput) => {
-  const group = await prisma.groupCompanies.findUnique({ where: { id: groupId } });
+  const group = await prisma.groupCompanies.findFirst({ where: { id: groupId } });
   if (!group) throw new Error('Grupo inexistente');
 
   if (!userIds && !companyIds && !name) throw new Error('Sem dados para atualizar');

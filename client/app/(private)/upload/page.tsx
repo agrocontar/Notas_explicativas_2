@@ -15,7 +15,7 @@ export interface Company {
 
 const uploadBalanceteData = async (data: ExcelData): Promise<{ success: boolean; inserted: number }> => {
   try {
-    const response = await api.post('/upload', data);
+    const response = await api.post('/balancete', data);
     const dataResponse= response.data
 
     if (response.status != 200) {

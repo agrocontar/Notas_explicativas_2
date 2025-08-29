@@ -20,6 +20,11 @@ const balanceteSchema = z.object({
   ),
 });
 
+const listBalancetePerYearSchema = z.object({
+  year: z.number(),
+  companyId: z.string()
+})
+
 export const createBalancete = async (req: Request, res: Response) => {
   try {
     const parsed = balanceteSchema.parse(req.body);
@@ -34,3 +39,37 @@ export const createBalancete = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao salvar balancete" });
   }
 };
+
+
+export const listBalancetePerYear = async (req: Request, res: Response) => {
+
+  try {
+    const parsed = listBalancetePerYearSchema.parse(req.body)
+    const result = await balanceteService.listBalancetePerYear(parsed)
+
+    res.json(result)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: handleZodError(error) });
+      }
+    console.error(error);
+    res.status(500).json({ error: "Erro ao listar balancete" });
+    
+  }
+}
+
+export const listBalancetesCompany = async (req: Request, res: Response) => {
+
+  try{
+    const {companyId} = req.params
+    const result = await balanceteService.listBalancetesCompany(companyId)
+
+    res.json(result)
+  }catch(error){
+    if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: handleZodError(error) });
+      }
+    console.error(error);
+    res.status(500).json({ error: "Erro ao listar balancete" });
+  }
+}

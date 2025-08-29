@@ -89,7 +89,7 @@ export const getAllUsers = async () => {
 
 
 
-const updateUser = async ({userId, email, name, password}: UpdateUserInput) => {
+export const updateUser = async ({userId, email, name, password}: UpdateUserInput) => {
 
   if(!email && !name && !password) throw new Error('Sem dados para atualizar')
 

@@ -31,3 +31,16 @@ export const listGroups = async (req: Request, res: Response) => {
     res.status(400).json({ error: err instanceof Error ? err.message : err });
   }
 };
+
+export const updateGroup = async (req: Request, res: Response) => {
+  try {
+    const groupId = req.params.id;
+    const { name, companyIds, userIds } = req.body;
+
+    const updatedGroup = await groupService.updateGroup({ groupId, name, companyIds, userIds });
+    res.json(updatedGroup);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+
+}

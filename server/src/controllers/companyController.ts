@@ -7,7 +7,8 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
 const companySchema = z.object({
-  name: z.string()
+  name: z.string(),
+  cnpj: z.string()
 })
 
 export const createCompany = async (req: Request, res: Response) => {

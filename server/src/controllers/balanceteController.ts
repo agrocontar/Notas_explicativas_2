@@ -1,12 +1,12 @@
 // src/controllers/balancete.controller.ts
 import { Request, Response } from "express";
 import { z } from "zod";
-import * as uploadServices from '../services/uploadServices'
+import * as balanceteService from '../services/balanceteService'
 import { handleZodError } from "../utils/handleZodError";
 
 const balanceteSchema = z.object({
   companyId: z.string().uuid(),
-  referenceDate: z.string(),
+  referenceDate: z.number(),
   balanceteData: z.array(
     z.object({
       accountingAccount: z.string(),
@@ -23,7 +23,7 @@ const balanceteSchema = z.object({
 export const createBalancete = async (req: Request, res: Response) => {
   try {
     const parsed = balanceteSchema.parse(req.body);
-    const result = await uploadServices.createBalancete(parsed)
+    const result = await balanceteService.createBalancete(parsed)
 
     res.json({ success: true, inserted: result.count });
   } catch (err) {

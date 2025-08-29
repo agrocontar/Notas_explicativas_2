@@ -3,6 +3,7 @@ import { prisma } from "../prismaClient"
 
 interface CreateCompanyInput {
   name: string
+  cnpj: string
 }
 
 // Create Company

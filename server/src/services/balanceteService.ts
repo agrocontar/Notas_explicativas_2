@@ -2,7 +2,7 @@ import { prisma } from "../prismaClient";
 
 interface uploadInput {
   companyId: string
-  referenceDate: string
+  referenceDate: number
   balanceteData:
     { 
       accountingAccount: string,
@@ -21,7 +21,7 @@ export const createBalancete = async (data: uploadInput) => {
   const balances = await prisma.balanceteData.createMany({
       data: data.balanceteData.map((row) => ({
         companyId: data.companyId,
-        referenceDate: new Date(data.referenceDate),
+        referenceDate: data.referenceDate,
         accountingAccount: row.accountingAccount.replace(/\W/g, ""), //Remove dots
         accountName: row.accountName,
         previousBalance: row.previousBalance,

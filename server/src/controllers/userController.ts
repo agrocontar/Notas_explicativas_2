@@ -109,7 +109,27 @@ export const updateUser = async (req: Request, res: Response) => {
 
     const updatedUser = await userService.updateUser({...parsed, userId: id});
     res.json(updatedUser);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
   }
 }
+
+export const deleteUser = async (req: Request, res: Response) => {
+
+  try{
+    const {id} = req.params
+    if (!id){
+      res.json({message: 'Id não enviado'})
+    }
+
+    const deletedUser = await userService.deleteUser(id)
+    if(!deletedUser) return res.json({message: "Usuário não encontrado"})
+    
+    res.json({message: "Usuario deletado com sucesso!"})
+
+  }catch (err){
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
+  }
+}
+
+

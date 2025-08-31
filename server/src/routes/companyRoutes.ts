@@ -6,6 +6,7 @@ const router = Router();
 
 router.post("/", authMiddleware, companyController.createCompany);
 router.get("/", authMiddleware, companyController.listCompanies)
+router.put("/:id", authMiddleware, companyController.updateCompany)
 router.get("/user/", authMiddleware, companyController.listUserCompanies)
 
 

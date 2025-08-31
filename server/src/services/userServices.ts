@@ -2,6 +2,7 @@ import { email } from "zod";
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+
 interface CreateUserInput {
   name: string;
   email: string;
@@ -110,4 +111,21 @@ export const updateUser = async ({userId, email, name, password}: UpdateUserInpu
 
   return updateUser
 
+}
+
+export const deleteUser = async (userId: string) => {
+
+  if (!userId) throw new Error('Id de Usuario não enviado!')
+
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) throw new Error('Usuário não encontrado!')
+
+  await prisma.user.delete({ where: { id: userId } })
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt
+  }
 }

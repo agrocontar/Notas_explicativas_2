@@ -11,6 +11,11 @@ const companySchema = z.object({
   cnpj: z.string()
 })
 
+const updateCompanySchema = z.object({
+  name: z.string().optional(),
+  cnpj: z.string().optional()
+})
+
 export const createCompany = async (req: Request, res: Response) => {
 
   try {
@@ -54,3 +59,14 @@ export const listUserCompanies = async (req: Request, res: Response) => {
 }
 
 
+export const updateCompany = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const parsed = updateCompanySchema.parse(req.body)
+
+    const updatedCompany = await companyService.updateCompany({...parsed, companyId: id});
+    res.json(updatedCompany);
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
+  }
+}

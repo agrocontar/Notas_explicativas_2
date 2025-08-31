@@ -95,7 +95,7 @@ export const updateUser = async ({userId, email, name, password}: UpdateUserInpu
   if(!email && !name && !password) throw new Error('Sem dados para atualizar')
 
   const user = await prisma.user.findFirst({where: {id: userId}})
-  if (!user) throw new Error('Usuário inexiste!')
+  if (!user) throw new Error('Usuário nao existe!')
 
   const data: any = {}
 

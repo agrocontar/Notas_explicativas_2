@@ -155,19 +155,17 @@ const UsersPage = () => {
         try {
 
           const payload = {
-              name: user.name,
-              email: user.email,
-              password: user.password,
-              role: user.role,
-            }
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            role: user.role,
+          }
 
-          const res = await api.post('/users',payload);
-          const data = await res.data;
+          const res = await api.post('/users', payload);
 
           if (!res.status) {
             throw new Error(res.data.error || 'Erro ao criar usuário');
           }
-          console.log(data)
           const createdUser = await res.data
           _user.id = createdUser.id; // assumindo que o back retorna o ID
           _users.push(_user);
@@ -185,7 +183,7 @@ const UsersPage = () => {
           toast.current?.show({
             severity: 'error',
             summary: 'Erro',
-            detail: err.response.data.error || 'Erro ao criar usuário',
+            detail: err.response.data.error || err.response.data.errors[0].message || 'Erro ao criar usuário',
             life: 3000,
           });
           return;
@@ -202,26 +200,23 @@ const UsersPage = () => {
     if (!user.id) return;
 
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        }),
-      });
 
-      const data = await res.json();
+      const payload = {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }
 
-      if (!res.ok) {
+      const res = await api.put(`/users/${user.id}`, payload);
+      const data = res.data
+
+
+
+      if (!res.status) {
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: data.error || 'Erro ao editar o usuário.',
+          detail: res.data.error || 'Erro ao editar o usuário.',
           life: 3000,
         });
         return;
@@ -257,17 +252,12 @@ const UsersPage = () => {
     if (!user.id) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
 
-      const data = await res.json();
+      const res = await api.delete(`/users/${user.id}`);
+      const data = res.data
 
-      if (!res.ok) {
+      if (!res.status) {
+        console.log(res)
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
@@ -329,23 +319,23 @@ const UsersPage = () => {
 
 
   const actionBodyTemplate = (rowData: User) => {
-      return (
-        <>
-          <Button
-            icon="pi pi-pencil"
-            rounded
-            severity="info"
-            className="mr-2"
-            onClick={() => openEdit(rowData)}
-          />
-          <Button
-            icon="pi pi-trash"
-            rounded
-            severity="danger"
-            onClick={() => confirmDeleteProduct(rowData)}
-          />
-        </>
-      );
+    return (
+      <>
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          severity="info"
+          className="mr-2"
+          onClick={() => openEdit(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          rounded
+          severity="danger"
+          onClick={() => confirmDeleteProduct(rowData)}
+        />
+      </>
+    );
   }
 
 
@@ -477,7 +467,7 @@ const UsersPage = () => {
               <Dropdown
                 value={user.role}
                 onChange={(e) => setUser({ ...user, role: e.value })}
-                options={['Administrador', 'UsuarioPadrao']}
+                options={['Admin', 'Coordenador', 'Colaborador']}
                 placeholder="Selecione" className="w-full md:w-14rem"
               />
               {submitted && !user.role && <small className="p-invalid">O usuário é obrigatório</small>}
@@ -513,7 +503,7 @@ const UsersPage = () => {
               <Dropdown
                 value={user.role}
                 onChange={(e) => setUser({ ...user, role: e.value })}
-                options={['Administrador', 'UsuarioPadrao']}
+                options={['Admin', 'Coordenador', 'Colaborador']}
                 placeholder="Selecione" className="w-full md:w-14rem"
               />
               {submitted && !user.role && <small className="p-invalid">a permissão é obrigatório</small>}

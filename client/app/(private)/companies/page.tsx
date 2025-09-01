@@ -12,48 +12,32 @@ import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
-import { ativateUser } from './untils/ativateUser';
 import api from '@/app/api/api';
 
-interface User {
+interface Company {
   id: string;
   name: string;
-  email: string;
-  role: string;
-  password?: string;
-}
-
-function getCookie(name: string): string | null {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-  return null;
+  cnpj: string;
 }
 
 
-const UsersPage = () => {
-  const emptyUser = {
+const CompaniesPage = () => {
+  const emptyCompany = {
     id: '',
     name: '',
-    email: '',
-    role: '',
-    status: 1,
-    password: '',
+    cnpj: '',
   };
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [user, setUser] = useState<User>(emptyUser);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [company, setCompany] = useState<Company>(emptyCompany);
 
-  const [userDialog, setUserDialog] = useState(false);
+  const [companyDialog, setCompanyDialog] = useState(false);
   const [deleteUserDialog, setDeleteUserDialog] = useState(false);
   const [editUserDialog, setEditUserDialog] = useState(false);
-  const [activeUserDialog, setActiveUserDialog] = useState(false);
-
 
   const [selectedUsers, setSelectedUsers] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
-  const [globalFilter, setGlobalFilter] = useState('');
   const toast = useRef<Toast>(null);
   const dt = useRef<DataTable<any>>(null);
   const [loading, setLoading] = useState(false);
@@ -88,7 +72,7 @@ const UsersPage = () => {
         return;
       }
 
-      setUsers(data);
+      setCompanies(data);
     } catch (err) {
       console.error('Erro inesperado:', err);
     }
@@ -100,20 +84,13 @@ const UsersPage = () => {
 
   //Abre o dialogo de novo usuario
   const openNew = () => {
-    setUser(emptyUser);
+    setCompany(emptyCompany);
     setSubmitted(false);
-    setUserDialog(true);
+    setCompanyDialog(true);
   };
 
-  const openActive = (user: User) => {
-    setUser({ ...user });
-    setSubmitted(false);
-    setActiveUserDialog(true);
-  }
-
-  //Abre o dialogo de editar usuario
-  const openEdit = (user: User) => {
-    setUser({ ...user });
+  const openEdit = (company: Company) => {
+    setCompany({ ...company });
     setSubmitted(false);
     setEditUserDialog(true);
   };
@@ -121,7 +98,7 @@ const UsersPage = () => {
   // esconde o diagolo 
   const hideDialog = () => {
     setSubmitted(false);
-    setUserDialog(false);
+    setCompanyDialog(false);
   };
 
   // esconde o dialogo de editar usuario
@@ -134,41 +111,39 @@ const UsersPage = () => {
   const hideDeleteProductDialog = () => setDeleteUserDialog(false);
 
   // Salva o usuario
-  const saveUser = async () => {
+  const saveCompany = async () => {
     setSubmitted(true);
 
-    if (user.name.trim() && user.email.trim() && user.password && user.role) {
-      let _users = [...users];
-      let _user = { ...user };
+    if (company.name.trim() && company.cnpj.trim()) {
+      let _companies = [...companies];
+      let _company = { ...company };
 
-      if (user.id) {
-        const index = findIndexById(user.id);
-        _users[index] = _user;
+      if (company.id) {
+        const index = findIndexById(company.id);
+        _companies[index] = _company;
         toast.current?.show({
           severity: 'success',
           summary: 'Sucesso',
           detail: 'Usuário Atualizado',
           life: 3000,
         });
-        setUsers(_users);
+        setCompanies(_companies);
       } else {
         try {
 
           const payload = {
-            name: user.name,
-            email: user.email,
-            password: user.password,
-            role: user.role,
+            name: company.name,
+            cnpj: company.cnpj,
           }
 
-          const res = await api.post('/users', payload);
+          const res = await api.post('/companies', payload);
 
           if (!res.status) {
-            throw new Error(res.data.error || 'Erro ao criar usuário');
+            throw new Error(res.data.error || 'Erro ao criar Empresa');
           }
-          const createdUser = await res.data
-          _user.id = createdUser.id; // assumindo que o back retorna o ID
-          _users.push(_user);
+          const createdCompany = await res.data
+          _company.id = createdCompany.id; // assumindo que o back retorna o ID
+          _companies.push(_company);
 
           toast.current?.show({
             severity: 'success',
@@ -177,7 +152,7 @@ const UsersPage = () => {
             life: 3000,
           });
 
-          setUsers(_users);
+          setCompanies(_companies);
         } catch (err: any) {
           console.error('Erro ao criar usuário:', err);
           toast.current?.show({
@@ -190,24 +165,23 @@ const UsersPage = () => {
         }
       }
 
-      setUserDialog(false);
-      setUser(emptyUser);
+      setCompanyDialog(false);
+      setCompany(emptyCompany);
     }
   };
 
   // Edita o usuario
-  const editUser = async () => {
-    if (!user.id) return;
+  const editCompany = async () => {
+    if (!company.id) return;
 
     try {
 
       const payload = {
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        name: company.name,
+        cnpk: company.cnpj,
       }
 
-      const res = await api.put(`/users/${user.id}`, payload);
+      const res = await api.put(`/companies/${company.id}`, payload);
       const data = res.data
 
 
@@ -230,11 +204,11 @@ const UsersPage = () => {
       });
 
       // Atualiza lista local
-      const updatedUsers = users.map((u) => (u.id === user.id ? data : u));
-      setUsers(updatedUsers);
-      setUser(data);
+      const updatedCompanies = companies.map((u) => (u.id === company.id ? data : u));
+      setCompanies(updatedCompanies);
+      setCompany(data);
       setEditUserDialog(false);
-      setUser(emptyUser);
+      setCompany(emptyCompany);
 
     } catch (err) {
       console.error('Erro ao editar usuário:', err);
@@ -248,12 +222,12 @@ const UsersPage = () => {
   };
 
   // Deleta o usuario
-  const deleteUser = async () => {
-    if (!user.id) return;
+  const deleteCompany = async () => {
+    if (!company.id) return;
     setLoading(true);
     try {
 
-      const res = await api.delete(`/users/${user.id}`);
+      const res = await api.delete(`/companies/${company.id}`);
       const data = res.data
 
       if (!res.status) {
@@ -275,13 +249,13 @@ const UsersPage = () => {
       });
 
       // Atualiza lista local
-      const updatedUsers = users.map((u) => (u.id === user.id ? data : u));
-      setUsers(updatedUsers);
-      setUser(data);
+      const updatedCompanies = companies.map((u) => (u.id === company.id ? data : u));
+      setCompanies(updatedCompanies);
+      setCompany(data);
       setSelectedUsers(null);
       setDeleteUserDialog(false);
       fetchUsers()
-      setUser(emptyUser);
+      setCompany(emptyCompany);
       setLoading(false)
 
     } catch (err) {
@@ -297,28 +271,27 @@ const UsersPage = () => {
 
 
   // Confirma a exclusão do usuario
-  const confirmDeleteProduct = (user: User) => {
-    setUser(user);
+  const confirmDeleteProduct = (company: Company) => {
+    setCompany(company);
     setDeleteUserDialog(true);
   };
 
-  const findIndexById = (id: string) => users.findIndex((u) => u.id === id);
+  const findIndexById = (id: string) => companies.findIndex((u) => u.id === id);
 
   const onInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     name: string
   ) => {
     const val = (e.target && e.target.value) || '';
-    setUser({ ...user, [name]: val });
+    setCompany({ ...company, [name]: val });
   };
 
 
-  const nameBodyTemplate = (rowData: User) => <span>{rowData.name}</span>;
-  const emailBodyTemplate = (rowData: User) => <span>{rowData.email}</span>;
-  const roleBodyTemplate = (rowData: User) => <span>{rowData.role}</span>;
+  const nameBodyTemplate = (rowData: Company) => <span>{rowData.name}</span>;
+  const cnpjBodyTemplate = (rowData: Company) => <span>{rowData.cnpj}</span>;
 
 
-  const actionBodyTemplate = (rowData: User) => {
+  const actionBodyTemplate = (rowData: Company) => {
     return (
       <>
         <Button
@@ -341,14 +314,14 @@ const UsersPage = () => {
 
   const leftToolbarTemplate = () => (
     <div className="my-2">
-      <Button label="Novo Usuário" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
+      <Button label="Nova Empresa" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
     </div>
   );
 
 
   const header = (
     <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-      <h5 className="m-0">Cadastro de Usuários</h5>
+      <h5 className="m-0">Cadastro de Empresas</h5>
       <span className="block mt-2 md:mt-0 p-input-icon-left">
         <i className="pi pi-search" />
         <InputText
@@ -364,21 +337,21 @@ const UsersPage = () => {
   const UserDialogFooter = (
     <>
       <Button label="Cancelar" icon="pi pi-times" text onClick={hideDialog} />
-      <Button label="Salvar" icon="pi pi-check" text onClick={saveUser} />
+      <Button label="Salvar" icon="pi pi-check" text onClick={saveCompany} />
     </>
   );
 
   const editUserDialogFooter = (
     <>
       <Button label="Cancelar" icon="pi pi-times" text onClick={hideEditUserDialog} />
-      <Button label="Salvar" icon="pi pi-check" text onClick={editUser} />
+      <Button label="Salvar" icon="pi pi-check" text onClick={editCompany} />
     </>
   );
 
   const deleteUserDialogFooter = (
     <>
       <Button label="Não" icon="pi pi-times" text onClick={hideDeleteProductDialog} />
-      <Button label="Sim" icon="pi pi-check" text onClick={deleteUser} />
+      <Button label="Sim" icon="pi pi-check" text onClick={deleteCompany} />
     </>
   );
 
@@ -404,7 +377,7 @@ const UsersPage = () => {
           ) : (
             <DataTable
               ref={dt}
-              value={users}
+              value={companies}
               selection={selectedUsers}
               onSelectionChange={(e) => setSelectedUsers(e.value as any)}
               paginator
@@ -421,57 +394,55 @@ const UsersPage = () => {
               globalFilterFields={['name', 'email', 'role']}
             >
               <Column field="name" header="Nome" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
-              <Column field="email" header="E-mail" sortable body={emailBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
-              <Column field="role" header="Permissão" body={roleBodyTemplate} sortable />
+              <Column field="email" header="E-mail" sortable body={cnpjBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
               <Column body={actionBodyTemplate} header="Ações" headerStyle={{ minWidth: '10rem' }} />
             </DataTable>
           )}
 
-          <Dialog visible={userDialog} style={{ width: '450px' }} header="Novo Usuário" modal className="p-fluid" footer={UserDialogFooter} onHide={hideDialog}>
+          <Dialog visible={companyDialog} style={{ width: '450px' }} header="Novo Usuário" modal className="p-fluid" footer={UserDialogFooter} onHide={hideDialog}>
             <div className="field">
               <label htmlFor="name">Nome</label>
               <InputText
                 id="name"
-                value={user.name}
+                value={company.name}
                 onChange={(e) => onInputChange(e, 'name')}
                 required
                 autoFocus
-                className={classNames({ 'p-invalid': submitted && !user.name })}
+                className={classNames({ 'p-invalid': submitted && !company.name })}
               />
-              {submitted && !user.name && <small className="p-invalid">O nome é obrigatório</small>}
+              {submitted && !company.name && <small className="p-invalid">O nome é obrigatório</small>}
             </div>
+
             <div className="field">
-              <label htmlFor="email">E-mail</label>
-              <InputText
-                id="email"
-                value={user.email}
-                onChange={(e) => onInputChange(e, 'email')}
-                required
-                className={classNames({ 'p-invalid': submitted && !user.email })}
-              />
-              {submitted && !user.email && <small className="p-invalid">O e-mail é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="password">Senha do Usuário</label>
-              <InputText
-                id="password"
-                value={user.password}
-                onChange={(e) => onInputChange(e, 'password')}
-                required
-                className={classNames({ 'p-invalid': submitted && !user.password })}
-              />
-              {submitted && !user.password && <small className="p-invalid">O usuário é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="role">Permissão</label>
-              <Dropdown
-                value={user.role}
-                onChange={(e) => setUser({ ...user, role: e.value })}
-                options={['Admin', 'Coordenador', 'Colaborador']}
-                placeholder="Selecione" className="w-full md:w-14rem"
-              />
-              {submitted && !user.role && <small className="p-invalid">O usuário é obrigatório</small>}
-            </div>
+                      <label htmlFor="cnpj">CNPJ/CPF <span style={{ color: 'red' }}>*</span></label>
+                      <InputText
+                        id="cnpj"
+                        value={company.cnpj}
+                        onChange={(e) => onInputChange(e, 'cnpj')}
+                        placeholder="Digite somente números"
+                        onBlur={(e) => {
+                          const digits = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+                          let maskedValue = digits;
+            
+                          if (digits.length === 11) { // CPF
+                            maskedValue = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                          } else if (digits.length === 14) { // CNPJ
+                            maskedValue = digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                          }
+                          // Se não for nem 11 nem 14, mantém sem formatação (será validado depois)
+            
+                          setCompany({ ...company, cnpj: maskedValue });
+                        }}
+                        className={classNames({ 'p-invalid': submitted && !company.name })}
+                        required
+                      />
+                      {submitted && !company.cnpj && <small className="p-invalid">CPF/CNPJ é obrigatório!</small>}
+                      {company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length) && (
+                        <small className="p-invalid">Documento inválido (CPF 11 dígitos, CNPJ de 14)</small>
+                      )}
+                    </div>
+
+
           </Dialog>
 
           <Dialog visible={editUserDialog} style={{ width: '450px' }} header="Editar Usuário" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
@@ -479,41 +450,49 @@ const UsersPage = () => {
               <label htmlFor="name">Nome</label>
               <InputText
                 id="name"
-                value={user.name}
+                value={company.name}
                 onChange={(e) => onInputChange(e, 'name')}
                 required
                 autoFocus
-                className={classNames({ 'p-invalid': submitted && !user.name })}
+                className={classNames({ 'p-invalid': submitted && !company.name })}
               />
-              {submitted && !user.name && <small className="p-invalid">O nome é obrigatório</small>}
+              {submitted && !company.name && <small className="p-invalid">O nome é obrigatório</small>}
             </div>
+
             <div className="field">
-              <label htmlFor="email">E-mail</label>
-              <InputText
-                id="email"
-                value={user.email}
-                onChange={(e) => onInputChange(e, 'email')}
-                required
-                className={classNames({ 'p-invalid': submitted && !user.email })}
-              />
-              {submitted && !user.email && <small className="p-invalid">O e-mail é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="role">Permissão</label>
-              <Dropdown
-                value={user.role}
-                onChange={(e) => setUser({ ...user, role: e.value })}
-                options={['Admin', 'Coordenador', 'Colaborador']}
-                placeholder="Selecione" className="w-full md:w-14rem"
-              />
-              {submitted && !user.role && <small className="p-invalid">a permissão é obrigatório</small>}
-            </div>
+                      <label htmlFor="cnpj">CNPJ/CPF <span style={{ color: 'red' }}>*</span></label>
+                      <InputText
+                        id="cnpj"
+                        value={company.cnpj}
+                        onChange={(e) => onInputChange(e, 'cnpj')}
+                        placeholder="Digite somente números"
+                        onBlur={(e) => {
+                          const digits = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+                          let maskedValue = digits;
+            
+                          if (digits.length === 11) { // CPF
+                            maskedValue = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                          } else if (digits.length === 14) { // CNPJ
+                            maskedValue = digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                          }
+                          // Se não for nem 11 nem 14, mantém sem formatação (será validado depois)
+            
+                          setCompany({ ...company, cnpj: maskedValue });
+                        }}
+                        className={classNames({ 'p-invalid': submitted && !company.name })}
+                        required
+                      />
+                      {submitted && !company.cnpj && <small className="p-invalid">CPF/CNPJ é obrigatório!</small>}
+                      {company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length) && (
+                        <small className="p-invalid">Documento inválido (CPF 11 dígitos, CNPJ de 14)</small>
+                      )}
+                    </div>
           </Dialog>
 
           <Dialog visible={deleteUserDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteUserDialogFooter} onHide={hideDeleteProductDialog}>
             <div className="confirmation-content">
               <i className="pi pi-exclamation-triangle mr-3" />
-              {user && <span>Tem certeza que deseja excluir <b>{user.name}</b>?</span>}
+              {company && <span>Tem certeza que deseja excluir <b>{company.name}</b>?</span>}
             </div>
           </Dialog>
 
@@ -523,4 +502,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default CompaniesPage;

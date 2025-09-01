@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,15 +8,21 @@ datasource db {
 }
 
 model User {
-  id   String @id @default(uuid())
-  name String
-  email String @unique
-  password String
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(Colaborador)
   createdAt DateTime @default(now())
 
-  groups    GroupCompanies[] @relation("UserGroup")
+  groups GroupCompanies[] @relation("UserGroup")
 }
 
+enum Role {
+  Admin
+  Coordenador
+  Colaborador
+}
 
 model GroupCompanies {
   id        String    @id @default(uuid())
@@ -25,25 +30,23 @@ model GroupCompanies {
   createdAt DateTime  @default(now())
 
   users     User[]    @relation("UserGroup")
-  companies  Company[] @relation("CompanyGroup")
+  companies Company[] @relation("CompanyGroup")
 }
-
-
 
 model Company {
   id        String       @id @default(uuid())
-  name      String       @unique
+  name      String       
+  cnpj      String       @unique
   createdAt DateTime     @default(now())
 
   groups    GroupCompanies[] @relation("CompanyGroup")
   balancetes BalanceteData[] 
 }
 
-
 model BalanceteData {
   id          String   @id @default(uuid())
   uploadedAt  DateTime @default(now())
-  referenceDate DateTime 
+  referenceDate Int  
   accountingAccount String
   accountName String
   previousBalance Decimal @db.Decimal(20,2)
@@ -54,4 +57,10 @@ model BalanceteData {
 
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id])
+
+  // indexes
+  @@index([companyId, referenceDate])
+  @@index([referenceDate])
+  @@index([accountingAccount])
+  @@index([companyId, accountingAccount, referenceDate])
 }

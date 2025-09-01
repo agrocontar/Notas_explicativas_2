@@ -7,7 +7,13 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
 const companySchema = z.object({
-  name: z.string()
+  name: z.string(),
+  cnpj: z.string()
+})
+
+const updateCompanySchema = z.object({
+  name: z.string().optional(),
+  cnpj: z.string().optional()
 })
 
 export const createCompany = async (req: Request, res: Response) => {
@@ -53,3 +59,27 @@ export const listUserCompanies = async (req: Request, res: Response) => {
 }
 
 
+export const updateCompany = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const parsed = updateCompanySchema.parse(req.body)
+
+    const updatedCompany = await companyService.updateCompany({...parsed, companyId: id});
+    res.json(updatedCompany);
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
+  }
+}
+
+
+export const deleteCompany = async (req: Request, res: Response) => {
+  try {
+    const {id} = req.params
+    if(!id) res.status(400).json({message: "Parametro nao enviado!"})
+
+    const deletedCompany = await companyService.deleteCompany(id)
+    res.json(deletedCompany)
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
+  }
+}

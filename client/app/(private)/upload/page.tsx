@@ -15,14 +15,14 @@ export interface Company {
 
 const uploadBalanceteData = async (data: ExcelData): Promise<{ success: boolean; inserted: number }> => {
   try {
-    const response = await api.post('/upload');
-    const data = response.data
+    const response = await api.post('/balancete', data);
+    const dataResponse= response.data
 
     if (response.status != 200) {
       throw new Error(`Erro no servidor: ${response.status}`);
     }
 
-    return data;
+    return dataResponse;
   } catch (error) {
     console.error('Erro ao enviar dados:', error);
     throw error;
@@ -46,11 +46,36 @@ const UploadPage = () => {
         setUploading(true);
 
         try {
-            // Ler o arquivo Excel
-            const excelData = await readExcelFile(file, selectedCompany.id, date);
+                  // Ler o arquivo Excel
+            const excelData = await readExcelFile(file, 'company-id', new Date());
+            
+            console.log('Dados processados para envio:', excelData);
+            
+            // Verificar se há dados válidos
+            if (!excelData.balanceteData || excelData.balanceteData.length === 0) {
+              throw new Error('Nenhum dado válido encontrado no arquivo');
+            }
+
+            // Preparar dados para envio
+            const payload = {
+              companyId: selectedCompany.id,
+              referenceDate: date,
+              balanceteData: excelData.balanceteData.map(item => ({
+                accountingAccount: item.accountingAccount || '',
+                accountName: item.accountName || '',
+                previousBalance: item.previousBalance ?? 0,
+                debit: item.debit ?? 0,
+                credit: item.credit ?? 0,
+                monthBalance: item.monthBalance ?? 0,
+                currentBalance: item.currentBalance ?? 0
+              }))
+            };
+
+            console.log('Payload enviado:', payload);
+
             
             // Enviar para o backend
-            const result = await uploadBalanceteData(excelData);
+            const result = await uploadBalanceteData(payload);
             
             showToast('success', 'Sucesso', `Dados enviados com sucesso! ${result.inserted} registros inseridos.`);
             

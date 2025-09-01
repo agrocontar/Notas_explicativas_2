@@ -44,3 +44,16 @@ export const updateGroup = async (req: Request, res: Response) => {
   }
 
 }
+
+export const deleteGroup = async (req: Request, res: Response) => {
+  try {
+    const groupId = req.params.id;
+    if(!groupId) res.status(400).json({message: "Parametro não enviado"})
+
+    const deletedGroup = groupService.deleteGroup(groupId)
+    res.json(deletedGroup);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+
+}

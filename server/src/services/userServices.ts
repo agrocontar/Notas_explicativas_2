@@ -13,7 +13,7 @@ interface UpdateUserInput {
   name?: string,
   email?: string,
   password?: string
-
+  role?: 'Admin' | 'Coordenador' | 'Colaborador';
 }
 
 
@@ -47,9 +47,9 @@ export const getAllUsers = async () => {
 
 
 
-export const updateUser = async ({userId, email, name, password}: UpdateUserInput) => {
+export const updateUser = async ({userId, email, name, password, role}: UpdateUserInput) => {
 
-  if(!email && !name && !password) throw new Error('Sem dados para atualizar')
+  if(!email && !name && !password && !role) throw new Error('Sem dados para atualizar')
 
   const user = await prisma.user.findFirst({where: {id: userId}})
   if (!user) throw new Error('Usuário nao existe!')
@@ -57,8 +57,12 @@ export const updateUser = async ({userId, email, name, password}: UpdateUserInpu
   const data: any = {}
 
     if (name) data.name = name;
-    if (password) data.password = password;
     if (email) data.email = email;
+    if (role) data.role = role;
+    if(password){
+      const hashedPassword = await bcrypt.hash(password, 10);
+      data.password = hashedPassword
+    }
 
 
   const updateUser = await prisma.user.update({

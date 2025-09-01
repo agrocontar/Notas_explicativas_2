@@ -4,9 +4,9 @@ import { authMiddleware, requireCoordenador } from "../middlewares/authMiddlewar
 
 const router = Router();
 
-router.post("/", authMiddleware, requireCoordenador,  userController.createUser);
-router.get("/", authMiddleware,requireCoordenador ,userController.getUsers);
-router.put("/:id", authMiddleware, requireCoordenador, userController.updateUser);
+router.post("/", authMiddleware,  userController.createUser);
+router.get("/", authMiddleware ,userController.getUsers);
+router.put("/:id", authMiddleware, userController.updateUser);
 router.delete("/:id", authMiddleware,requireCoordenador, userController.deleteUser);
 
 export default router;

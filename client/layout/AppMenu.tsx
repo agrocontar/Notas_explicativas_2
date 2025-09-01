@@ -17,9 +17,11 @@ interface Companies {
 
 const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
-    const { isCoordenador } = useAuth(); // Obter informação se é admin
+    const { isCoordenador, isAdmin } = useAuth(); // Obter informação se é admin
     const [companies, setCompanies] = useState<Companies[]>([])
     const toast = useRef<Toast>(null);
+
+
 
     useEffect(() => {
         const fetchCompanies = async () => {
@@ -58,8 +60,9 @@ const AppMenu = () => {
         },
         {
             label: "Configurações",
-            icon: "pi pi-fw pi-cog",
-            to: '/users'
+            items: [
+                {label: "Usuarios", icon: 'pi pi-fw pi-users', to: '/users'}
+            ]           
         },
         {
             label: 'Upload',
@@ -71,10 +74,10 @@ const AppMenu = () => {
 
     // Filtrar o menu baseado na role do usuário
     const filteredMenu = baseMenu.filter(item => {
-        // Se for o item "Usuarios", mostrar apenas para admins
         if (item.label === "Configurações") {
-            return isCoordenador;
+            return isCoordenador || isAdmin;
         }
+        
         return true; // Manter todos os outros itens
     });
 

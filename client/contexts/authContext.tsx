@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('refreshToken');
   };
 
-  const isAdmin = user?.role === 'Administrador';
+  const isAdmin = user?.role === 'Admin';
   const isCoordenador = user?.role === 'Coordenador';
 
   return (

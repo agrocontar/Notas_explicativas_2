@@ -115,7 +115,7 @@ const CompaniesPage = () => {
     setSubmitted(true);
 
     const requiredFields = [
-      { id: 'cpf_cnpj', label: 'CPF/CNPJ', value: company.cnpj?.trim() },
+      { id: 'cnpj', label: 'CPF/CNPJ', value: company.cnpj?.trim() },
     ];
 
     const invalidField = requiredFields.find(field => !field.value);
@@ -211,11 +211,50 @@ const CompaniesPage = () => {
   const editCompany = async () => {
     if (!company.id) return;
 
+    
+    const requiredFields = [
+      { id: 'cnpj', label: 'CPF/CNPJ', value: company.cnpj?.trim() },
+    ];
+
+    const invalidField = requiredFields.find(field => !field.value);
+
+    if (invalidField) {
+      const el = document.getElementById(invalidField.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.focus?.();
+      }
+
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Preencha todos os campos obrigatórios',
+        detail: `O campo "${invalidField.label}" precisa ser preenchido.`,
+        life: 4000,
+      });
+
+      return;
+    }
+
+    if (company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length)) {
+      const el = document.getElementById('cnpj');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.focus?.();
+      }
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Documento Inválido',
+        detail: 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.',
+        life: 4000,
+      });
+      return;
+    }
+
     try {
 
       const payload = {
         name: company.name,
-        cnpk: company.cnpj,
+        cnpj: company.cnpj,
       }
 
       const res = await api.put(`/companies/${company.id}`, payload);

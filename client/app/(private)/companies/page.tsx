@@ -114,56 +114,93 @@ const CompaniesPage = () => {
   const saveCompany = async () => {
     setSubmitted(true);
 
-    if (company.name.trim() && company.cnpj.trim()) {
-      let _companies = [...companies];
-      let _company = { ...company };
+    const requiredFields = [
+      { id: 'cpf_cnpj', label: 'CPF/CNPJ', value: company.cnpj?.trim() },
+    ];
 
-      if (company.id) {
-        const index = findIndexById(company.id);
-        _companies[index] = _company;
+    const invalidField = requiredFields.find(field => !field.value);
+
+    if (invalidField) {
+      const el = document.getElementById(invalidField.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.focus?.();
+      }
+
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Preencha todos os campos obrigatórios',
+        detail: `O campo "${invalidField.label}" precisa ser preenchido.`,
+        life: 4000,
+      });
+
+      return;
+    }
+
+    if (company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length)) {
+      const el = document.getElementById('cnpj');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.focus?.();
+      }
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Documento Inválido',
+        detail: 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.',
+        life: 4000,
+      });
+      return;
+    }
+
+    let _companies = [...companies];
+    let _company = { ...company };
+
+    if (company.id) {
+      const index = findIndexById(company.id);
+      _companies[index] = _company;
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Empresa Atualizada',
+        life: 3000,
+      });
+      setCompanies(_companies);
+    } else {
+      try {
+
+        const payload = {
+          name: company.name,
+          cnpj: company.cnpj,
+        }
+
+        const res = await api.post('/companies', payload);
+
+        if (!res.status) {
+          throw new Error(res.data.error || 'Erro ao criar Empresa');
+        }
+        const createdCompany = await res.data
+        _company.id = createdCompany.id; // assumindo que o back retorna o ID
+        _companies.push(_company);
+
         toast.current?.show({
           severity: 'success',
           summary: 'Sucesso',
-          detail: 'Usuário Atualizado',
+          detail: 'Empresa Criado',
           life: 3000,
         });
+
         setCompanies(_companies);
-      } else {
-        try {
-
-          const payload = {
-            name: company.name,
-            cnpj: company.cnpj,
-          }
-
-          const res = await api.post('/companies', payload);
-
-          if (!res.status) {
-            throw new Error(res.data.error || 'Erro ao criar Empresa');
-          }
-          const createdCompany = await res.data
-          _company.id = createdCompany.id; // assumindo que o back retorna o ID
-          _companies.push(_company);
-
-          toast.current?.show({
-            severity: 'success',
-            summary: 'Sucesso',
-            detail: 'Usuário Criado',
-            life: 3000,
-          });
-
-          setCompanies(_companies);
-        } catch (err: any) {
-          console.error('Erro ao criar usuário:', err);
-          toast.current?.show({
-            severity: 'error',
-            summary: 'Erro',
-            detail: err.response.data.error || err.response.data.errors[0].message || 'Erro ao criar usuário',
-            life: 3000,
-          });
-          return;
-        }
+      } catch (err: any) {
+        console.error('Erro ao criar Empresa:', err);
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Erro',
+          detail: err.response.data.error || err.response.data.errors[0].message || 'Erro ao criar Empresa',
+          life: 3000,
+        });
+        return;
       }
+
 
       setCompanyDialog(false);
       setCompany(emptyCompany);
@@ -414,33 +451,33 @@ const CompaniesPage = () => {
             </div>
 
             <div className="field">
-                      <label htmlFor="cnpj">CNPJ/CPF <span style={{ color: 'red' }}>*</span></label>
-                      <InputText
-                        id="cnpj"
-                        value={company.cnpj}
-                        onChange={(e) => onInputChange(e, 'cnpj')}
-                        placeholder="Digite somente números"
-                        onBlur={(e) => {
-                          const digits = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
-                          let maskedValue = digits;
-            
-                          if (digits.length === 11) { // CPF
-                            maskedValue = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                          } else if (digits.length === 14) { // CNPJ
-                            maskedValue = digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-                          }
-                          // Se não for nem 11 nem 14, mantém sem formatação (será validado depois)
-            
-                          setCompany({ ...company, cnpj: maskedValue });
-                        }}
-                        className={classNames({ 'p-invalid': submitted && !company.name })}
-                        required
-                      />
-                      {submitted && !company.cnpj && <small className="p-invalid">CPF/CNPJ é obrigatório!</small>}
-                      {company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length) && (
-                        <small className="p-invalid">Documento inválido (CPF 11 dígitos, CNPJ de 14)</small>
-                      )}
-                    </div>
+              <label htmlFor="cnpj">CNPJ/CPF <span style={{ color: 'red' }}>*</span></label>
+              <InputText
+                id="cnpj"
+                value={company.cnpj}
+                onChange={(e) => onInputChange(e, 'cnpj')}
+                placeholder="Digite somente números"
+                onBlur={(e) => {
+                  const digits = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+                  let maskedValue = digits;
+
+                  if (digits.length === 11) { // CPF
+                    maskedValue = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                  } else if (digits.length === 14) { // CNPJ
+                    maskedValue = digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                  }
+                  // Se não for nem 11 nem 14, mantém sem formatação (será validado depois)
+
+                  setCompany({ ...company, cnpj: maskedValue });
+                }}
+                className={classNames({ 'p-invalid': submitted && !company.name })}
+                required
+              />
+              {submitted && !company.cnpj && <small className="p-invalid">CPF/CNPJ é obrigatório!</small>}
+              {company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length) && (
+                <small className="p-invalid">Documento inválido (CPF 11 dígitos, CNPJ de 14)</small>
+              )}
+            </div>
 
 
           </Dialog>
@@ -460,33 +497,33 @@ const CompaniesPage = () => {
             </div>
 
             <div className="field">
-                      <label htmlFor="cnpj">CNPJ/CPF <span style={{ color: 'red' }}>*</span></label>
-                      <InputText
-                        id="cnpj"
-                        value={company.cnpj}
-                        onChange={(e) => onInputChange(e, 'cnpj')}
-                        placeholder="Digite somente números"
-                        onBlur={(e) => {
-                          const digits = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
-                          let maskedValue = digits;
-            
-                          if (digits.length === 11) { // CPF
-                            maskedValue = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                          } else if (digits.length === 14) { // CNPJ
-                            maskedValue = digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-                          }
-                          // Se não for nem 11 nem 14, mantém sem formatação (será validado depois)
-            
-                          setCompany({ ...company, cnpj: maskedValue });
-                        }}
-                        className={classNames({ 'p-invalid': submitted && !company.name })}
-                        required
-                      />
-                      {submitted && !company.cnpj && <small className="p-invalid">CPF/CNPJ é obrigatório!</small>}
-                      {company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length) && (
-                        <small className="p-invalid">Documento inválido (CPF 11 dígitos, CNPJ de 14)</small>
-                      )}
-                    </div>
+              <label htmlFor="cnpj">CNPJ/CPF <span style={{ color: 'red' }}>*</span></label>
+              <InputText
+                id="cnpj"
+                value={company.cnpj}
+                onChange={(e) => onInputChange(e, 'cnpj')}
+                placeholder="Digite somente números"
+                onBlur={(e) => {
+                  const digits = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+                  let maskedValue = digits;
+
+                  if (digits.length === 11) { // CPF
+                    maskedValue = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                  } else if (digits.length === 14) { // CNPJ
+                    maskedValue = digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                  }
+                  // Se não for nem 11 nem 14, mantém sem formatação (será validado depois)
+
+                  setCompany({ ...company, cnpj: maskedValue });
+                }}
+                className={classNames({ 'p-invalid': submitted && !company.name })}
+                required
+              />
+              {submitted && !company.cnpj && <small className="p-invalid">CPF/CNPJ é obrigatório!</small>}
+              {company.cnpj && ![11, 14].includes(company.cnpj.replace(/\D/g, '').length) && (
+                <small className="p-invalid">Documento inválido (CPF 11 dígitos, CNPJ de 14)</small>
+              )}
+            </div>
           </Dialog>
 
           <Dialog visible={deleteUserDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteUserDialogFooter} onHide={hideDeleteProductDialog}>

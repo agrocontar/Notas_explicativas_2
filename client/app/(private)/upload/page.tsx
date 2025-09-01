@@ -59,7 +59,7 @@ const UploadPage = () => {
             // Preparar dados para envio
             const payload = {
               companyId: selectedCompany.id,
-              referenceDate: date,
+              referenceDate: date.getFullYear(),
               balanceteData: excelData.balanceteData.map(item => ({
                 accountingAccount: item.accountingAccount || '',
                 accountName: item.accountName || '',
@@ -116,7 +116,7 @@ const UploadPage = () => {
                                         dateFormat="yy"
                                         showIcon
                                         yearNavigator
-                                        yearRange="2020:2030"
+                                        yearRange="2023:2026"
                                     />
                                 </div>
                             </div>

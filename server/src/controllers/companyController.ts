@@ -70,3 +70,16 @@ export const updateCompany = async (req: Request, res: Response) => {
     res.status(401).json({ error: err instanceof Error ? err.message : err });
   }
 }
+
+
+export const deleteCompany = async (req: Request, res: Response) => {
+  try {
+    const {id} = req.params
+    if(!id) res.status(400).json({message: "Parametro nao enviado!"})
+
+    const deletedCompany = await companyService.deleteCompany(id)
+    res.json(deletedCompany)
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
+  }
+}

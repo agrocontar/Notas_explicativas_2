@@ -7,6 +7,8 @@ const router = Router();
 router.post("/", authMiddleware, companyController.createCompany);
 router.get("/", authMiddleware, companyController.listCompanies)
 router.put("/:id", authMiddleware, companyController.updateCompany)
+router.delete("/:id", authMiddleware, companyController.deleteCompany)
+
 router.get("/user/", authMiddleware, companyController.listUserCompanies)
 
 

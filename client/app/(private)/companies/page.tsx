@@ -58,15 +58,15 @@ const CompaniesPage = () => {
   // BUsca a lista de usuarios
   const fetchUsers = async () => {
     try {
-      const res = await api.get('/users');
+      const res = await api.get('/companies');
       const data = await res.data;
 
       if (!res.status) {
-        console.error('Erro ao buscar os usuários:', data.error);
+        console.error('Erro ao buscar as empresas:', data.error);
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Erro ao buscar os usuários.',
+          detail: 'Erro ao buscar os empresas.',
           life: 3000,
         });
         return;
@@ -385,16 +385,16 @@ const CompaniesPage = () => {
               rowsPerPageOptions={[5, 10, 25]}
               className="datatable-responsive"
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} usuários"
+              currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} Empresas"
               emptyMessage="Nenhum usuário encontrado."
               header={header}
               responsiveLayout="scroll"
               filters={filters}
               filterDisplay="row"
-              globalFilterFields={['name', 'email', 'role']}
+              globalFilterFields={['name', 'cnpj', 'role']}
             >
               <Column field="name" header="Nome" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
-              <Column field="email" header="E-mail" sortable body={cnpjBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
+              <Column field="cnpj" header="Cnpj" sortable body={cnpjBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
               <Column body={actionBodyTemplate} header="Ações" headerStyle={{ minWidth: '10rem' }} />
             </DataTable>
           )}

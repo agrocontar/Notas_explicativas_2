@@ -25,7 +25,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
 
     const logout = () => {
         try {
-            api.post('/users/logout')
+            api.post('/auth/logout')
             window.location.href = '/auth/login';
         } catch (err: any) {
             console.error('Erro ao fazer logout:', err);

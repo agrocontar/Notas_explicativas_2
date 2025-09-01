@@ -28,7 +28,7 @@ const LoginPage = () => {
         setError('');
 
         try {
-            const response = await api.post('/users/login', {
+            const response = await api.post('/auth/login', {
                 email,
                 password
             });

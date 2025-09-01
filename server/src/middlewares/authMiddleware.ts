@@ -28,7 +28,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   }
 };
 
-// Middleware para verificar se o usuário tem role de Admin
+
 export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({ error: "Usuário não autenticado" });
@@ -41,7 +41,6 @@ export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction
   next();
 };
 
-// Middleware para verificar se o usuário tem role de Coordenador ou superior
 export const requireCoordenador = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({ error: "Usuário não autenticado" });

@@ -66,3 +66,18 @@ export const updateGroup = async ({ userIds, companyIds, name, groupId }: Update
 
   return updatedGroup;
 }
+
+export const deleteGroup = async (groupId: string)=> {
+
+  const group = await prisma.groupCompanies.findUnique({ where: { id: groupId } })
+  if (!group) throw new Error('Grupo não encontrado!')
+
+  await prisma.groupCompanies.delete({ where: { id: groupId } })
+
+  return {
+    id: group.id,
+    name: group.name,
+    createdAt: group.createdAt
+  }
+
+}

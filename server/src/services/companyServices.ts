@@ -23,27 +23,29 @@ export const createCompany = async (data: CreateCompanyInput) => {
 }
 
 // List Company
-export const listCompanies = async() => {
+export const listCompanies = async () => {
   return prisma.company.findMany()
 }
 
 
 // List Companies per user group
-export const listUserCompanies = async( userId: string) => {
+export const listUserCompanies = async (userId: string) => {
 
-  const user = await prisma.user.findUnique({where: {id: userId}})
-  if(!user) throw new Error('Usuário não encontrado!')
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) throw new Error('Usuário não encontrado!')
 
-  const groupCompanies = await prisma.groupCompanies.findMany({where: {
-    users: {
-      some: {
-        id: userId
+  const groupCompanies = await prisma.groupCompanies.findMany({
+    where: {
+      users: {
+        some: {
+          id: userId
+        }
       }
+
+    }, include: {
+      companies: true
     }
-    
-  }, include: {
-    companies: true
-  }})
+  })
 
   // Flatter and remove duplicateds
   const companyMap = new Map<string, typeof groupCompanies[0]['companies'][0]>();
@@ -61,10 +63,10 @@ export const listUserCompanies = async( userId: string) => {
 export const updateCompany = async ({ companyId, cnpj, name }: updateCompanyInput) => {
   if (!companyId) throw new Error("Id da empresa não informado");
 
-  const company = await prisma.company.findUnique({ 
-    where: { id: companyId } 
+  const company = await prisma.company.findUnique({
+    where: { id: companyId }
   });
-  
+
   if (!company) throw new Error("Empresa não encontrada");
 
   // verify if cnpj is active
@@ -85,7 +87,7 @@ export const updateCompany = async ({ companyId, cnpj, name }: updateCompanyInpu
   const data: any = {};
 
   if (cnpj) data.cnpj = cnpj;
-  if (name) data.name = name; 
+  if (name) data.name = name;
 
 
   if (Object.keys(data).length === 0) {
@@ -101,8 +103,8 @@ export const updateCompany = async ({ companyId, cnpj, name }: updateCompanyInpu
 };
 
 export const deleteCompany = async (companyId: string) => {
-const company = await prisma.company.findUnique({ where: { id: companyId } })
-  if (!company) throw new Error('Usuário não encontrado!')
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new Error('Empresa não encontrada!')
 
   await prisma.company.delete({ where: { id: companyId } })
 

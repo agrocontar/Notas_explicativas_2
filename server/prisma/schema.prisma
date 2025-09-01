@@ -44,19 +44,19 @@ model Company {
 }
 
 model BalanceteData {
-  id          String   @id @default(uuid())
-  uploadedAt  DateTime @default(now())
-  referenceDate Int  
+  id              String   @id @default(uuid())
+  uploadedAt      DateTime @default(now())
+  referenceDate   Int  
   accountingAccount String
-  accountName String
+  accountName     String
   previousBalance Decimal @db.Decimal(20,2)
-  debit Decimal @db.Decimal(20,2)
-  credit Decimal @db.Decimal(20,2)
-  monthBalance Decimal @db.Decimal(20,2)
-  currentBalance Decimal @db.Decimal(20,2)
+  debit           Decimal @db.Decimal(20,2)
+  credit          Decimal @db.Decimal(20,2)
+  monthBalance    Decimal @db.Decimal(20,2)
+  currentBalance  Decimal @db.Decimal(20,2)
 
   companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // indexes
   @@index([companyId, referenceDate])

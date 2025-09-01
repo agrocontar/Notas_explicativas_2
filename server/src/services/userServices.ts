@@ -32,7 +32,7 @@ export const loginUser = async (email: string, password: string) => {
   
   // Generate token
   const token = jwt.sign(
-    {userId: user.id, email: user.email},
+    {userId: user.id, email: user.email, role: user.role},
     JWT_SECRET,
     {expiresIn: "1h"}
   )
@@ -43,6 +43,7 @@ export const loginUser = async (email: string, password: string) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    role: user.role,
     createdAt: user.createdAt
   }}
   

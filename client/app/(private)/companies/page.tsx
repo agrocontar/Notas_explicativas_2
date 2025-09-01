@@ -266,7 +266,7 @@ const CompaniesPage = () => {
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: res.data.error || 'Erro ao editar o usuário.',
+          detail: res.data.error || 'Erro ao editar o empresa.',
           life: 3000,
         });
         return;
@@ -275,7 +275,7 @@ const CompaniesPage = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Usuário atualizado com sucesso.',
+        detail: 'empresa atualizado com sucesso.',
         life: 3000,
       });
 
@@ -287,11 +287,11 @@ const CompaniesPage = () => {
       setCompany(emptyCompany);
 
     } catch (err) {
-      console.error('Erro ao editar usuário:', err);
+      console.error('Erro ao editar empresa:', err);
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Erro inesperado ao editar usuário.',
+        detail: 'Erro inesperado ao editar empresa.',
         life: 3000,
       });
     }
@@ -311,7 +311,7 @@ const CompaniesPage = () => {
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: data.error || 'Erro ao Excluir o usuário.',
+          detail: data.error || 'Erro ao Excluir a empresa.',
           life: 3000,
         });
         return;
@@ -320,7 +320,7 @@ const CompaniesPage = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Usuário excluido com sucesso.',
+        detail: 'Empresa excluido com sucesso.',
         life: 3000,
       });
 
@@ -335,11 +335,11 @@ const CompaniesPage = () => {
       setLoading(false)
 
     } catch (err) {
-      console.error('Erro ao excluir usuário:', err);
+      console.error('Erro ao excluir empresa:', err);
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Erro inesperado ao excluir usuário.',
+        detail: 'Erro inesperado ao excluir empresa.',
         life: 3000,
       });
     }

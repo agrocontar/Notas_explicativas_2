@@ -20,7 +20,6 @@ interface User {
   name: string;
   email: string;
   role: string;
-  status: number;
   password?: string;
 }
 
@@ -154,26 +153,22 @@ const UsersPage = () => {
         setUsers(_users);
       } else {
         try {
-          const res = await fetch('/api/users', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
+
+          const payload = {
               name: user.name,
               email: user.email,
               password: user.password,
               role: user.role,
-            }),
-          });
+            }
 
-          if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.message || 'Erro ao criar usuário');
+          const res = await api.post('/users',payload);
+          const data = await res.data;
+
+          if (!res.status) {
+            throw new Error(res.data.error || 'Erro ao criar usuário');
           }
-
-          const createdUser = await res.json();
+          console.log(data)
+          const createdUser = await res.data
           _user.id = createdUser.id; // assumindo que o back retorna o ID
           _users.push(_user);
 
@@ -190,7 +185,7 @@ const UsersPage = () => {
           toast.current?.show({
             severity: 'error',
             summary: 'Erro',
-            detail: err.message || 'Erro ao criar usuário',
+            detail: err.response.data.error || 'Erro ao criar usuário',
             life: 3000,
           });
           return;
@@ -332,19 +327,8 @@ const UsersPage = () => {
   const emailBodyTemplate = (rowData: User) => <span>{rowData.email}</span>;
   const roleBodyTemplate = (rowData: User) => <span>{rowData.role}</span>;
 
-  const statusBodyTemplate = (rowData: User) => (
-    <>
-      {rowData.status === 1 ? (
-        <span className="product-badge status-available">Ativo</span>
-      ) : rowData.status === 2 ? (
-        <span className="product-badge status-outofstock">Inativo</span>
-      ) : null}
-    </>
-  );
 
   const actionBodyTemplate = (rowData: User) => {
-    if (rowData.status === 1) {
-      // Botões para transportes ativos (editar/excluir)
       return (
         <>
           <Button
@@ -362,19 +346,6 @@ const UsersPage = () => {
           />
         </>
       );
-    } else {
-      // Botão para transportes inativos (reativar)
-      return (
-        <Button
-          icon="pi pi-refresh"
-          rounded
-          severity="success"
-          tooltip="Reativar transporte"
-          tooltipOptions={{ position: 'top' }}
-          onClick={() => openActive(rowData)}
-        />
-      );
-    }
   }
 
 
@@ -421,24 +392,6 @@ const UsersPage = () => {
     </>
   );
 
-  const handleActiveUser = () => {
-    ativateUser(
-      user,
-      setActiveUserDialog,
-      setUser,
-      setUsers,
-      users,
-      toast,
-      emptyUser,
-    )
-  }
-
-  const activeUserDialogFooter = (
-    <>
-      <Button label="Não" icon="pi pi-times" text onClick={() => setActiveUserDialog(false)} />
-      <Button label="Sim" icon="pi pi-check" text onClick={handleActiveUser} />
-    </>
-  );
 
 
 
@@ -480,7 +433,6 @@ const UsersPage = () => {
               <Column field="name" header="Nome" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
               <Column field="email" header="E-mail" sortable body={emailBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
               <Column field="role" header="Permissão" body={roleBodyTemplate} sortable />
-              <Column field="status" header="Status" body={statusBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }} />
               <Column body={actionBodyTemplate} header="Ações" headerStyle={{ minWidth: '10rem' }} />
             </DataTable>
           )}
@@ -574,14 +526,6 @@ const UsersPage = () => {
               {user && <span>Tem certeza que deseja excluir <b>{user.name}</b>?</span>}
             </div>
           </Dialog>
-
-          <Dialog visible={activeUserDialog} style={{ width: '450px' }} header="Confirmar" modal footer={activeUserDialogFooter} onHide={() => setActiveUserDialog(false)}>
-            <div className="confirmation-content">
-              <i className="pi pi-exclamation-triangle mr-3" />
-              {user && <span>Tem certeza que deseja ativar o usuario de <b>{user.name}</b>?</span>}
-            </div>
-          </Dialog>
-
 
         </div>
       </div>

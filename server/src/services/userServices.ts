@@ -6,6 +6,7 @@ interface CreateUserInput {
   name: string;
   email: string;
   password: string;
+  role: 'Admin' | 'Coordenador' | 'Colaborador';
 }
 
 interface UpdateUserInput {
@@ -35,6 +36,7 @@ export const createUser = async (data: CreateUserInput) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    role: user.role,
     createdAt: user.createdAt
   }
 

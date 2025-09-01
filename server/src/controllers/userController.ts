@@ -7,6 +7,7 @@ const userSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6, { message: "Senha deve ter no minimo 6 caracteres" }),
+  role: z.enum(['Admin', 'Coordenador', 'Colaborador'])
 });
 
 const updateUserSchema = z.object({

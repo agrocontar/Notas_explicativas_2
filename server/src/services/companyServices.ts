@@ -58,24 +58,58 @@ export const listUserCompanies = async( userId: string) => {
   return uniqueCompanies
 }
 
+export const updateCompany = async ({ companyId, cnpj, name }: updateCompanyInput) => {
+  if (!companyId) throw new Error("Id da empresa não informado");
 
-export const updateCompany = async ({companyId, cnpj, name}: updateCompanyInput) => {
-
-  if(!companyId) throw new Error("Id da empresa não informado")
+  const company = await prisma.company.findUnique({ 
+    where: { id: companyId } 
+  });
   
-  const company = await prisma.company.findUnique({where: {id: companyId}})
-  if(!companyId) throw new Error("Empresa não encontrada")
+  if (!company) throw new Error("Empresa não encontrada");
 
-  const data: any = {}
+  // verify if cnpj is active
+  if (cnpj && company.cnpj !== cnpj) {
 
-  if (cnpj) data.cnpj = cnpj
-  if (name) data.cnpj = name
+    const existingCompanyWithCnpj = await prisma.company.findFirst({
+      where: {
+        cnpj: cnpj,
+        id: { not: companyId } // Except the current company
+      }
+    });
+
+    if (existingCompanyWithCnpj) {
+      throw new Error("CNPJ já está sendo utilizado por outra empresa");
+    }
+  }
+
+  const data: any = {};
+
+  if (cnpj) data.cnpj = cnpj;
+  if (name) data.name = name; 
+
+
+  if (Object.keys(data).length === 0) {
+    return company;
+  }
 
   const updatedCompany = await prisma.company.update({
-    where: {id: companyId},
+    where: { id: companyId },
     data
-  
-  })
+  });
 
-  return updatedCompany
+  return updatedCompany;
+};
+
+export const deleteCompany = async (companyId: string) => {
+const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new Error('Usuário não encontrado!')
+
+  await prisma.company.delete({ where: { id: companyId } })
+
+  return {
+    id: company.id,
+    name: company.name,
+    cnpj: company.cnpj,
+    createdAt: company.createdAt
+  }
 }

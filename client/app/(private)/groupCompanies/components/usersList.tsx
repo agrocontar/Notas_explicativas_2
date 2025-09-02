@@ -1,26 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { PickList } from 'primereact/picklist';
-import { GroupCompanies } from '../page';
 
-interface Company {
+interface User {
   id: string;
   name: string;
-  cnpj: string;
+  email: string;
+  role: string;
 }
 
-interface PermissionListProps {
-  companies: Company[];
+interface usersListProps {
+  users: User[];
 }
 
-export default function PermissionList({ companies }: PermissionListProps){
-    const [source, setSource] = useState<Company[]>([]);
-    const [target, setTarget] = useState<Company[]>([]);
+export default function UsersList({ users }: usersListProps){
+    const [source, setSource] = useState<User[]>([]);
+    const [target, setTarget] = useState<User[]>([]);
 
     useEffect(() => {
-        setSource(companies);
-        setTarget([]);
-    }, [companies]); 
+        setSource([]);
+        setTarget(users);
+    }, [users]); 
 
     const onChange = (event: any) => {
         setSource(event.source);
@@ -38,8 +38,8 @@ export default function PermissionList({ companies }: PermissionListProps){
     return (
         <div className="card">
             <PickList dataKey="id" source={source} target={target} onChange={onChange} itemTemplate={itemTemplate} filter filterBy="name" breakpoint="1280px"
-                sourceHeader="Usuários Disponíveis" targetHeader="Usuários do Grupo" sourceStyle={{ height: '24rem' }} targetStyle={{ height: '24rem' }}
-                sourceFilterPlaceholder="Buscar por nome" targetFilterPlaceholder="Buscar por nome" />
+                sourceHeader="Usuários Disponíveis" targetHeader="Usuários do Grupo" sourceStyle={{ height: '18rem' }} targetStyle={{ height: '18rem' }}
+                sourceFilterPlaceholder="Buscar por nome" targetFilterPlaceholder="Buscar por nome" showSourceControls={false} showTargetControls={false} />
         </div>
     );
 }

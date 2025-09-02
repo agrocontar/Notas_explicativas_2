@@ -13,7 +13,8 @@ import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import api from '@/app/api/api';
-import PermissionList from './components/permissionsList';
+import CompaniesList from './components/companiesList';
+import UsersList from './components/usersList';
 
 export interface GroupCompanies {
   id: string;
@@ -23,6 +24,12 @@ export interface GroupCompanies {
     name: string;
     cnpj: string;
   }[]
+  users: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  }[]
 }
 
 const GroupCompaniesPage = () => {
@@ -30,9 +37,15 @@ const GroupCompaniesPage = () => {
     id: '',
     name: '',
     companies: [{
-    id: '',
-    name: '',
-    cnpj: '',
+      id: '',
+      name: '',
+      cnpj: '',
+    }],
+    users: [{
+      id: '',
+      name: '',
+      email: '',
+      role: '',
     }]
   };
 
@@ -420,8 +433,10 @@ const GroupCompaniesPage = () => {
             </div>
           </Dialog>
 
-          <Dialog visible={editUserDialog} style={{ width: '450px' }} header="Editar Grupo" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
-            <PermissionList companies={groupCompanies.companies}/>
+          <Dialog visible={editUserDialog} style={{ width: '80%' }} header="Editar Grupo" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
+            <CompaniesList companies={groupCompanies.companies} />
+            <UsersList users={groupCompanies.users} />
+
           </Dialog>
 
           <Dialog visible={deleteUserDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteUserDialogFooter} onHide={hideDeleteProductDialog}>

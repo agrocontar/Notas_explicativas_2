@@ -31,7 +31,17 @@ export const createGroupCompanies = async (data: CreateGroupCompaniesInput) => {
 // List groups
 export const listGroups = async () => {
   return prisma.groupCompanies.findMany({
-    include: { companies: true },
+    include: {
+      companies: true,
+      users: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true
+        }
+      }
+    },
   });
 };
 

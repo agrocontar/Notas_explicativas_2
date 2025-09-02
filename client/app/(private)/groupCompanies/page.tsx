@@ -13,20 +13,27 @@ import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import api from '@/app/api/api';
+import PermissionList from './components/permissionsList';
 
-interface GroupCompanies {
+export interface GroupCompanies {
   id: string;
   name: string;
+  companies: {
+    id: string;
+    name: string;
+    cnpj: string;
+  }[]
 }
 
 const GroupCompaniesPage = () => {
   const emptyGroup = {
     id: '',
     name: '',
-    email: '',
-    role: '',
-    status: 1,
-    password: '',
+    companies: [{
+    id: '',
+    name: '',
+    cnpj: '',
+    }]
   };
 
   const [groupCompaniesArray, setGroupCompaniesArray] = useState<GroupCompanies[]>([]);
@@ -414,18 +421,7 @@ const GroupCompaniesPage = () => {
           </Dialog>
 
           <Dialog visible={editUserDialog} style={{ width: '450px' }} header="Editar Grupo" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
-            <div className="field">
-              <label htmlFor="name">Nome</label>
-              <InputText
-                id="name"
-                value={groupCompanies.name}
-                onChange={(e) => onInputChange(e, 'name')}
-                required
-                autoFocus
-                className={classNames({ 'p-invalid': submitted && !groupCompanies.name })}
-              />
-              {submitted && !groupCompanies.name && <small className="p-invalid">O nome é obrigatório</small>}
-            </div>
+            <PermissionList companies={groupCompanies.companies}/>
           </Dialog>
 
           <Dialog visible={deleteUserDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteUserDialogFooter} onHide={hideDeleteProductDialog}>

@@ -10,13 +10,13 @@ interface Company {
 
 interface CompaniesListProps {
     companies: Company[];
+    onCompaniesChange: (companies: Company[]) => void;
 }
 
-export default function CompaniesList({ companies }: CompaniesListProps) {
+export default function CompaniesList({ companies, onCompaniesChange }: CompaniesListProps) {
     const [allCompanies, setAllCompanies] = useState<Company[]>([]);
     const [target, setTarget] = useState<Company[]>([]);
 
-    // Filtrar source para mostrar apenas empresas não vinculadas ao grupo
     const source = useMemo(() => {
         return allCompanies.filter(company => 
             !target.some(targetCompany => targetCompany.id === company.id)
@@ -47,6 +47,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
     const onChange = (event: any) => {
         setAllCompanies(event.source.concat(event.target));
         setTarget(event.target);
+        onCompaniesChange(event.target); // Notifica o componente pai
     };
 
     const itemTemplate = (item: any) => {

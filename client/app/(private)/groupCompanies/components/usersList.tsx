@@ -11,30 +11,23 @@ interface User {
 
 interface UsersListProps {
   users: User[];
-  allUsers?: User[]; // Opcional: se você tiver acesso a todos os usuários
+  onUsersChange: (users: User[]) => void;
 }
 
-export default function UsersList({ users, allUsers }: UsersListProps) {
-    const [allUsersList, setAllUsersList] = useState<User[]>(allUsers || []);
+export default function UsersList({ users, onUsersChange }: UsersListProps) {
+    const [allUsersList, setAllUsersList] = useState<User[]>([]);
     const [target, setTarget] = useState<User[]>([]);
 
-    // Filtrar source para mostrar apenas usuários não vinculados ao grupo
     const source = useMemo(() => {
         return allUsersList.filter(user => 
             !target.some(targetUser => targetUser.id === user.id)
         );
     }, [allUsersList, target]);
 
-    // Se você não tem acesso a todos os usuários via prop, pode buscar da API
     const fetchAllUsers = async () => {
         try {
             const res = await api.get('/users');
             const data = await res.data;
-
-            if (!res.status) {
-                console.error('Erro ao buscar as empresas:', data.error);
-                return;
-            }
             setAllUsersList(data);
         } catch (err) {
             console.error('Erro ao buscar usuários:', err);
@@ -42,18 +35,14 @@ export default function UsersList({ users, allUsers }: UsersListProps) {
     };
 
     useEffect(() => {
-        // Se não receber allUsers via prop, busca da API
-        if (!allUsers) {
-            fetchAllUsers();
-        } else {
-            setAllUsersList(allUsers);
-        }
+        fetchAllUsers();
         setTarget(users);
-    }, [users, allUsers]);
+    }, [users]);
 
     const onChange = (event: any) => {
         setAllUsersList(event.source.concat(event.target));
         setTarget(event.target);
+        onUsersChange(event.target); // Notifica o componente pai
     };
 
     const itemTemplate = (item: User) => {

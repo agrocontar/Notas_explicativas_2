@@ -14,24 +14,13 @@ import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import api from '@/app/api/api';
 
-interface User {
+interface GroupCompanies {
   id: string;
   name: string;
-  email: string;
-  role: string;
-  password?: string;
 }
 
-function getCookie(name: string): string | null {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-  return null;
-}
-
-
-const UsersPage = () => {
-  const emptyUser = {
+const GroupCompaniesPage = () => {
+  const emptyGroup = {
     id: '',
     name: '',
     email: '',
@@ -40,19 +29,17 @@ const UsersPage = () => {
     password: '',
   };
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [user, setUser] = useState<User>(emptyUser);
+  const [groupCompaniesArray, setGroupCompaniesArray] = useState<GroupCompanies[]>([]);
+  const [groupCompanies, setGroupCompanies] = useState<GroupCompanies>(emptyGroup);
 
   const [userDialog, setUserDialog] = useState(false);
   const [deleteUserDialog, setDeleteUserDialog] = useState(false);
   const [editUserDialog, setEditUserDialog] = useState(false);
-  const [activeUserDialog, setActiveUserDialog] = useState(false);
 
 
   const [selectedUsers, setSelectedUsers] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
-  const [globalFilter, setGlobalFilter] = useState('');
   const toast = useRef<Toast>(null);
   const dt = useRef<DataTable<any>>(null);
   const [loading, setLoading] = useState(false);
@@ -71,48 +58,42 @@ const UsersPage = () => {
   };
 
   // BUsca a lista de usuarios
-  const fetchUsers = async () => {
+  const fetchGroups = async () => {
     try {
-      const res = await api.get('/users');
+      const res = await api.get('/groupCompanies');
       const data = await res.data;
 
       if (!res.status) {
-        console.error('Erro ao buscar os usuários:', data.error);
+        console.error('Erro ao buscar os Grupos de Empresas:', data.error);
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Erro ao buscar os usuários.',
+          detail: 'Erro ao buscar os Grupos de Empresas.',
           life: 3000,
         });
         return;
       }
 
-      setUsers(data);
+      setGroupCompaniesArray(data);
     } catch (err) {
       console.error('Erro inesperado:', err);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchGroups();
   }, []);
 
   //Abre o dialogo de novo usuario
   const openNew = () => {
-    setUser(emptyUser);
+    setGroupCompanies(emptyGroup);
     setSubmitted(false);
     setUserDialog(true);
   };
 
-  const openActive = (user: User) => {
-    setUser({ ...user });
-    setSubmitted(false);
-    setActiveUserDialog(true);
-  }
-
   //Abre o dialogo de editar usuario
-  const openEdit = (user: User) => {
-    setUser({ ...user });
+  const openEdit = (user: GroupCompanies) => {
+    setGroupCompanies({ ...user });
     setSubmitted(false);
     setEditUserDialog(true);
   };
@@ -133,37 +114,34 @@ const UsersPage = () => {
   const hideDeleteProductDialog = () => setDeleteUserDialog(false);
 
   // Salva o usuario
-  const saveUser = async () => {
+  const saveGroup = async () => {
     setSubmitted(true);
 
-    if (user.name.trim() && user.email.trim() && user.password && user.role) {
-      let _users = [...users];
-      let _user = { ...user };
+    if (groupCompanies.name.trim()) {
+      let _users = [...groupCompaniesArray];
+      let _user = { ...groupCompanies };
 
-      if (user.id) {
-        const index = findIndexById(user.id);
+      if (groupCompanies.id) {
+        const index = findIndexById(groupCompanies.id);
         _users[index] = _user;
         toast.current?.show({
           severity: 'success',
           summary: 'Sucesso',
-          detail: 'Usuário Atualizado',
+          detail: 'Grupo Atualizado',
           life: 3000,
         });
-        setUsers(_users);
+        setGroupCompaniesArray(_users);
       } else {
         try {
 
           const payload = {
-            name: user.name,
-            email: user.email,
-            password: user.password,
-            role: user.role,
+            name: groupCompanies.name,
           }
 
-          const res = await api.post('/users', payload);
+          const res = await api.post('/groupCompanies', payload);
 
           if (!res.status) {
-            throw new Error(res.data.error || 'Erro ao criar usuário');
+            throw new Error(res.data.error || 'Erro ao criar Grupo');
           }
           const createdUser = await res.data
           _user.id = createdUser.id; // assumindo que o back retorna o ID
@@ -172,17 +150,17 @@ const UsersPage = () => {
           toast.current?.show({
             severity: 'success',
             summary: 'Sucesso',
-            detail: 'Usuário Criado',
+            detail: 'Grupo Criado',
             life: 3000,
           });
 
-          setUsers(_users);
+          setGroupCompaniesArray(_users);
         } catch (err: any) {
-          console.error('Erro ao criar usuário:', err);
+          console.error('Erro ao criar Grupo:', err);
           toast.current?.show({
             severity: 'error',
             summary: 'Erro',
-            detail: err.response.data.error || err.response.data.errors[0].message || 'Erro ao criar usuário',
+            detail: err.response.data.error || err.response.data.errors[0].message || 'Erro ao criar Grupo',
             life: 3000,
           });
           return;
@@ -190,23 +168,21 @@ const UsersPage = () => {
       }
 
       setUserDialog(false);
-      setUser(emptyUser);
+      setGroupCompanies(emptyGroup);
     }
   };
 
   // Edita o usuario
-  const editUser = async () => {
-    if (!user.id) return;
+  const editGroup = async () => {
+    if (!groupCompanies.id) return;
 
     try {
 
       const payload = {
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        name: groupCompanies.name,
       }
 
-      const res = await api.put(`/users/${user.id}`, payload);
+      const res = await api.put(`/groupCompanies/${groupCompanies.id}`, payload);
       const data = res.data
 
 
@@ -215,7 +191,7 @@ const UsersPage = () => {
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: res.data.error || 'Erro ao editar o usuário.',
+          detail: res.data.error || 'Erro ao editar o Grupo.',
           life: 3000,
         });
         return;
@@ -224,35 +200,35 @@ const UsersPage = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Usuário atualizado com sucesso.',
+        detail: 'Grupo atualizado com sucesso.',
         life: 3000,
       });
 
       // Atualiza lista local
-      const updatedUsers = users.map((u) => (u.id === user.id ? data : u));
-      setUsers(updatedUsers);
-      setUser(data);
+      const updatedUsers = groupCompaniesArray.map((u) => (u.id === groupCompanies.id ? data : u));
+      setGroupCompaniesArray(updatedUsers);
+      setGroupCompanies(data);
       setEditUserDialog(false);
-      setUser(emptyUser);
+      setGroupCompanies(emptyGroup);
 
     } catch (err) {
-      console.error('Erro ao editar usuário:', err);
+      console.error('Erro ao editar Grupo:', err);
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Erro inesperado ao editar usuário.',
+        detail: 'Erro inesperado ao editar Grupo.',
         life: 3000,
       });
     }
   };
 
   // Deleta o usuario
-  const deleteUser = async () => {
-    if (!user.id) return;
+  const deleteGroup = async () => {
+    if (!groupCompanies.id) return;
     setLoading(true);
     try {
 
-      const res = await api.delete(`/users/${user.id}`);
+      const res = await api.delete(`/groupCompanies/${groupCompanies.id}`);
       const data = res.data
 
       if (!res.status) {
@@ -260,7 +236,7 @@ const UsersPage = () => {
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: data.error || 'Erro ao Excluir o usuário.',
+          detail: data.error || 'Erro ao Excluir o Grupo.',
           life: 3000,
         });
         return;
@@ -269,26 +245,26 @@ const UsersPage = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Usuário excluido com sucesso.',
+        detail: 'Grupo excluido com sucesso.',
         life: 3000,
       });
 
       // Atualiza lista local
-      const updatedUsers = users.map((u) => (u.id === user.id ? data : u));
-      setUsers(updatedUsers);
-      setUser(data);
+      const updatedUsers = groupCompaniesArray.map((u) => (u.id === groupCompanies.id ? data : u));
+      setGroupCompaniesArray(updatedUsers);
+      setGroupCompanies(data);
       setSelectedUsers(null);
       setDeleteUserDialog(false);
-      fetchUsers()
-      setUser(emptyUser);
+      fetchGroups()
+      setGroupCompanies(emptyGroup);
       setLoading(false)
 
     } catch (err) {
-      console.error('Erro ao excluir usuário:', err);
+      console.error('Erro ao excluir Grupo:', err);
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Erro inesperado ao excluir usuário.',
+        detail: 'Erro inesperado ao excluir Grupo.',
         life: 3000,
       });
     }
@@ -296,28 +272,26 @@ const UsersPage = () => {
 
 
   // Confirma a exclusão do usuario
-  const confirmDeleteProduct = (user: User) => {
-    setUser(user);
+  const confirmDeleteProduct = (user: GroupCompanies) => {
+    setGroupCompanies(user);
     setDeleteUserDialog(true);
   };
 
-  const findIndexById = (id: string) => users.findIndex((u) => u.id === id);
+  const findIndexById = (id: string) => groupCompaniesArray.findIndex((u) => u.id === id);
 
   const onInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     name: string
   ) => {
     const val = (e.target && e.target.value) || '';
-    setUser({ ...user, [name]: val });
+    setGroupCompanies({ ...groupCompanies, [name]: val });
   };
 
 
-  const nameBodyTemplate = (rowData: User) => <span>{rowData.name}</span>;
-  const emailBodyTemplate = (rowData: User) => <span>{rowData.email}</span>;
-  const roleBodyTemplate = (rowData: User) => <span>{rowData.role}</span>;
+  const nameBodyTemplate = (rowData: GroupCompanies) => <span>{rowData.name}</span>;
 
 
-  const actionBodyTemplate = (rowData: User) => {
+  const actionBodyTemplate = (rowData: GroupCompanies) => {
     return (
       <>
         <Button
@@ -340,14 +314,14 @@ const UsersPage = () => {
 
   const leftToolbarTemplate = () => (
     <div className="my-2">
-      <Button label="Novo Usuário" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
+      <Button label="Novo Grupo" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
     </div>
   );
 
 
   const header = (
     <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-      <h5 className="m-0">Cadastro de Usuários</h5>
+      <h5 className="m-0">Cadastro de Grupos de Empresas</h5>
       <span className="block mt-2 md:mt-0 p-input-icon-left">
         <i className="pi pi-search" />
         <InputText
@@ -363,21 +337,21 @@ const UsersPage = () => {
   const UserDialogFooter = (
     <>
       <Button label="Cancelar" icon="pi pi-times" text onClick={hideDialog} />
-      <Button label="Salvar" icon="pi pi-check" text onClick={saveUser} />
+      <Button label="Salvar" icon="pi pi-check" text onClick={saveGroup} />
     </>
   );
 
   const editUserDialogFooter = (
     <>
       <Button label="Cancelar" icon="pi pi-times" text onClick={hideEditUserDialog} />
-      <Button label="Salvar" icon="pi pi-check" text onClick={editUser} />
+      <Button label="Salvar" icon="pi pi-check" text onClick={editGroup} />
     </>
   );
 
   const deleteUserDialogFooter = (
     <>
       <Button label="Não" icon="pi pi-times" text onClick={hideDeleteProductDialog} />
-      <Button label="Sim" icon="pi pi-check" text onClick={deleteUser} />
+      <Button label="Sim" icon="pi pi-check" text onClick={deleteGroup} />
     </>
   );
 
@@ -403,7 +377,7 @@ const UsersPage = () => {
           ) : (
             <DataTable
               ref={dt}
-              value={users}
+              value={groupCompaniesArray}
               selection={selectedUsers}
               onSelectionChange={(e) => setSelectedUsers(e.value as any)}
               paginator
@@ -411,8 +385,8 @@ const UsersPage = () => {
               rowsPerPageOptions={[5, 10, 25]}
               className="datatable-responsive"
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} usuários"
-              emptyMessage="Nenhum usuário encontrado."
+              currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} Grupos de Empresas"
+              emptyMessage="Nenhum Grupo encontrado."
               header={header}
               responsiveLayout="scroll"
               filters={filters}
@@ -420,99 +394,44 @@ const UsersPage = () => {
               globalFilterFields={['name', 'email', 'role']}
             >
               <Column field="name" header="Nome" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
-              <Column field="email" header="E-mail" sortable body={emailBodyTemplate} headerStyle={{ minWidth: '15rem' }} />
-              <Column field="role" header="Permissão" body={roleBodyTemplate} sortable />
               <Column body={actionBodyTemplate} header="Ações" headerStyle={{ minWidth: '10rem' }} />
             </DataTable>
           )}
 
-          <Dialog visible={userDialog} style={{ width: '450px' }} header="Novo Usuário" modal className="p-fluid" footer={UserDialogFooter} onHide={hideDialog}>
+          <Dialog visible={userDialog} style={{ width: '450px' }} header="Novo Grupo" modal className="p-fluid" footer={UserDialogFooter} onHide={hideDialog}>
             <div className="field">
               <label htmlFor="name">Nome</label>
               <InputText
                 id="name"
-                value={user.name}
+                value={groupCompanies.name}
                 onChange={(e) => onInputChange(e, 'name')}
                 required
                 autoFocus
-                className={classNames({ 'p-invalid': submitted && !user.name })}
+                className={classNames({ 'p-invalid': submitted && !groupCompanies.name })}
               />
-              {submitted && !user.name && <small className="p-invalid">O nome é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="email">E-mail</label>
-              <InputText
-                id="email"
-                value={user.email}
-                onChange={(e) => onInputChange(e, 'email')}
-                required
-                className={classNames({ 'p-invalid': submitted && !user.email })}
-              />
-              {submitted && !user.email && <small className="p-invalid">O e-mail é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="password">Senha do Usuário</label>
-              <InputText
-                id="password"
-                value={user.password}
-                onChange={(e) => onInputChange(e, 'password')}
-                required
-                className={classNames({ 'p-invalid': submitted && !user.password })}
-              />
-              {submitted && !user.password && <small className="p-invalid">O usuário é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="role">Permissão</label>
-              <Dropdown
-                value={user.role}
-                onChange={(e) => setUser({ ...user, role: e.value })}
-                options={['Admin', 'Coordenador', 'Colaborador']}
-                placeholder="Selecione" className="w-full md:w-14rem"
-              />
-              {submitted && !user.role && <small className="p-invalid">O usuário é obrigatório</small>}
+              {submitted && !groupCompanies.name && <small className="p-invalid">O nome é obrigatório</small>}
             </div>
           </Dialog>
 
-          <Dialog visible={editUserDialog} style={{ width: '450px' }} header="Editar Usuário" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
+          <Dialog visible={editUserDialog} style={{ width: '450px' }} header="Editar Grupo" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
             <div className="field">
               <label htmlFor="name">Nome</label>
               <InputText
                 id="name"
-                value={user.name}
+                value={groupCompanies.name}
                 onChange={(e) => onInputChange(e, 'name')}
                 required
                 autoFocus
-                className={classNames({ 'p-invalid': submitted && !user.name })}
+                className={classNames({ 'p-invalid': submitted && !groupCompanies.name })}
               />
-              {submitted && !user.name && <small className="p-invalid">O nome é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="email">E-mail</label>
-              <InputText
-                id="email"
-                value={user.email}
-                onChange={(e) => onInputChange(e, 'email')}
-                required
-                className={classNames({ 'p-invalid': submitted && !user.email })}
-              />
-              {submitted && !user.email && <small className="p-invalid">O e-mail é obrigatório</small>}
-            </div>
-            <div className="field">
-              <label htmlFor="role">Permissão</label>
-              <Dropdown
-                value={user.role}
-                onChange={(e) => setUser({ ...user, role: e.value })}
-                options={['Admin', 'Coordenador', 'Colaborador']}
-                placeholder="Selecione" className="w-full md:w-14rem"
-              />
-              {submitted && !user.role && <small className="p-invalid">a permissão é obrigatório</small>}
+              {submitted && !groupCompanies.name && <small className="p-invalid">O nome é obrigatório</small>}
             </div>
           </Dialog>
 
           <Dialog visible={deleteUserDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteUserDialogFooter} onHide={hideDeleteProductDialog}>
             <div className="confirmation-content">
               <i className="pi pi-exclamation-triangle mr-3" />
-              {user && <span>Tem certeza que deseja excluir <b>{user.name}</b>?</span>}
+              {groupCompanies && <span>Tem certeza que deseja excluir <b>{groupCompanies.name}</b>?</span>}
             </div>
           </Dialog>
 
@@ -522,4 +441,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default GroupCompaniesPage;

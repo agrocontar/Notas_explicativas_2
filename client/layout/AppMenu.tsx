@@ -62,7 +62,8 @@ const AppMenu = () => {
             label: "Configurações",
             items: [
                 {label: "Usuarios", icon: 'pi pi-fw pi-users', to: '/users'},
-                {label: "Empresas", icon: 'pi pi-fw pi-building', to: '/companies'}
+                {label: "Empresas", icon: 'pi pi-fw pi-building', to: '/companies'},
+                {label: "Grupo de empresas", icon: 'pi pi-fw pi-id-card', to: '/groupCompanies'},
             ]           
         },
         {

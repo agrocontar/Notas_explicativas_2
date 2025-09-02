@@ -2,7 +2,6 @@ import { prisma } from "../prismaClient";
 
 interface CreateGroupCompaniesInput {
   name: string
-  companyIds: string[]; 
 }
 
 interface UpdateGroupCompaniesInput {
@@ -18,11 +17,7 @@ export const createGroupCompanies = async (data: CreateGroupCompaniesInput) => {
   const group = await prisma.groupCompanies.create({
     data: {
       name: data.name,
-      companies: {
-        connect: data.companyIds.map(id => ({ id })),
-      },
     },
-    include: { companies: true }, 
   });
 
   return group;

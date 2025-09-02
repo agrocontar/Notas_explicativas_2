@@ -5,14 +5,13 @@ import { handleZodError } from "../utils/handleZodError";
 
 const groupCompanySchema = z.object({
   name: z.string(),
-  companyIds: z.string().array()
 })
 
 // Create Groups Companys
 export const createGroup = async (req: Request, res: Response) => {
   try {
-    const { name, companyIds } = groupCompanySchema.parse(req.body);
-    const group = await groupService.createGroupCompanies({ name, companyIds });
+    const { name } = groupCompanySchema.parse(req.body);
+    const group = await groupService.createGroupCompanies({ name });
     res.json(group);
   } catch (err) {
     if (err instanceof z.ZodError) {

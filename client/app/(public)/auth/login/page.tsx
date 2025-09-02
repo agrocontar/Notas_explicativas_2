@@ -10,6 +10,7 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import api from '@/app/api/api';
 import { Message } from 'primereact/message';
+import { useAuth } from '@/contexts/authContext';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { layoutConfig } = useContext(LayoutContext);
+    const {login} = useAuth()
     const router = useRouter();
     
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
@@ -28,10 +30,14 @@ const LoginPage = () => {
         setError('');
 
         try {
-            const response = await api.post('/users/login', {
+            const response = await api.post('/auth/login', {
                 email,
                 password
             });
+
+            const {user} = response.data
+
+            login(user)
 
             // Login bem-sucedido - redirecionar para a página inicial
             router.push('/');

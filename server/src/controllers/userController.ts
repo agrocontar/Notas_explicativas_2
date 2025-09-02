@@ -7,13 +7,14 @@ const userSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6, { message: "Senha deve ter no minimo 6 caracteres" }),
+  role: z.enum(['Admin', 'Coordenador', 'Colaborador'])
 });
 
 const updateUserSchema = z.object({
   name: z.string().optional(),
   email: z.string().optional(),
-  password: z.string().min(6, { message: "Senha deve ter no minimo 6 caracteres" }).optional()
-
+  password: z.string().min(6, { message: "Senha deve ter no minimo 6 caracteres" }).optional(),
+  role: z.enum(['Admin', 'Coordenador', 'Colaborador']).optional()
 })
 
 export const createUser = async (req: Request, res: Response) => {
@@ -46,7 +47,10 @@ export const updateUser = async (req: Request, res: Response) => {
     const updatedUser = await userService.updateUser({...parsed, userId: id});
     res.json(updatedUser);
   } catch (err) {
-    res.status(401).json({ error: err instanceof Error ? err.message : err });
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ errors: handleZodError(err) });
+    }
+    res.status(400).json({ error: err instanceof Error ? err.message : err });
   }
 }
 

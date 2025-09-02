@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtDecode } from 'jwt-decode';
 
-const protectedRoutes = ['/', '/upload'];
+const protectedRoutes = ['/', '/upload', '/users', '/companies', '/groupCompanies'];
 const publicRoutes = ['/auth/login'];
 
 // Verify if token is expired
@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 60 * 60
+          maxAge: 60 * 60 * 1000 * 6 //6h
         });
         return response;
       }

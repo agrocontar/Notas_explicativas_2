@@ -7,6 +7,7 @@ import { MenuProvider } from './context/menucontext';
 import { AppMenuItem } from '@/types';
 import api from '@/app/api/api';
 import { Toast } from 'primereact/toast';
+import { useAuth } from '@/contexts/authContext'; 
 
 interface Companies {
     id: string
@@ -16,8 +17,11 @@ interface Companies {
 
 const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
+    const { isCoordenador, isAdmin } = useAuth(); // Obter informação se é admin
     const [companies, setCompanies] = useState<Companies[]>([])
     const toast = useRef<Toast>(null);
+
+
 
     useEffect(() => {
         const fetchCompanies = async () => {
@@ -28,7 +32,6 @@ const AppMenu = () => {
                 if (toast.current) {
                     toast.current.show({ severity: 'error', summary: 'Error', detail: String(err), life: 3000 });
                 }
-
             }
         };
         fetchCompanies();
@@ -46,7 +49,7 @@ const AppMenu = () => {
         ]
     }))
 
-    const model: AppMenuItem[] = [
+    const baseMenu: AppMenuItem[] = [
         {
             label: 'Home',
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
@@ -56,19 +59,35 @@ const AppMenu = () => {
             items: companiesMenu
         },
         {
+            label: "Configurações",
+            items: [
+                {label: "Usuarios", icon: 'pi pi-fw pi-users', to: '/users'},
+                {label: "Empresas", icon: 'pi pi-fw pi-building', to: '/companies'},
+                {label: "Grupo de empresas", icon: 'pi pi-fw pi-id-card', to: '/groupCompanies'},
+            ]           
+        },
+        {
             label: 'Upload',
             items: [
                 {label: 'Upload de Balancete', icon: 'pi pi-fw pi-upload', to: '/upload'}
             ]
         }
-
     ];
+
+    // Filtrar o menu baseado na role do usuário
+    const filteredMenu = baseMenu.filter(item => {
+        if (item.label === "Configurações") {
+            return isCoordenador || isAdmin;
+        }
+        
+        return true; // Manter todos os outros itens
+    });
 
     return (
         <MenuProvider>
             <Toast ref={toast} />
             <ul className="layout-menu">
-                {model.map((item, i) => {
+                {filteredMenu.map((item, i) => {
                     return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> : <li className="menu-separator"></li>;
                 })}
             </ul>

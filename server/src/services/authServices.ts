@@ -20,7 +20,7 @@ export const login = async (email: string, password: string) => {
   const token = jwt.sign(
     {userId: user.id, email: user.email, role: user.role},
     JWT_SECRET,
-    {expiresIn: "1h"}
+    {expiresIn: "6h"}
   )
 
   const refreshToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
@@ -40,7 +40,7 @@ export const login = async (email: string, password: string) => {
 export const refreshToken = (token: string) => {
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { userId: number };
-    const newToken = jwt.sign({ userId: payload.userId }, JWT_SECRET, { expiresIn: "1h" });
+    const newToken = jwt.sign({ userId: payload.userId }, JWT_SECRET, { expiresIn: "6h" });
     return newToken;
   } catch {
     throw new Error("Refresh token inválido");

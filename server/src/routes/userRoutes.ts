@@ -4,7 +4,7 @@ import { authMiddleware, requireCoordenador } from "../middlewares/authMiddlewar
 
 const router = Router();
 
-router.post("/", authMiddleware,  userController.createUser);
+router.post("/",  userController.createUser);
 router.get("/", authMiddleware ,userController.getUsers);
 router.put("/:id", authMiddleware, userController.updateUser);
 router.delete("/:id", authMiddleware,requireCoordenador, userController.deleteUser);

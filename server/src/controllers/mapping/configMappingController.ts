@@ -1,22 +1,20 @@
 import z from "zod";
-import * as configService from '../services/configCompanyServices'
+import * as mappingService from '../../services/mapping/configMappingServices'
 import { Request, Response } from "express";
-import { handleZodError } from "../utils/handleZodError";
-import { NotFoundError } from "../utils/errors";
+import { handleZodError } from "../../utils/handleZodError";
+import { NotFoundError } from "../../utils/errors";
 
 const configSchema = z.object({
   companyId: z.string(),
-  configs: z.object({
-    accountingAccount: z.string().max(10, 'Codigo da conta deve conter no máximo 10 caracteres!'),
-    accountName: z.string(),
-  }).array()
+  companyAccount: z.string(),
+  defaultAccountId: z.number(),
 });
 
 
-export const createConfig = async (req: Request, res: Response) => {
+export const createMapping = async (req: Request, res: Response) => {
   try {
     const parsed = configSchema.parse(req.body);
-    const result = await configService.createConfig(parsed)
+    const result = await mappingService.createMappingCompany(parsed)
 
     res.json(result);
   } catch (err) {
@@ -32,28 +30,11 @@ export const createConfig = async (req: Request, res: Response) => {
 };
 
 
-export const listConfigs = async (_: Request, res: Response) => {
-  try {
-    const configs = await configService.listConfigCompanies()
 
-    res.json(configs);
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-        return res.status(400).json({ errors: handleZodError(err) });
-      }
-    if (err instanceof NotFoundError) {
-      return res.status(404).json({ error: err.message });
-    }
-    console.error(err);
-    res.status(500).json({ error: "Erro ao Listar Configurações" });
-  }
-};
-
-
-export const listConfigCompany = async (req: Request, res: Response) => {
+export const listMappingCompany = async (req: Request, res: Response) => {
   try {
     const companyId = req.params.id
-    const configs = await configService.listConfigCompany(companyId)
+    const configs = await mappingService.listMappingCompany(companyId)
 
     res.json(configs);
   } catch (err) {
@@ -69,10 +50,15 @@ export const listConfigCompany = async (req: Request, res: Response) => {
 };
 
 
-export const updateConfigCompany = async (req: Request, res: Response) => {
+export const updateMappingCompany = async (req: Request, res: Response) => {
   try {
     const parsed = configSchema.parse(req.body);
-    const result = await configService.updateConfigCompany(parsed)
+    const mappingId = Number(req.params.id)
+    if (isNaN(mappingId)) {
+      res.status(400).json({error: "ID inválido, precisa ser numérico!"}) 
+      return
+    }
+    const result = await mappingService.updateMappingCompany({...parsed, mappingId})
 
     res.json(result);
   } catch (err) {

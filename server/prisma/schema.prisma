@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Usuários do sistema
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -18,12 +19,14 @@ model User {
   groups GroupCompanies[] @relation("UserGroup")
 }
 
+/// Funções de usuário
 enum Role {
   Admin
   Coordenador
   Colaborador
 }
 
+/// Grupos de empresas, para controle de permissões e agrupamento
 model GroupCompanies {
   id        String   @id @default(uuid())
   name      String
@@ -33,6 +36,7 @@ model GroupCompanies {
   companies Company[] @relation("CompanyGroup")
 }
 
+/// Empresas do sistema
 model Company {
   id        String   @id @default(uuid())
   name      String
@@ -42,14 +46,16 @@ model Company {
   groups     GroupCompanies[] @relation("CompanyGroup")
   balancetes BalanceteData[]
   config     ConfigCompany[]
+  mappings   ConfigMapping[]
 }
 
+/// Dados de balancete enviados pelos clientes, serão normalizados usando o de/para
 model BalanceteData {
   id                String   @id @default(uuid())
   uploadedAt        DateTime @default(now())
   referenceDate     Int
-  accountingAccount String   @db.VarChar(10)
-  accountName       String
+  accountingAccount String   @db.VarChar(10) // código do cliente
+  accountName       String   // nome da conta do cliente
   previousBalance   Decimal  @db.Decimal(20, 2)
   debit             Decimal  @db.Decimal(20, 2)
   credit            Decimal  @db.Decimal(20, 2)
@@ -59,18 +65,44 @@ model BalanceteData {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // indexes
+  // Indexes para otimizar consultas
   @@index([companyId, referenceDate])
   @@index([referenceDate])
   @@index([accountingAccount])
   @@index([companyId, accountingAccount, referenceDate])
 }
 
+/// Layout de contas do cliente, cadastrado antes do de/para
 model ConfigCompany {
-  id                Int    @id @default(autoincrement())
-  accountingAccount String @db.VarChar(10)
-  accountName       String
+  id                Int     @id @default(autoincrement())
+  accountingAccount String  @db.VarChar(10)  // código do cliente
+  accountName       String                  // nome da conta do cliente
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, accountingAccount])  // evita duplicação no cliente
+}
+
+/// Mapeamento de contas (de/para) entre cliente e layout padrão
+model ConfigMapping {
+  id              Int @id @default(autoincrement())
+  companyId       String
+  company         Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  companyAccount   String          // código da conta do cliente
+  defaultAccountId Int             // FK para ConfigTemplate
+  defaultAccount   ConfigTemplate @relation(fields: [defaultAccountId], references: [id])
+
+  @@unique([companyId, companyAccount]) // garante que cada conta do cliente mapeia no máximo uma vez
+}
+
+/// Layout padrão do sistema, único e compartilhado por todas as empresas
+model ConfigTemplate {
+  id                Int     @id @default(autoincrement())
+  accountingAccount String  @db.VarChar(10)
+  accountName       String
+  createdAt         DateTime @default(now())
+
+  ConfigMapping ConfigMapping[]
 }

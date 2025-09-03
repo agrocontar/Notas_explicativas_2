@@ -1,3 +1,5 @@
+import TemplateList from "./components/templateList"
+
 interface CompanyConfigPageProps {
   params: {
     id: string
@@ -5,11 +7,19 @@ interface CompanyConfigPageProps {
 }
 
 const CompanyConfigPage = ({ params }: CompanyConfigPageProps) => {
+
+  
   return (
-    <div>
-      <h1>Company Config</h1>
-      <p>ID da empresa: {params.id}</p>
-    </div>
+    
+    <div className="grid">
+          <div className="col-12">
+              <div className="card">
+                  <TemplateList />
+              </div>
+          </div>
+      </div>
+      
+    
   )
 }
 

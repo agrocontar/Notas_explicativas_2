@@ -72,7 +72,7 @@ export const listConfigCompany = async (req: Request, res: Response) => {
 export const updateConfigCompany = async (req: Request, res: Response) => {
   try {
     const parsed = configSchema.parse(req.body);
-    const result = await configService.createConfig(parsed)
+    const result = await configService.updateConfigCompany(parsed)
 
     res.json(result);
   } catch (err) {

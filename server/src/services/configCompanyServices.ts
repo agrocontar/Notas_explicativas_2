@@ -62,20 +62,20 @@ export const listConfigCompany = async (companyId: string) => {
 }
 
 //update configs of a company
-export const updateConfigCompany = async (companyId: string, data: createConfigInput) => {
+export const updateConfigCompany = async (data: createConfigInput) => {
 
-  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  const company = await prisma.company.findUnique({ where: { id: data.companyId } })
   if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
 
   // delete all current configs of company
   await prisma.configCompany.deleteMany({
-    where: { companyId }
+    where: { companyId: data.companyId }
   })
 
   // create new configs
   const configs = await prisma.configCompany.createMany({
     data: data.configs.map((row) => ({
-      companyId,
+      companyId: data.companyId,
       accountingAccount: row.accountingAccount,
       accountName: row.accountName,
     }))

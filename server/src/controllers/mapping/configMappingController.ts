@@ -54,6 +54,10 @@ export const updateMappingCompany = async (req: Request, res: Response) => {
   try {
     const parsed = configSchema.parse(req.body);
     const mappingId = Number(req.params.id)
+    if (isNaN(mappingId)) {
+      res.status(400).json({error: "ID inválido, precisa ser numérico!"}) 
+      return
+    }
     const result = await mappingService.updateMappingCompany({...parsed, mappingId})
 
     res.json(result);

@@ -1,5 +1,6 @@
 import { prisma } from "../../prismaClient"
 import { NotFoundError } from "../../utils/errors"
+import { normalizeAccountingAccount } from "../../utils/normalizeAccountingAccount";
 
 interface createMappingCompany {
   companyId: string;
@@ -47,12 +48,12 @@ export const createMappingCompany = async (data: createMappingCompany) => {
     where: { id: data.defaultAccountId }
   })
   if (!systemAccount) throw new NotFoundError("Conta padrão não encontrada!")
-
+ 
   //create the mapping
     const mapping = await prisma.configMapping.create({
     data: {
       companyId: data.companyId,
-      companyAccount: data.companyAccount,
+      companyAccount: normalizeAccountingAccount(data.companyAccount),
       defaultAccountId: data.defaultAccountId
     }
   })
@@ -74,9 +75,20 @@ export const updateMappingCompany = async (data: updateMappingCompany) => {
   // check if defaultAccount exists
   const systemAccount = await prisma.configTemplate.findUnique({where: { id: data.defaultAccountId }})
   if (!systemAccount) throw new NotFoundError("Conta padrão não encontrada!")
+
+  const normalizedAccount = normalizeAccountingAccount(data.companyAccount)
+
+  const existing = await prisma.configMapping.findFirst({
+    where: {
+      companyId: data.companyId,
+      companyAccount: normalizedAccount,
+      NOT: { id: data.mappingId },
+    },
+  })
+  if (!existing) throw new NotFoundError(`Já existe um mapeamento com a conta ${normalizedAccount} para esta empresa!`)
   
   const payload: any = {
-    companyAccount: data.companyAccount,
+    companyAccount: normalizedAccount,
     defaultAccountId: data.defaultAccountId
   }
   

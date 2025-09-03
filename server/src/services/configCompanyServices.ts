@@ -9,6 +9,20 @@ interface createConfigInput {
   }[]
 }
 
+function normalizeAccountingAccount(value: string | number): string {
+
+  let str = String(value)
+  
+  // Remove all points
+  str = str.replace(/\D/g, "")
+
+  if (str.length < 10) {
+    str = str.padEnd(10, "0")
+  }
+  
+  return str
+}
+
 // Create Config with json
 export const createConfig = async (data: createConfigInput) => {
 
@@ -21,7 +35,7 @@ export const createConfig = async (data: createConfigInput) => {
   const config = await prisma.configCompany.createMany({
     data: data.configs.map((row) => ({
       companyId: data.companyId,
-      accountingAccount: row.accountingAccount,
+      accountingAccount: normalizeAccountingAccount(row.accountingAccount),
       accountName: row.accountName
     })),
   });

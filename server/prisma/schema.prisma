@@ -67,10 +67,19 @@ model BalanceteData {
 }
 
 model ConfigCompany {
-  id                Int    @id @default(autoincrement())
-  accountingAccount String @db.VarChar(10)
+  id                Int     @id @default(autoincrement())
+  accountingAccount String  @db.VarChar(10)
   accountName       String
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, accountingAccount]) 
+}
+
+model ConfigTemplate {
+  id                Int     @id @default(autoincrement())
+  accountingAccount String  @db.VarChar(10)
+  accountName       String
+  createdAt         DateTime @default(now())
 }

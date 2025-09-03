@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import * as balanceteService from '../services/balanceteService'
 import { handleZodError } from "../utils/handleZodError";
+import { NotFoundError } from "../utils/errors";
 
 const balanceteSchema = z.object({
   companyId: z.string().uuid(),
@@ -35,6 +36,9 @@ export const createBalancete = async (req: Request, res: Response) => {
     if (err instanceof z.ZodError) {
         return res.status(400).json({ errors: handleZodError(err) });
       }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
     console.error(err);
     res.status(500).json({ error: "Erro ao salvar balancete" });
   }
@@ -52,6 +56,9 @@ export const listBalancetePerYear = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
         return res.status(400).json({ errors: handleZodError(error) });
       }
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({ error: error.message });
+    }
     console.error(error);
     res.status(500).json({ error: "Erro ao listar balancete" });
     
@@ -69,6 +76,9 @@ export const listBalancetesCompany = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
         return res.status(400).json({ errors: handleZodError(error) });
       }
+      if (error instanceof NotFoundError) {
+      return res.status(404).json({ error: error.message });
+    }
     console.error(error);
     res.status(500).json({ error: "Erro ao listar balancete" });
   }

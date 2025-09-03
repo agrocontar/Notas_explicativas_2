@@ -25,42 +25,52 @@ enum Role {
 }
 
 model GroupCompanies {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   users     User[]    @relation("UserGroup")
   companies Company[] @relation("CompanyGroup")
 }
 
 model Company {
-  id        String       @id @default(uuid())
-  name      String       
-  cnpj      String       @unique
-  createdAt DateTime     @default(now())
+  id        String   @id @default(uuid())
+  name      String
+  cnpj      String   @unique
+  createdAt DateTime @default(now())
 
-  groups    GroupCompanies[] @relation("CompanyGroup")
-  balancetes BalanceteData[] 
+  groups     GroupCompanies[] @relation("CompanyGroup")
+  balancetes BalanceteData[]
+  config     ConfigCompany[]
 }
 
 model BalanceteData {
-  id              String   @id @default(uuid())
-  uploadedAt      DateTime @default(now())
-  referenceDate   Int  
-  accountingAccount String
-  accountName     String
-  previousBalance Decimal @db.Decimal(20,2)
-  debit           Decimal @db.Decimal(20,2)
-  credit          Decimal @db.Decimal(20,2)
-  monthBalance    Decimal @db.Decimal(20,2)
-  currentBalance  Decimal @db.Decimal(20,2)
+  id                String   @id @default(uuid())
+  uploadedAt        DateTime @default(now())
+  referenceDate     Int
+  accountingAccount String   @db.VarChar(10)
+  accountName       String
+  previousBalance   Decimal  @db.Decimal(20, 2)
+  debit             Decimal  @db.Decimal(20, 2)
+  credit            Decimal  @db.Decimal(20, 2)
+  monthBalance      Decimal  @db.Decimal(20, 2)
+  currentBalance    Decimal  @db.Decimal(20, 2)
 
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // indexes
   @@index([companyId, referenceDate])
   @@index([referenceDate])
   @@index([accountingAccount])
   @@index([companyId, accountingAccount, referenceDate])
+}
+
+model ConfigCompany {
+  id                Int    @id @default(autoincrement())
+  accountingAccount String @db.VarChar(10)
+  accountName       String
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }

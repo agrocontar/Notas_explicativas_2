@@ -1,4 +1,5 @@
 import { prisma } from "../prismaClient";
+import { NotFoundError } from "../utils/errors";
 
 interface uploadInput {
   companyId: string
@@ -17,6 +18,12 @@ interface uploadInput {
 
 // Create Balancetes
 export const createBalancete = async (data: uploadInput) => {
+
+  const company = await prisma.company.findUnique({
+    where: {id: data.companyId}
+  })
+
+  if(!company) throw new NotFoundError("Empresa com este ID nao existe no banco de dados!")
 
   const balances = await prisma.balanceteData.createMany({
       data: data.balanceteData.map((row) => ({
@@ -45,7 +52,7 @@ export const listBalancetePerYear = async (data: {companyId: string, year:number
       }
     });
 
-  if(!balancetes) throw new Error('Nenhum Balancete encontrado nessa empresa!')
+  if(!balancetes) throw new NotFoundError('Nenhum Balancete encontrado nessa empresa!')
 
   
   return balancetes

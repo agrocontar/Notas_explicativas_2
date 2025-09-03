@@ -32,21 +32,26 @@ export interface GroupCompanies {
   }[]
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface Company {
+    id: string;
+    name: string;
+    cnpj: string;
+}
+
+
 const GroupCompaniesPage = () => {
   const emptyGroup = {
     id: '',
     name: '',
-    companies: [{
-      id: '',
-      name: '',
-      cnpj: '',
-    }],
-    users: [{
-      id: '',
-      name: '',
-      email: '',
-      role: '',
-    }]
+    companies: [],
+    users: []
   };
 
   const [groupCompaniesArray, setGroupCompaniesArray] = useState<GroupCompanies[]>([]);
@@ -55,6 +60,10 @@ const GroupCompaniesPage = () => {
   const [userDialog, setUserDialog] = useState(false);
   const [deleteUserDialog, setDeleteUserDialog] = useState(false);
   const [editUserDialog, setEditUserDialog] = useState(false);
+  const [editNameDialog, setEditNameDialog] = useState(false)
+
+  const [updatedCompanies, setUpdatedCompanies] = useState<Company[]>([]);
+  const [updatedUsers, setUpdatedUsers] = useState<User[]>([]);
 
 
   const [selectedUsers, setSelectedUsers] = useState(null);
@@ -112,10 +121,16 @@ const GroupCompaniesPage = () => {
   };
 
   //Abre o dialogo de editar usuario
-  const openEdit = (user: GroupCompanies) => {
-    setGroupCompanies({ ...user });
+  const openEdit = (group: GroupCompanies) => {
+    setGroupCompanies({ ...group });
     setSubmitted(false);
     setEditUserDialog(true);
+  };
+
+  const openEditName = (group: GroupCompanies) => {
+    setGroupCompanies({ ...group });
+    setSubmitted(false);
+    setEditNameDialog(true);
   };
 
   // esconde o diagolo 
@@ -128,6 +143,14 @@ const GroupCompaniesPage = () => {
   const hideEditUserDialog = () => {
     setSubmitted(false);
     setEditUserDialog(false);
+  };
+
+  const handleCompaniesChange = (companies: Company[]) => {
+    setUpdatedCompanies(companies);
+  };
+
+  const handleUsersChange = (users: User[]) => {
+    setUpdatedUsers(users);
   };
 
   // esconde o dialogo de deletar usuario
@@ -198,14 +221,18 @@ const GroupCompaniesPage = () => {
 
     try {
 
-      const payload = {
+      const payload: any = {
         name: groupCompanies.name,
-      }
+        companyIds: updatedCompanies.length > 0 
+          ? updatedCompanies.map(company => company.id) 
+          : groupCompanies.companies.map(company => company.id),
+        userIds: updatedUsers.length > 0 
+          ? updatedUsers.map(user => user.id) 
+          : groupCompanies.users.map(user => user.id)
+      };
 
       const res = await api.put(`/groupCompanies/${groupCompanies.id}`, payload);
       const data = res.data
-
-
 
       if (!res.status) {
         toast.current?.show({
@@ -225,11 +252,18 @@ const GroupCompaniesPage = () => {
       });
 
       // Atualiza lista local
-      const updatedUsers = groupCompaniesArray.map((u) => (u.id === groupCompanies.id ? data : u));
-      setGroupCompaniesArray(updatedUsers);
+      const updatedGroups = groupCompaniesArray.map((g) => 
+        g.id === groupCompanies.id ? data : g
+      );
+      setGroupCompaniesArray(updatedGroups);
       setGroupCompanies(data);
       setEditUserDialog(false);
+      setEditNameDialog(false);
       setGroupCompanies(emptyGroup);
+      
+      // Limpa os arrays temporários
+      setUpdatedCompanies([]);
+      setUpdatedUsers([]);
 
     } catch (err) {
       console.error('Erro ao editar Grupo:', err);
@@ -319,6 +353,13 @@ const GroupCompaniesPage = () => {
           rounded
           severity="info"
           className="mr-2"
+          onClick={() => openEditName(rowData)}
+        />
+        <Button
+          icon="pi pi-server"
+          rounded
+          severity="info"
+          className="mr-2"
           onClick={() => openEdit(rowData)}
         />
         <Button
@@ -367,6 +408,13 @@ const GroupCompaniesPage = () => {
       <Button label="Salvar" icon="pi pi-check" text onClick={editGroup} />
     </>
   );
+
+  const editNameDialogFooter = (
+    <>
+      <Button label="Cancelar" icon="pi pi-times" text onClick={()=> setEditNameDialog} />
+      <Button label="Salvar" icon="pi pi-check" text onClick={editGroup} />
+    </>
+  )
 
   const deleteUserDialogFooter = (
     <>
@@ -433,9 +481,24 @@ const GroupCompaniesPage = () => {
             </div>
           </Dialog>
 
+          <Dialog visible={editNameDialog} style={{ width: '450px' }} header="Novo Grupo" modal className="p-fluid" footer={editNameDialogFooter} onHide={()=> setEditNameDialog(false)}>
+            <div className="field">
+              <label htmlFor="name">Nome</label>
+              <InputText
+                id="name"
+                value={groupCompanies.name}
+                onChange={(e) => onInputChange(e, 'name')}
+                required
+                autoFocus
+                className={classNames({ 'p-invalid': submitted && !groupCompanies.name })}
+              />
+              {submitted && !groupCompanies.name && <small className="p-invalid">O nome é obrigatório</small>}
+            </div>
+          </Dialog>
+
           <Dialog visible={editUserDialog} style={{ width: '80%' }} header="Editar Grupo" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
-            <CompaniesList companies={groupCompanies.companies} />
-            <UsersList users={groupCompanies.users} />
+            <CompaniesList companies={groupCompanies.companies} onCompaniesChange={handleCompaniesChange}/>
+            <UsersList users={groupCompanies.users} onUsersChange={handleUsersChange}/>
 
           </Dialog>
 

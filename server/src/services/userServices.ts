@@ -44,7 +44,15 @@ export const createUser = async (data: CreateUserInput) => {
 
 // List all users
 export const getAllUsers = async () => {
-  return prisma.user.findMany();
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true
+    }
+  });
 };
 
 

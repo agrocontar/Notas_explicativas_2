@@ -90,11 +90,11 @@ model ConfigMapping {
   companyId       String
   company         Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  clientAccount   String          // código da conta do cliente
-  systemAccountId Int             // FK para ConfigTemplate
-  systemAccount   ConfigTemplate @relation(fields: [systemAccountId], references: [id])
+  companyAccount   String          // código da conta do cliente
+  defaultAccountId Int             // FK para ConfigTemplate
+  defaultAccount   ConfigTemplate @relation(fields: [defaultAccountId], references: [id])
 
-  @@unique([companyId, clientAccount]) // garante que cada conta do cliente mapeia no máximo uma vez
+  @@unique([companyId, companyAccount]) // garante que cada conta do cliente mapeia no máximo uma vez
 }
 
 /// Layout padrão do sistema, único e compartilhado por todas as empresas

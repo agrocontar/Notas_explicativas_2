@@ -40,3 +40,22 @@ export const listConfigCompanies = async () => {
 
     return configs
 }
+
+
+
+export const listConfigCompany = async (companyId: string) => {
+
+    const company = await prisma.company.findUnique({where: {id: companyId}})
+    if(!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
+
+    const configs = await prisma.configCompany.findMany({
+      where:{
+        companyId
+      },
+      include: {
+        company: true
+      }
+    })
+
+    return configs
+}

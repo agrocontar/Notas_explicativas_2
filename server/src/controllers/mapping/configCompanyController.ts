@@ -1,8 +1,8 @@
 import z from "zod";
-import * as configService from '../services/configCompanyServices'
+import * as configService from '../../services/mapping/configCompanyServices'
 import { Request, Response } from "express";
-import { handleZodError } from "../utils/handleZodError";
-import { NotFoundError } from "../utils/errors";
+import { handleZodError } from "../../utils/handleZodError";
+import { NotFoundError } from "../../utils/errors";
 
 const configSchema = z.object({
   companyId: z.string(),

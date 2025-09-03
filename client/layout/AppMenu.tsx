@@ -46,6 +46,8 @@ const AppMenu = () => {
             { label: 'DRE', icon: 'pi pi-fw pi-bookmark', },
             { label: 'DMPL', icon: 'pi pi-fw pi-bookmark', },
             { label: 'DFC', icon: 'pi pi-fw pi-bookmark', },
+            { label: 'Configurações da Empresa', icon: 'pi pi-fw pi-cog', to: `/companyConfig/${company.id}`},
+
         ]
     }))
 

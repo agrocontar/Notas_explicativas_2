@@ -3,7 +3,7 @@ import userRoutes from "./routes/userRoutes";
 import companyRoutes from "./routes/companyRoutes";
 import groupCompaniesRoutes from './routes/groupCompaniesRoutes'
 import balanceteRoutes from './routes/balanceteRoutes'
-import configRoutes from './routes/configCompanyRoutes'
+import configRoutes from './routes/mapping/configCompanyRoutes'
 import authRoutes from './routes/authRoutes'
 import cookieParser from "cookie-parser";
 import cors from 'cors'

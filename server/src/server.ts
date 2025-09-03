@@ -3,6 +3,7 @@ import userRoutes from "./routes/userRoutes";
 import companyRoutes from "./routes/companyRoutes";
 import groupCompaniesRoutes from './routes/groupCompaniesRoutes'
 import balanceteRoutes from './routes/balanceteRoutes'
+import configRoutes from './routes/configCompanyRoutes'
 import authRoutes from './routes/authRoutes'
 import cookieParser from "cookie-parser";
 import cors from 'cors'
@@ -21,6 +22,7 @@ app.use("/users", userRoutes);
 app.use("/companies", companyRoutes);
 app.use("/groupCompanies", groupCompaniesRoutes)
 app.use("/balancete", balanceteRoutes)
+app.use("/config", configRoutes)
 app.use("/auth", authRoutes)
 
 

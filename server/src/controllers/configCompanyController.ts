@@ -30,3 +30,23 @@ export const createConfig = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao salvar Configuração" });
   }
 };
+
+
+export const listConfigs = async (_: Request, res: Response) => {
+  try {
+    const configs = await configService.listConfigCompanies()
+
+    res.json(configs);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+        return res.status(400).json({ errors: handleZodError(err) });
+      }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erro ao Listar Configurações" });
+  }
+};
+
+

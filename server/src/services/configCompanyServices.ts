@@ -27,3 +27,16 @@ export const createConfig = async (data:createConfigInput) => {
   
     return config
 }
+
+
+
+export const listConfigCompanies = async () => {
+
+    const configs = await prisma.configCompany.findMany({
+      include: {
+        company: true
+      }
+    })
+
+    return configs
+}

@@ -50,3 +50,21 @@ export const listConfigs = async (_: Request, res: Response) => {
 };
 
 
+export const listConfigCompany = async (req: Request, res: Response) => {
+  try {
+    const companyId = req.params.id
+    const configs = await configService.listConfigCompany(companyId)
+
+    res.json(configs);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+        return res.status(400).json({ errors: handleZodError(err) });
+      }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erro ao Listar Configurações" });
+  }
+};
+

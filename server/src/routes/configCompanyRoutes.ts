@@ -6,6 +6,7 @@ const router = Router();
 
 router.post("/", authMiddleware ,configController.createConfig);
 router.get("/", authMiddleware, requireAdmin,  configController.listConfigs);
+router.get("/:id", authMiddleware, requireAdmin,  configController.listConfigCompany);
 // router.put("/:id", authMiddleware, requireAdmin, groupController.updateGroup);
 // router.delete("/:id", authMiddleware, requireAdmin, groupController.deleteGroup);
 

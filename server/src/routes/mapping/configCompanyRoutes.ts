@@ -15,6 +15,7 @@ router.put("/company", authMiddleware, configCompany.updateConfigCompany);
 router.post("/mapping", authMiddleware ,configMapping.createMapping);
 router.put("/mapping/:id", authMiddleware ,configMapping.updateMappingCompany);
 router.get("/mapping/:id", authMiddleware ,configMapping.listMappingCompany);
+router.delete("/mapping/:id", authMiddleware ,configMapping.deleteMappingCompany);
 
 
 // config template routes

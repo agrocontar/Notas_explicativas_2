@@ -75,29 +75,29 @@ model BalanceteData {
 /// Layout de contas do cliente, cadastrado antes do de/para
 model ConfigCompany {
   id                Int     @id @default(autoincrement())
-  accountingAccount String  @db.VarChar(10)  // código do cliente
-  accountName       String                  // nome da conta do cliente
+  accountingAccount String  @db.VarChar(10)
+  accountName       String
+  companyId         String
+  company           Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // RELAÇÃO DEVE ESTAR DEFINIDA AQUI
+  ConfigMapping     ConfigMapping[]
 
-  ConfigMapping     ConfigMapping?
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@unique([companyId, accountingAccount])  // evita duplicação no cliente
+  @@unique([companyId, accountingAccount])
 }
 
-/// Mapeamento de contas (de/para) entre cliente e layout padrão
 model ConfigMapping {
   id              Int @id @default(autoincrement())
   companyId       String
   company         Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  companyAccount   String          // código da conta do cliente
-  defaultAccountId Int             // FK para ConfigTemplate
+  companyAccount  String
+  defaultAccountId Int
   defaultAccount   ConfigTemplate @relation(fields: [defaultAccountId], references: [id])
 
-  configCompany   ConfigCompany? @relation(fields: [companyId, companyAccount], references: [companyId, accountingAccount])
+  // RELAÇÃO INVERSA
+  configCompany   ConfigCompany @relation(fields: [companyId, companyAccount], references: [companyId, accountingAccount])
 
-  @@unique([companyId, companyAccount]) // garante que cada conta do cliente mapeia no máximo uma vez
+  @@unique([companyId, companyAccount])
 }
 
 /// Layout padrão do sistema, único e compartilhado por todas as empresas

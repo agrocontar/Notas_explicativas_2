@@ -1,5 +1,6 @@
 import { prisma } from "../../prismaClient";
 import { NotFoundError } from "../../utils/errors";
+import { normalizeAccountingAccount } from "../../utils/normalizeAccountingAccount";
 
 interface createConfigInput {
   companyId: string
@@ -7,20 +8,6 @@ interface createConfigInput {
     accountingAccount: string,
     accountName: string,
   }[]
-}
-
-function normalizeAccountingAccount(value: string | number): string {
-
-  let str = String(value)
-
-  // Remove all points
-  str = str.replace(/\D/g, "")
-
-  if (str.length < 10) {
-    str = str.padEnd(10, "0")
-  }
-
-  return str
 }
 
 // Create Config with json
@@ -41,19 +28,32 @@ export const createConfig = async (data: createConfigInput) => {
 }
 
 
-// List configs of a company
+// List configs of a company that are not yet mapped
 export const listConfigCompany = async (companyId: string) => {
 
   const company = await prisma.company.findUnique({ where: { id: companyId } })
   if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
 
-  const configs = await prisma.configCompany.findMany({
+  const unmappedConfigs = await prisma.configCompany.findMany({
     where: {
-      companyId
+      companyId,
+      // Filtra apenas as configurações que não têm mapeamento
+      ConfigMapping: {
+        none: {} // Nenhum mapeamento relacionado existe
+      }
+    },
+    include: {
+      // Inclui informações adicionais se necessário
+      company: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
     }
   })
 
-  return configs
+  return unmappedConfigs
 }
 
 //update configs of a company
@@ -85,3 +85,4 @@ export const updateConfigCompany = async (data: createConfigInput) => {
 
   return configs
 }
+

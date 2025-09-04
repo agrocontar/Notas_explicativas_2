@@ -1,3 +1,4 @@
+import MappingTable from "./components/MappingTable";
 import TemplateList from "./components/TemplateList";
 import { getCompanyData } from "./components/TemplateList/actions";
 
@@ -9,7 +10,7 @@ interface CompanyConfigPageProps {
 }
 
 const CompanyConfigPage = async ({ params }: CompanyConfigPageProps) => {
-  // Buscar dados iniciais no servidor usando o ID
+  // Get initial data of the company
   const initialData = await getCompanyData(params.id);
   
   return (
@@ -17,6 +18,9 @@ const CompanyConfigPage = async ({ params }: CompanyConfigPageProps) => {
       <div className="col-12">
         <div className="card">
           <TemplateList companyId={params.id} initialData={initialData} />
+        </div>
+        <div className="card">
+          <MappingTable companyId={params.id}/>
         </div>
       </div>
     </div>

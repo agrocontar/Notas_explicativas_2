@@ -63,7 +63,7 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
     
     try {
       setLoading(true);
-      await relateAccounts(companyId, selectedSource.id, selectedTarget.id);
+      await relateAccounts(companyId, selectedSource.accountingAccount, selectedTarget.id);
       
       toast.current?.show({
         severity: 'success',

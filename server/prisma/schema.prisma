@@ -78,6 +78,7 @@ model ConfigCompany {
   accountingAccount String  @db.VarChar(10)  // código do cliente
   accountName       String                  // nome da conta do cliente
 
+  ConfigMapping     ConfigMapping?
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -93,6 +94,8 @@ model ConfigMapping {
   companyAccount   String          // código da conta do cliente
   defaultAccountId Int             // FK para ConfigTemplate
   defaultAccount   ConfigTemplate @relation(fields: [defaultAccountId], references: [id])
+
+  configCompany   ConfigCompany? @relation(fields: [companyId, companyAccount], references: [companyId, accountingAccount])
 
   @@unique([companyId, companyAccount]) // garante que cada conta do cliente mapeia no máximo uma vez
 }

@@ -44,18 +44,18 @@ export async function getSourceData(companyId: string) {
   }
 }
 
-export async function relateAccounts(companyId: string, sourceAccountId: number, targetAccountId: number) {
+export async function relateAccounts(companyId: string, companyAccount: string, defaultAccountId: number) {
   try {
     // Obter os cookies da requisição
     const cookieStore = cookies();
     const token = cookieStore.get('token')?.value;
     
     const res = await serverApi.post(
-      `/config/mapping/${companyId}`,
+      `/config/mapping`,
       {
         companyId,
-        sourceAccountId,
-        targetAccountId
+        companyAccount,
+        defaultAccountId
       },
       {
         headers: {

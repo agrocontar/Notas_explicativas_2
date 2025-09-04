@@ -12,15 +12,23 @@ interface CompanyConfigPageProps {
 const CompanyConfigPage = async ({ params }: CompanyConfigPageProps) => {
   // Get initial data of the company
   const initialData = await getCompanyData(params.id);
-  
+
   return (
     <div className="grid">
       <div className="col-12">
         <div className="card">
+          <div className="mb-4 p-2 border-bottom-1 surface-border">
+
+            <h2>Configuração do Plano de Contas</h2>
+          </div>
           <TemplateList companyId={params.id} initialData={initialData} />
         </div>
         <div className="card">
-          <MappingTable companyId={params.id}/>
+          <div className="mb-4 p-2 border-bottom-1 surface-border"  >
+
+            <h2>Mapeamentos</h2>
+          </div>
+          <MappingTable companyId={params.id} />
         </div>
       </div>
     </div>

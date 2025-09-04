@@ -59,7 +59,7 @@ export const AccountTable = memo(({
           onSelectionChange={(e) => onSelectionChange(e.value as Account)}
           dataKey="id"
           scrollable 
-          scrollHeight="400px"
+          scrollHeight="300px"
           loading={loading}
           className="p-datatable-sm"
           emptyMessage={emptyMessage}

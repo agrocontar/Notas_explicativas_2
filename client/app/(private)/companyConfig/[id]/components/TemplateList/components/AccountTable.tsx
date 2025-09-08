@@ -71,13 +71,13 @@ export const AccountTable = memo(({
             onClick={handleCreateAccount}
           />
 
-          <Button
+          {/* <Button
             icon="pi pi-times"
             className="p-button-rounded p-button-danger p-button-sm"
             tooltip="Remover conta"
             tooltipOptions={{ position: 'top' }}
             onClick={handleCreateAccount}
-          />
+          /> */}
 
           
         </div>

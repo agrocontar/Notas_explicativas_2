@@ -70,3 +70,42 @@ export async function relateAccounts(companyId: string, companyAccount: string, 
     throw error;
   }
 }
+
+
+export async function createAccount(accountData: { companyId: string;  configs: {accountingAccount: string; accountName: string; }[]}) {
+  try {
+    // Obter os cookies da requisição
+    console.log('Criando conta com dados:', accountData);
+    const cookieStore = cookies();
+    const token = cookieStore.get('token')?.value; 
+    const res = await serverApi.post(
+      `/config/company`,
+      accountData,
+      {
+        headers: {
+          'Cookie': `token=${token}` // Passar o cookie manualmente
+        },
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    
+    if (error.response?.status === 409) {
+      // A mensagem pode estar em diferentes propriedades
+      const serverMessage = error.response.data?.message 
+        || error.response.data?.error 
+        || 'Esta conta já existe para esta empresa.';
+      
+      throw new Error(serverMessage);
+    } 
+    else if (error.response?.status === 404) {
+      throw new Error(error.response.data?.message || 'Empresa não encontrada.');
+    } 
+    else if (error.response?.status === 400) {
+      throw new Error(error.response.data?.details?.[0]?.message || 'Dados inválidos.');
+    } 
+    else {
+      throw new Error(error.response?.data?.message || 'Falha ao criar conta.');
+    }
+  }
+}

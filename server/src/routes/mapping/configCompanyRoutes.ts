@@ -10,6 +10,7 @@ const router = Router();
 router.post("/company", authMiddleware ,configCompany.createConfig);
 router.get("/company/:id", authMiddleware, configCompany.listConfigCompany);
 router.put("/company", authMiddleware, configCompany.updateConfigCompany);
+router.delete("/company/:id", authMiddleware, configCompany.deleteConfigCompany);
 
 // mapping routes
 router.post("/mapping", authMiddleware ,configMapping.createMapping);

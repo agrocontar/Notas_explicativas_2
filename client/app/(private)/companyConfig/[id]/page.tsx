@@ -12,7 +12,7 @@ interface CompanyConfigPageProps {
 const CompanyConfigPage = async ({ params }: CompanyConfigPageProps) => {
   // Get initial data of the company
   const initialData = await getCompanyData(params.id);
-
+  
   return (
     <div className="grid">
       <div className="col-12">

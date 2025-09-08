@@ -1,5 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../prismaClient";
-import { NotFoundError } from "../../utils/errors";
+import { ConflictError, NotFoundError } from "../../utils/errors";
 import { normalizeAccountingAccount } from "../../utils/normalizeAccountingAccount";
 
 interface createConfigInput {
@@ -12,20 +13,42 @@ interface createConfigInput {
 
 // Create Config with json
 export const createConfig = async (data: createConfigInput) => {
+  const company = await prisma.company.findUnique({ where: { id: data.companyId } });
+  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!");
 
-  const company = await prisma.company.findUnique({ where: { id: data.companyId } })
-  if (!company) throw new NotFoundError("Empresa com este ID nao existe no banco de dados!")
+  try {
+    const config = await prisma.configCompany.createMany({
+      data: data.configs.map((row) => ({
+        companyId: data.companyId,
+        accountingAccount: normalizeAccountingAccount(row.accountingAccount),
+        accountName: row.accountName
+      })),
+    });
 
-  const config = await prisma.configCompany.createMany({
-    data: data.configs.map((row) => ({
-      companyId: data.companyId,
-      accountingAccount: normalizeAccountingAccount(row.accountingAccount),
-      accountName: row.accountName
-    })),
-  });
+    return config;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        // Extrair qual conta causou o problema
+        const existingAccount = await prisma.configCompany.findFirst({
+          where: {
+            companyId: data.companyId,
+            accountingAccount: {
+              in: data.configs.map(row => normalizeAccountingAccount(row.accountingAccount))
+            }
+          }
+        });
 
-  return config
-}
+        if (existingAccount) {
+          throw new ConflictError(`Já existe uma conta com o código '${existingAccount.accountingAccount}' para esta empresa.`);
+        }
+        
+        throw new ConflictError("Já existe uma conta com esses dados para esta empresa.");
+      }
+    }
+    throw error;
+  }
+};
 
 
 // List configs of a company that are not yet mapped
@@ -86,3 +109,27 @@ export const updateConfigCompany = async (data: createConfigInput) => {
   return configs
 }
 
+
+
+export const deleteOneConfigCompany = async (companyId: string, accountingAccount: number) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
+
+  const config = await prisma.configCompany.findUnique({
+    where: {
+      companyId_accountingAccount: {
+        companyId,
+        accountingAccount: normalizeAccountingAccount(accountingAccount)
+      }
+    }
+  })
+  if (!config) throw new NotFoundError("Configuração não encontrada nessa empresa!")
+
+  await prisma.configCompany.delete({
+    where: {
+      id: config.id
+    }
+  })
+
+  return { message: "Configuração deletada com sucesso!" }
+}

@@ -1,8 +1,13 @@
 'use client';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Toast } from 'primereact/toast';
-import { getSourceData, relateAccounts } from './actions';
+import { createAccount, getSourceData, relateAccounts } from './actions';
 import { Account } from './types';
+
+interface CreateAccountData {
+  accountName: string;
+  accountingAccount: string;
+}
 
 export const useTemplateList = (companyId: string, initialData: Account[]) => {
   const [source, setSource] = useState<Account[]>([]);
@@ -13,6 +18,7 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
   const [targetFilter, setTargetFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [sourceLoading, setSourceLoading] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
   
   const toast = useRef<Toast>(null);
 
@@ -90,6 +96,42 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
     }
   }, [companyId, selectedSource, selectedTarget]);
 
+  const handleCreateAccount = useCallback(async (accountData: CreateAccountData) => {
+  setCreateLoading(true);
+  try {
+    const createdAccount = await createAccount({
+      companyId: companyId,
+        configs: [{
+          accountName: accountData.accountName,
+          accountingAccount: accountData.accountingAccount
+        }]
+    });
+    
+    toast.current?.show({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: 'Conta criada com sucesso',
+      life: 3000
+    });
+    
+    await loadSourceData();
+    
+    return createdAccount;
+    
+  } catch (error: any) {
+
+    toast.current?.show({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message || 'Falha ao criar conta',
+      life: 5000
+    });
+
+  } finally {
+    setCreateLoading(false);
+  }
+}, [companyId, loadSourceData]);
+
   // Filtros aplicados localmente (igual para ambas as tabelas)
   const filteredTarget = useMemo(() => {
     if (!targetFilter) return target;
@@ -121,6 +163,8 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
     setTargetFilter: useCallback((value: string) => setTargetFilter(value), []),
     setSelectedSource: useCallback((value: Account | null) => setSelectedSource(value), []),
     setSelectedTarget: useCallback((value: Account | null) => setSelectedTarget(value), []),
-    handleDePara
+    handleDePara,
+    createLoading,
+    handleCreateAccount
   };
 };

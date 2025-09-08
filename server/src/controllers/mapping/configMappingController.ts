@@ -72,3 +72,26 @@ export const updateMappingCompany = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao editar Configurações" });
   }
 };
+
+
+export const deleteMappingCompany = async (req: Request, res: Response) => {
+  try {
+    const mappingId = Number(req.params.id)
+    if (isNaN(mappingId)) {
+      res.status(400).json({error: "ID inválido, precisa ser numérico!"}) 
+      return
+    }
+    const result = await mappingService.deleteMappingCompany(mappingId)
+
+    res.json(result);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+        return res.status(400).json({ errors: handleZodError(err) });
+      }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erro ao deletar Mapeamento" });
+  }
+}

@@ -39,27 +39,43 @@ export const listMappingCompany = async (companyId: string) => {
 
 // Create mapping
 export const createMappingCompany = async (data: createMappingCompany) => {
+  const company = await prisma.company.findUnique({ where: { id: data.companyId } });
+  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!");
 
-  const company = await prisma.company.findUnique({where: { id: data.companyId }})
-  if (!company) throw new NotFoundError("Empresa com este ID nao existe no banco de dados!")
-
-  // check if defaultAccount exists
-    const systemAccount = await prisma.configTemplate.findUnique({
+  // Check if defaultAccount exists
+  const systemAccount = await prisma.configTemplate.findUnique({
     where: { id: data.defaultAccountId }
-  })
-  if (!systemAccount) throw new NotFoundError("Conta padrão não encontrada!")
- 
-  //create the mapping
-    const mapping = await prisma.configMapping.create({
+  });
+  if (!systemAccount) throw new NotFoundError("Conta padrão não encontrada!");
+
+  // Check if the company account exists in ConfigCompany
+  const normalizedAccount = normalizeAccountingAccount(data.companyAccount);
+  const companyAccountExists = await prisma.configCompany.findUnique({
+    where: {
+      companyId_accountingAccount: {
+        companyId: data.companyId,
+        accountingAccount: normalizedAccount
+      }
+    }
+  });
+
+  if (!companyAccountExists) {
+    throw new NotFoundError(
+      `Conta ${normalizedAccount} não existe na empresa, Primeiro adicione a conta em ConfigCompany antes de mapeá-la.`
+    );
+  }
+
+  // Create the mapping
+  const mapping = await prisma.configMapping.create({
     data: {
       companyId: data.companyId,
-      companyAccount: normalizeAccountingAccount(data.companyAccount),
+      companyAccount: normalizedAccount,
       defaultAccountId: data.defaultAccountId
     }
-  })
+  });
 
-  return mapping
-}
+  return mapping;
+};
 
 
 export const updateMappingCompany = async (data: updateMappingCompany) => {
@@ -99,3 +115,16 @@ export const updateMappingCompany = async (data: updateMappingCompany) => {
 
   return updatedConfig
 }
+
+
+export const deleteMappingCompany = async (mappingId: number) => {
+
+  //check if mapping exists
+  const mapping = await prisma.configMapping.findUnique({ where: { id: mappingId } })
+  if (!mapping) throw new NotFoundError(`Mapeamento com o ID ${mappingId} não existe no banco de dados!`)
+
+  await prisma.configMapping.delete({ where: { id: mappingId } })
+
+  return { message: "Mapeamento deletado com sucesso!" }
+}
+      

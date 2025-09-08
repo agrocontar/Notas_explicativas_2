@@ -1,7 +1,9 @@
 'use client';
 import api from "@/app/api/api";
+import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
+import { Dialog } from "primereact/dialog";
 import { useEffect, useState } from "react";
 
 interface MappingTableProps {
@@ -31,6 +33,7 @@ export default function MappingTable({ companyId }: MappingTableProps) {
   const [mappingData, setMappingData] = useState<Mapping[]>([]);
   const [selected, setSelected] = useState<Mapping | null>(null);
   const [emptyMessage, setEmptyMessage] = useState('Nenhum mapeamento encontrado.');
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
   const onSelectionChange = (value: Mapping | null) => {
     setSelected(value);
@@ -80,7 +83,48 @@ export default function MappingTable({ companyId }: MappingTableProps) {
     );
   }
 
+
+  const confirmDeleteMapping = (mapping: Mapping) => {
+    setSelected(mapping);
+    setDeleteDialog(true);
+  };
+
+  const actionBodyTemplate = (rowData: Mapping) => {
+      return (
+        <>
+          <Button
+            icon="pi pi-trash"
+            rounded
+            severity="danger"
+            onClick={() => confirmDeleteMapping(rowData)}
+          />
+        </>
+      );
+    }
+
+    const deleteMapping = async () => {
+      if (!selected) return;
+      try {
+        await api.delete(`/config/mapping/${selected.id}`);
+        setMappingData(prev => prev.filter(item => item.id !== selected.id));
+        setDeleteDialog(false);
+        setSelected(null);
+        window.location.reload();
+      }
+      catch (err) {
+        console.error('Erro ao excluir mapeamento:', err);
+      }
+    };
+
+    const deleteDialogFooter = (
+      <>
+        <Button label="Cancelar" icon="pi pi-times" text onClick={() => setDeleteDialog(false)} />
+        <Button label="Excluir" icon="pi pi-check" text onClick={deleteMapping} />
+      </>
+    );
+
   return(
+    <>
     <DataTable
       value={mappingData}
       selectionMode="single"
@@ -92,10 +136,18 @@ export default function MappingTable({ companyId }: MappingTableProps) {
       className="p-datatable-sm"
       emptyMessage={emptyMessage}
     >
-      <Column body={companyAccount} header="Conta Parametrizada" style={{ minWidth: '200px' }} />
+      <Column body={companyAccount} header="Conta Parametrizada" style={{ minWidth: '100px' }} />
       <Column body={arrowIcon} header="" style={{ minWidth: '50px' }} />
       <Column body={defaultAccount} header="Conta Padrão" style={{ minWidth: '200px' }} />
+      <Column body={actionBodyTemplate} header="Ações" style={{ minWidth: '150px' }} />
     
     </DataTable>
+
+    <Dialog visible={deleteDialog} style={{ width: '450px' }} header="Excluir Mapeamento" modal className="p-fluid" footer={deleteDialogFooter} onHide={() => setDeleteDialog(false)}>
+      <div className="field">
+        <label htmlFor="deleteMapping">Tem certeza que deseja excluir este mapeamento?</label>
+      </div>
+    </Dialog>
+    </>
   )
 }

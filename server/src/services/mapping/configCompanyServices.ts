@@ -109,3 +109,27 @@ export const updateConfigCompany = async (data: createConfigInput) => {
   return configs
 }
 
+
+
+export const deleteOneConfigCompany = async (companyId: string, accountingAccount: number) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
+
+  const config = await prisma.configCompany.findUnique({
+    where: {
+      companyId_accountingAccount: {
+        companyId,
+        accountingAccount: normalizeAccountingAccount(accountingAccount)
+      }
+    }
+  })
+  if (!config) throw new NotFoundError("Configuração não encontrada nessa empresa!")
+
+  await prisma.configCompany.delete({
+    where: {
+      id: config.id
+    }
+  })
+
+  return { message: "Configuração deletada com sucesso!" }
+}

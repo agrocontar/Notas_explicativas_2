@@ -18,6 +18,7 @@ interface AccountTableProps {
   toolbar: React.ReactNode;
   header: React.ReactNode;
   handleCreateAccount?: () => void;
+  handleDeleteAccount?: () => void;
 }
 
 const accountTemplate = (rowData: Account) => {
@@ -48,12 +49,13 @@ export const AccountTable = memo(({
   emptyMessage,
   toolbar,
   header,
-  handleCreateAccount
+  handleCreateAccount,
+  handleDeleteAccount
 }: AccountTableProps) => {
   return (
     <Card className="h-full">
       <Toolbar className="mb-2" left={toolbar} />
-      {handleCreateAccount &&
+      {(handleCreateAccount || handleDeleteAccount) &&
         <div className='flex justify-content-end mb-2 my-2 gap-2'>
           <Button
             icon="pi pi-plus"
@@ -71,13 +73,13 @@ export const AccountTable = memo(({
             onClick={handleCreateAccount}
           /> */}
 
-          {/* <Button
+          <Button
             icon="pi pi-times"
             className="p-button-rounded p-button-danger p-button-sm"
             tooltip="Remover conta"
             tooltipOptions={{ position: 'top' }}
-            onClick={handleCreateAccount}
-          /> */}
+            onClick={handleDeleteAccount}
+          />
 
           
         </div>

@@ -75,3 +75,22 @@ export const updateConfigCompany = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao editar Configurações" });
   }
 };
+
+export const deleteConfigCompany = async (req: Request, res: Response) => {
+  try {
+    const companyId = req.params.id
+    const accountingAccount = req.body.accountingAccount
+    
+    const result = await configService.deleteOneConfigCompany(companyId, accountingAccount)
+    res.json(result);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+        return res.status(400).json({ errors: handleZodError(err) });
+      }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erro ao deletar Configuração" });
+  }
+};

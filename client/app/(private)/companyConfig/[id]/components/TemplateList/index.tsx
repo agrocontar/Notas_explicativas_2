@@ -204,6 +204,8 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
           )}
         </div>
       </Dialog>
+
+      
     </div>
   );
 }

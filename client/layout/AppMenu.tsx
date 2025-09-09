@@ -47,6 +47,7 @@ const AppMenu = () => {
             { label: 'DMPL', icon: 'pi pi-fw pi-bookmark', },
             { label: 'DFC', icon: 'pi pi-fw pi-bookmark', },
             { label: 'Plano de Contas', icon: 'pi pi-fw pi-cog', to: `/companyConfig/${company.id}`},
+            { label: 'Upload de Balancete', icon: 'pi pi-fw pi-upload', to:`/upload/${company.id}`}
 
         ]
     }))
@@ -68,12 +69,6 @@ const AppMenu = () => {
                 {label: "Grupo de empresas", icon: 'pi pi-fw pi-id-card', to: '/groupCompanies'},
             ]           
         },
-        {
-            label: 'Upload',
-            items: [
-                {label: 'Upload de Balancete', icon: 'pi pi-fw pi-upload', to: '/upload'}
-            ]
-        }
     ];
 
     // Filtrar o menu baseado na role do usuário

@@ -11,6 +11,12 @@ import { ExcelData } from './types';
 import { validateAccountingAccounts } from './services/validateAccountingAccounts';
 import { processMappedAccounts } from './services/processMappedAccounts';
 
+interface CompanyUploadPageProps {
+  params: {
+    id: string
+  }
+}
+
 export interface Company {
     id: string;
     name: string;
@@ -32,20 +38,14 @@ const uploadBalanceteData = async (data: ExcelData): Promise<{ success: boolean;
     }
 };
 
-const UploadPage = () => {
-    const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+const UploadPage = async ({ params }: CompanyUploadPageProps) => {
     const [date, setDate] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
     const toast = React.useRef<Toast>(null);
 
     const handleUpload = async (event: any) => {
         const file: File = event.files[0];
-
-        if (!file || !date || !selectedCompany) {
-            showToast('error', 'Erro', 'Selecione empresa, data e arquivo antes de enviar');
-            return;
-        }
-
+        
         setUploading(true);
 
         try {
@@ -61,12 +61,12 @@ const UploadPage = () => {
 
             const validationResult = await validateAccountingAccounts(
                 excelData.balanceteData,
-                selectedCompany.id
+                params.id
             );
 
             if (!validationResult.isValid) {
                 const invalidList = validationResult.invalidAccounts.join(', ');
-                showToast('error', 'Erro', `Contas contábeis inválidas encontradas: ${invalidList}`);
+                showToast('error', 'Erro', `Foi encontrado contas não mapeadas, verifique o plano de contas!`);
                 console.log(`Contas contábeis inválidas encontradas: ${invalidList}`);
                 return;
             }
@@ -79,7 +79,7 @@ const UploadPage = () => {
 
             // Preparar dados para envio
             const payload = {
-                companyId: selectedCompany.id,
+                companyId: params.id,
                 referenceDate: date.getFullYear(),
                 balanceteData: processedData.map(item => ({
                     accountingAccount: item.accountingAccount || '',
@@ -121,14 +121,6 @@ const UploadPage = () => {
                         <div className="col-12">
                             <div className="flex flex-row gap-3 mb-3">
                                 <div className="flex align-items-center gap-2">
-                                    <span>Empresa</span>
-                                    <SelectCompany
-                                        setSelectedCompany={setSelectedCompany}
-                                        selectedCompany={selectedCompany}
-                                    />
-                                </div>
-
-                                <div className="flex align-items-center gap-2">
                                     <span>Ano Referencia:</span>
                                     <Calendar
                                         value={date}
@@ -149,7 +141,6 @@ const UploadPage = () => {
                                 multiple={false}
                                 accept=".xlsx,.xls"
                                 maxFileSize={10000000}
-                                disabled={!selectedCompany || !date || uploading}
                                 mode="basic"
                                 chooseLabel={uploading ? 'Processando...' : 'Selecionar Arquivo'}
                                 auto

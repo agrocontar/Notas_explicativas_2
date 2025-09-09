@@ -1,5 +1,5 @@
-import { AccountValidationResult, BalanceteRow } from "../types";
-import { fetchCompanyMappedAccounts, fetchDefaultAccounts } from "./apis";
+import { AccountValidationResult, BalanceteRow, CompanyAccount } from "../types";
+import { createCompanyConfigs, fetchCompanyMappedAccounts, fetchDefaultAccounts } from "./apis";
 
 export const validateAccountingAccounts = async (
   balanceteData: BalanceteRow[],
@@ -12,7 +12,8 @@ export const validateAccountingAccounts = async (
     // Buscar contas padrão do sistema via API
     const defaultAccounts = await fetchDefaultAccounts();
     
-    const invalidAccounts: string[] = [];
+    const invalidAccountCodes: string[] = [];
+    const invalidAccountsWithNames: CompanyAccount[] = [];
     const validData: BalanceteRow[] = [];
     
     // Criar um Set para busca mais eficiente
@@ -28,7 +29,7 @@ export const validateAccountingAccounts = async (
       validAccountsSet.add(account.accountingAccount);
     });
     
-    // Validar cada linha do balancete
+    // Validar cada linha do balancete e coletar nomes
     balanceteData.forEach(row => {
       const accountCode = row.accountingAccount.trim();
       
@@ -36,15 +37,41 @@ export const validateAccountingAccounts = async (
         validData.push(row);
       } else {
         // Evitar duplicatas na lista de contas inválidas
-        if (!invalidAccounts.includes(accountCode)) {
-          invalidAccounts.push(accountCode);
+        if (!invalidAccountCodes.includes(accountCode)) {
+          invalidAccountCodes.push(accountCode);
+          invalidAccountsWithNames.push({
+            accountingAccount: accountCode,
+            accountName: row.accountName.trim() || 'Conta não mapeada'
+          });
         }
       }
     });
+
+    // Criar contas inválidas automaticamente se houver (em background)
+    if (invalidAccountsWithNames.length > 0) {
+      try {
+        // Executar a criação em background sem await para não bloquear
+        createCompanyConfigs({
+          companyId,
+          configs: invalidAccountsWithNames
+        })
+        .then(() => {
+          console.log(`✅ ${invalidAccountsWithNames.length} contas criadas automaticamente em background`);
+        })
+        .catch(createError => {
+          console.error('Erro ao criar contas automaticamente:', createError);
+        });
+        
+      } catch (createError) {
+        console.error('Erro ao tentar criar contas:', createError);
+        // Não lançar erro, apenas logar - o processo principal continua
+      }
+    }
     
+    // Retornar o resultado original (mesmo se contas foram criadas em background)
     return {
-      isValid: invalidAccounts.length === 0,
-      invalidAccounts,
+      isValid: invalidAccountCodes.length === 0,
+      invalidAccounts: invalidAccountCodes,
       validData
     };
     

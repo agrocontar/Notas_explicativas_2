@@ -3,7 +3,7 @@ import { CompanyAccount, DefaultAccount, MappedAccount } from "../types";
 
 interface CreateCompanyConfigParams {
   companyId: string;
-  configs: [CompanyAccount];
+  configs: CompanyAccount[];
 }
 
 export const createCompanyConfigs = async ({companyId, configs}: CreateCompanyConfigParams) => {
@@ -13,7 +13,7 @@ export const createCompanyConfigs = async ({companyId, configs}: CreateCompanyCo
     if (!response.status || response.status !== 200) {
       throw new Error(response.data?.message || response.data?.error || 'Erro ao criar configurações da empresa');
     }
-    
+
     return response.data;
   } catch (error) {
     console.error('Erro ao criar configurações da empresa:', error);

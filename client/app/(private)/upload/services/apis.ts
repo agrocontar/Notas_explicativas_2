@@ -1,17 +1,22 @@
 import api from "@/app/api/api";
 import { CompanyAccount, DefaultAccount, MappedAccount } from "../types";
 
-export const fetchCompanyAccounts = async (companyId: string): Promise<CompanyAccount[]> => {
-  try {
-    const response = await api.get(`/config/company/${companyId}`);
-    
-    if (!response.status || response.status !== 200) {
-      throw new Error(response.data?.error || 'Erro ao buscar contas da empresa');
-    }
+interface CreateCompanyConfigParams {
+  companyId: string;
+  configs: [CompanyAccount];
+}
 
+export const createCompanyConfigs = async ({companyId, configs}: CreateCompanyConfigParams) => {
+  try {
+    const response = await api.post(`/config/company/`, { companyId, configs });
+
+    if (!response.status || response.status !== 200) {
+      throw new Error(response.data?.message || response.data?.error || 'Erro ao criar configurações da empresa');
+    }
+    
     return response.data;
   } catch (error) {
-    console.error('Erro ao buscar contas da empresa:', error);
+    console.error('Erro ao criar configurações da empresa:', error);
     return [];
   }
 };

@@ -1,5 +1,5 @@
 import { AccountValidationResult, BalanceteRow } from "../types";
-import { fetchCompanyAccounts, fetchCompanyMappedAccounts, fetchDefaultAccounts } from "./apis";
+import { fetchCompanyMappedAccounts, fetchDefaultAccounts } from "./apis";
 
 export const validateAccountingAccounts = async (
   balanceteData: BalanceteRow[],

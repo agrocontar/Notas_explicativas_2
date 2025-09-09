@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Card } from 'primereact/card';
 import { FileUpload } from 'primereact/fileupload';
 import { Calendar } from 'primereact/calendar';
@@ -38,11 +38,11 @@ const uploadBalanceteData = async (data: ExcelData): Promise<{ success: boolean;
     }
 };
 
-const UploadPage = async ({ params }: CompanyUploadPageProps) => {
+const UploadPage = ({ params }: CompanyUploadPageProps) => {
     const [date, setDate] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
     const toast = React.useRef<Toast>(null);
-    const fileUploadRef = React.useRef<any>(null);
+    const fileUploadRef = useRef<any>(null);
 
     const handleUpload = async (event: any) => {
         const file: File = event.files[0];
@@ -50,6 +50,13 @@ const UploadPage = async ({ params }: CompanyUploadPageProps) => {
         setUploading(true);
 
         try {
+            // Validar se a data foi selecionada
+            if (!date) {
+                showToast('error', 'Erro', 'Selecione o ano de referência primeiro');
+                setUploading(false);
+                return;
+            }
+
             // Ler o arquivo Excel
             const excelData = await readExcelFile(file, 'company-id', new Date());
 
@@ -109,6 +116,10 @@ const UploadPage = async ({ params }: CompanyUploadPageProps) => {
         } catch (error) {
             console.error('Erro no upload:', error);
             showToast('error', 'Erro', 'Falha ao processar o arquivo. Verifique o formato.');
+            // Limpar o arquivo selecionado após o erro
+            if (fileUploadRef.current) {
+                fileUploadRef.current.clear();
+            }
         } finally {
             setUploading(false);
         }

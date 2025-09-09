@@ -4,7 +4,6 @@ import { normalizeAccountingAccount } from './normalizeAccounting';
 
 export const readExcelFile = async (file: File, companyId: string, date: Date): Promise<ExcelData> => {
   try {
-    console.log('Iniciando leitura do arquivo:', file.name);
 
     // Verificar se o arquivo é realmente um Excel
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls') && 
@@ -65,7 +64,6 @@ export const readExcelFile = async (file: File, companyId: string, date: Date): 
       blankrows: false 
     });
 
-    console.log('Dados brutos da planilha:', rawData);
 
     // Verificar se há dados suficientes
     if (rawData.length <= 1) {
@@ -74,13 +72,10 @@ export const readExcelFile = async (file: File, companyId: string, date: Date): 
 
     // Detectar automaticamente a linha do cabeçalho
     const headerRowIndex = detectHeaderRow(rawData as any[][]);
-    console.log('Cabeçalho detectado na linha:', headerRowIndex + 1);
 
     // Mapear as colunas baseado no cabeçalho
     const headerRow = rawData[headerRowIndex] as string[];
     const columnMapping = mapColumnsFromHeader(headerRow);
-    
-    console.log('Mapeamento de colunas:', columnMapping);
 
     // Processar dados (começar da linha após o cabeçalho)
     const balanceteData: BalanceteRow[] = [];
@@ -130,9 +125,6 @@ export const readExcelFile = async (file: File, companyId: string, date: Date): 
     if (balanceteData.length === 0) {
       throw new Error('Nenhum dado válido encontrado na planilha. Verifique o formato do arquivo.');
     }
-
-    console.log('Dados processados com sucesso:', balanceteData.length, 'linhas');
-    console.log('Primeiras linhas processadas:', balanceteData.slice(0, 3));
 
     return {
       companyId,

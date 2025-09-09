@@ -51,7 +51,7 @@ const UploadPage = () => {
                   // Ler o arquivo Excel
             const excelData = await readExcelFile(file, 'company-id', new Date());
             
-            console.log('Dados processados para envio:', excelData);
+            console.log('Dados processados para envio:', excelData.balanceteData.slice(0, 10)); // Mostrar as primeiras 10 linhas
             
             // Verificar se há dados válidos
             if (!excelData.balanceteData || excelData.balanceteData.length === 0) {

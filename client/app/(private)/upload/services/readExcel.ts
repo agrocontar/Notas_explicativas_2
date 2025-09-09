@@ -1,20 +1,6 @@
 import * as XLSX from 'xlsx';
-
-export interface BalanceteRow {
-  accountingAccount: string;
-  accountName: string;
-  previousBalance: number;
-  debit: number;
-  credit: number;
-  monthBalance: number;
-  currentBalance: number;
-}
-
-export interface ExcelData {
-  companyId: string;
-  referenceDate: string;
-  balanceteData: BalanceteRow[];
-}
+import { BalanceteRow, ExcelData } from '../types';
+import { normalizeAccountingAccount } from './normalizeAccounting';
 
 export const readExcelFile = async (file: File, companyId: string, date: Date): Promise<ExcelData> => {
   try {
@@ -111,7 +97,7 @@ export const readExcelFile = async (file: File, companyId: string, date: Date): 
         }
 
         const rowData: BalanceteRow = {
-          accountingAccount: String(row[columnMapping.contaContabil] || '').trim(),
+          accountingAccount: normalizeAccountingAccount(String(row[columnMapping.contaContabil] || '').trim()),
           accountName: String(row[columnMapping.nomenclatura] || '').trim(),
           previousBalance: parseFinancialNumber(row[columnMapping.saldoAnterior]),
           debit: parseFinancialNumber(row[columnMapping.debito]),

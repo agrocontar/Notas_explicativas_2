@@ -5,8 +5,10 @@ import { FileUpload } from 'primereact/fileupload';
 import { Calendar } from 'primereact/calendar';
 import { SelectCompany } from './components/selectCompany';
 import { Toast } from 'primereact/toast';
-import { ExcelData, readExcelFile } from './services/readExcel';
+import { readExcelFile } from './services/readExcel';
 import api from '@/app/api/api';
+import { ExcelData } from './types';
+import { validateAccountingAccounts } from './services/validateAccountingAccounts';
 
 export interface Company {
     id: string;
@@ -54,6 +56,18 @@ const UploadPage = () => {
             // Verificar se há dados válidos
             if (!excelData.balanceteData || excelData.balanceteData.length === 0) {
               throw new Error('Nenhum dado válido encontrado no arquivo');
+            }
+
+            const validationResult = await validateAccountingAccounts(
+                excelData.balanceteData,
+                selectedCompany.id
+            );
+
+            if (!validationResult.isValid) {
+                const invalidList = validationResult.invalidAccounts.join(', ');
+                showToast('error', 'Erro', `Contas contábeis inválidas encontradas: ${invalidList}`);
+                console.log(`Contas contábeis inválidas encontradas: ${invalidList}`);
+                return;
             }
 
             // Preparar dados para envio

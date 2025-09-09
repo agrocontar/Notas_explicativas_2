@@ -1,5 +1,5 @@
 import api from "@/app/api/api";
-import { CompanyAccount, DefaultAccount, MappedAccount } from "../types";
+import { Balancete, CompanyAccount, DefaultAccount, MappedAccount } from "../types";
 
 interface CreateCompanyConfigParams {
   companyId: string;
@@ -61,6 +61,21 @@ export const fetchDefaultAccounts = async (): Promise<DefaultAccount[]> => {
     }
 
     return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar contas padrão:', error);
+    return [];
+  }
+};
+
+export const fetchBalanceAccounts = async ({year, companyId}: {year: number, companyId: string}) => {
+  try {
+    const response = await api.patch('/balancete', {year, companyId});
+
+    if (!response.status || response.status !== 200) {
+      throw new Error(response.data?.error || 'Erro ao buscar contas padrão');
+    }
+
+    return response.data as Balancete[];
   } catch (error) {
     console.error('Erro ao buscar contas padrão:', error);
     return [];

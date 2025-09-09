@@ -13,6 +13,23 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import api from '@/app/api/api';
 
+// Defina os componentes fora do componente principal ou atribua displayName
+const LeftToolbar = memo(() => (
+  <div className="flex flex-column gap-2">
+    <span className="text-xl font-bold">Contas não parametrizadas</span>
+    <span>Selecione uma conta</span>
+  </div>
+));
+LeftToolbar.displayName = 'LeftToolbar'; // Adicione esta linha
+
+const RightToolbar = memo(() => (
+  <div className="flex flex-column gap-2">
+    <span className="text-xl font-bold">Contas Padrão</span>
+    <span>Selecione uma conta</span>
+  </div>
+));
+RightToolbar.displayName = 'RightToolbar'; // Adicione esta linha
+
 export default function TemplateList({ companyId, initialData }: TemplateListProps) {
   const {
     source,
@@ -43,18 +60,39 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     accountingAccount: ''
   });
 
-  // Headers memoizados - com botão de criação apenas na tabela de não parametrizadas
-  const sourceHeader = useMemo(() => (
+  // Componentes com display name
+  const SourceHeaderComponent = ({ filterValue, onFilterChange, selectedAccount, placeholder }:any) => (
     <FilterHeader
+      filterValue={filterValue}
+      onFilterChange={onFilterChange}
+      selectedAccount={selectedAccount}
+      placeholder={placeholder}
+    />
+  );
+  SourceHeaderComponent.displayName = 'SourceHeaderComponent';
+
+  const TargetHeaderComponent = ({ filterValue, onFilterChange, selectedAccount, placeholder }:any) => (
+    <FilterHeader
+      filterValue={filterValue}
+      onFilterChange={onFilterChange}
+      selectedAccount={selectedAccount}
+      placeholder={placeholder}
+    />
+  );
+  TargetHeaderComponent.displayName = 'TargetHeaderComponent';
+
+  // Headers memoizados - dependências corrigidas
+  const sourceHeader = useMemo(() => (
+    <SourceHeaderComponent
       filterValue={sourceFilter}
       onFilterChange={setSourceFilter}
       selectedAccount={selectedSource}
       placeholder="Filtrar por código ou nome"
     />
-  ), [sourceFilter, selectedSource, setSourceFilter, handleCreateAccount]);
+  ), [sourceFilter, selectedSource, setSourceFilter]);
 
   const targetHeader = useMemo(() => (
-    <FilterHeader
+    <TargetHeaderComponent
       filterValue={targetFilter}
       onFilterChange={setTargetFilter}
       selectedAccount={selectedTarget}
@@ -70,20 +108,6 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
   const openDeleteDialog = () => {
     setDeleteDialog(true);
   }
-
-  const LeftToolbar = memo(() => (
-    <div className="flex flex-column gap-2">
-      <span className="text-xl font-bold">Contas não parametrizadas</span>
-      <span>Selecione uma conta</span>
-    </div>
-  ));
-
-  const RightToolbar = memo(() => (
-    <div className="flex flex-column gap-2">
-      <span className="text-xl font-bold">Contas Padrão</span>
-      <span>Selecione uma conta</span>
-    </div>
-  ));
 
    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const val = e.target?.value || '';

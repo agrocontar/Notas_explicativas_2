@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface MappingTableProps {
   companyId: string;
@@ -39,8 +39,8 @@ export default function MappingTable({ companyId }: MappingTableProps) {
     setSelected(value);
   };
 
-  const fetchMappings = async () => {
-
+  // fetchMappings com useCallback
+  const fetchMappings = useCallback(async () => {
     try {
       const res = await api.get(`/config/mapping/${companyId}`);
       const data = await res.data;
@@ -54,11 +54,11 @@ export default function MappingTable({ companyId }: MappingTableProps) {
     } catch (err) {
       console.error('Erro inesperado:', err);
     }
-  }
+  }, [companyId]);
 
   useEffect(() => {
     fetchMappings();
-  }, [companyId]);
+  }, [companyId, fetchMappings]);
 
   const companyAccount = (rowData: Mapping) => {
     return (

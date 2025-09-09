@@ -19,7 +19,6 @@ const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
     const { isCoordenador, isAdmin } = useAuth(); // Obter informação se é admin
     const [companies, setCompanies] = useState<Companies[]>([])
-    const toast = useRef<Toast>(null);
 
 
 
@@ -29,9 +28,7 @@ const AppMenu = () => {
                 const response = await api.get('/companies/user');
                 setCompanies(response.data);
             } catch (err) {
-                if (toast.current) {
-                    toast.current.show({ severity: 'error', summary: 'Error', detail: String(err), life: 3000 });
-                }
+                console.error('Erro ao buscar empresas:', err);
             }
         };
         fetchCompanies();
@@ -82,7 +79,6 @@ const AppMenu = () => {
 
     return (
         <MenuProvider>
-            <Toast ref={toast} />
             <ul className="layout-menu">
                 {filteredMenu.map((item, i) => {
                     return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> : <li className="menu-separator"></li>;

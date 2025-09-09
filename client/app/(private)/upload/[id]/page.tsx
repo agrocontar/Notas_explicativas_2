@@ -42,6 +42,7 @@ const UploadPage = async ({ params }: CompanyUploadPageProps) => {
     const [date, setDate] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
     const toast = React.useRef<Toast>(null);
+    const fileUploadRef = React.useRef<any>(null);
 
     const handleUpload = async (event: any) => {
         const file: File = event.files[0];
@@ -98,6 +99,11 @@ const UploadPage = async ({ params }: CompanyUploadPageProps) => {
             // Enviar para o backend
             const result = await uploadBalanceteData(payload);
 
+            // Limpar o arquivo selecionado após o sucesso
+            if (fileUploadRef.current) {
+                fileUploadRef.current.clear();
+            }
+
             showToast('success', 'Sucesso', `Dados enviados com sucesso! ${result.inserted} registros inseridos.`);
 
         } catch (error) {
@@ -132,19 +138,25 @@ const UploadPage = async ({ params }: CompanyUploadPageProps) => {
                                         yearRange="2023:2026"
                                     />
                                 </div>
+                                <div className='flex align-items-center gap-2'>
+                                    <span>Arquivo:</span>
+                                    <FileUpload
+                                        ref={fileUploadRef}
+                                        name="balanceteAtual"
+                                        customUpload
+                                        uploadHandler={handleUpload}
+                                        multiple={false}
+                                        accept=".xlsx,.xls"
+                                        maxFileSize={10000000}
+                                        mode="basic"
+                                        chooseLabel={uploading ? 'Processando...' : 'Selecionar Arquivo'}
+                                        auto
+                                    />
+                                </div>
+                                
                             </div>
 
-                            <FileUpload
-                                name="balanceteAtual"
-                                customUpload
-                                uploadHandler={handleUpload}
-                                multiple={false}
-                                accept=".xlsx,.xls"
-                                maxFileSize={10000000}
-                                mode="basic"
-                                chooseLabel={uploading ? 'Processando...' : 'Selecionar Arquivo'}
-                                auto
-                            />
+                            
                         </div>
                     </div>
                 </Card>

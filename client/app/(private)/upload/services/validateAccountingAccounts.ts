@@ -1,5 +1,5 @@
-import { AccountValidationResult, BalanceteRow, CompanyAccount } from "../types";
-import { createCompanyConfigs, fetchCompanyMappedAccounts, fetchDefaultAccounts } from "./apis";
+import { AccountValidationResult, BalanceteRow, CompanyAccount, MappedAccount } from "../types";
+import { createCompanyConfigs, fetchCompanyAccounts, fetchDefaultAccounts, fetchCompanyMappings } from "./apis";
 
 export const validateAccountingAccounts = async (
   balanceteData: BalanceteRow[],
@@ -7,10 +7,13 @@ export const validateAccountingAccounts = async (
 ): Promise<AccountValidationResult> => {
   try {
     // Buscar contas da empresa via API
-    const companyMappedAccounts = await fetchCompanyMappedAccounts(companyId);
+    const companyMappedAccounts = await fetchCompanyAccounts(companyId);
     
     // Buscar contas padrão do sistema via API
     const defaultAccounts = await fetchDefaultAccounts();
+    
+    // Buscar mapeamentos da empresa
+    const companyMappings = await fetchCompanyMappings(companyId);
     
     const invalidAccountCodes: string[] = [];
     const invalidAccountsWithNames: CompanyAccount[] = [];
@@ -20,13 +23,19 @@ export const validateAccountingAccounts = async (
     const validAccountsSet = new Set<string>();
     
     // Adicionar contas da empresa
-    companyMappedAccounts.forEach(account => {
+    companyMappings.forEach(account => {
       validAccountsSet.add(account.companyAccount);
     });
     
     // Adicionar contas padrão do sistema
     defaultAccounts.forEach(account => {
       validAccountsSet.add(account.accountingAccount);
+    });
+    
+    // Criar mapa de mapeamentos para acesso rápido
+    const mappingsMap = new Map<string, MappedAccount>();
+    companyMappings.forEach(mapping => {
+      mappingsMap.set(mapping.companyAccount, mapping);
     });
     
     // Validar cada linha do balancete e coletar nomes
@@ -50,7 +59,6 @@ export const validateAccountingAccounts = async (
     // Criar contas inválidas automaticamente se houver (em background)
     if (invalidAccountsWithNames.length > 0) {
       try {
-        // Executar a criação em background sem await para não bloquear
         createCompanyConfigs({
           companyId,
           configs: invalidAccountsWithNames
@@ -61,18 +69,16 @@ export const validateAccountingAccounts = async (
         .catch(createError => {
           console.error('Erro ao criar contas automaticamente:', createError);
         });
-        
       } catch (createError) {
         console.error('Erro ao tentar criar contas:', createError);
-        // Não lançar erro, apenas logar - o processo principal continua
       }
     }
     
-    // Retornar o resultado original (mesmo se contas foram criadas em background)
     return {
       isValid: invalidAccountCodes.length === 0,
       invalidAccounts: invalidAccountCodes,
-      validData
+      validData,
+      mappings: companyMappings // Retornar mapeamentos para uso posterior
     };
     
   } catch (error) {

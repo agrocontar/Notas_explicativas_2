@@ -2,6 +2,7 @@ export interface AccountValidationResult {
   isValid: boolean;
   invalidAccounts: string[];
   validData: BalanceteRow[];
+  mappings?: MappedAccount[];
 }
 
 export interface CompanyAccount {

@@ -50,3 +50,17 @@ export interface ExcelData {
   referenceDate: string;
   balanceteData: BalanceteRow[];
 }
+
+export interface Balancete {
+  id: string,
+  companyId: string,
+  uploadedAt: string,
+  referenceDate: number,
+  accountingAccount: string,
+  accountName: string,
+  previousBalance: number,
+  debit: number,
+  credit: number,
+  monthBalance: number,
+  currentBalance: number,
+}

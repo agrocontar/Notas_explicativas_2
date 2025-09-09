@@ -1,15 +1,17 @@
 'use client'
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card } from 'primereact/card';
 import { FileUpload } from 'primereact/fileupload';
 import { Calendar } from 'primereact/calendar';
-import { SelectCompany } from './components/selectCompany';
 import { Toast } from 'primereact/toast';
 import { readExcelFile } from './services/readExcel';
 import api from '@/app/api/api';
-import { ExcelData } from './types';
+import { Balancete, ExcelData } from './types';
 import { validateAccountingAccounts } from './services/validateAccountingAccounts';
 import { processMappedAccounts } from './services/processMappedAccounts';
+import { DataTable } from 'primereact/datatable';
+import { fetchBalanceAccounts } from './services/apis';
+import BalanceTable from './components/BalanceTable';
 
 interface CompanyUploadPageProps {
   params: {
@@ -43,6 +45,10 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
     const [uploading, setUploading] = useState(false);
     const toast = React.useRef<Toast>(null);
     const fileUploadRef = useRef<any>(null);
+    const [currentBalanceAccounts, setCurrentBalanceAccounts] = useState<Balancete[]>([]);
+    const [previousBalanceAccounts, setPreviousBalanceAccounts] = useState<Balancete[]>([]);
+    const currentYear = new Date().getFullYear();
+    
 
     const handleUpload = async (event: any) => {
         const file: File = event.files[0];
@@ -129,6 +135,21 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
         toast.current?.show({ severity, summary, detail, life: 3000 });
     };
 
+    const getBalanceteData = async () => {
+        try {
+            const currentBalance = await fetchBalanceAccounts({ year: currentYear, companyId: params.id });
+            setCurrentBalanceAccounts(currentBalance);
+            const previousBalance = await fetchBalanceAccounts({ year: currentYear - 1, companyId: params.id });
+            setPreviousBalanceAccounts(previousBalance);
+        } catch (error) {
+            console.error('Erro ao buscar dados do balancete:', error);
+        }
+    }
+
+    useEffect(()=> {
+        getBalanceteData();
+    }, [])
+
     return (
         <div className="grid">
             <Toast ref={toast} />
@@ -166,11 +187,15 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
                                 </div>
                                 
                             </div>
-
-                            
                         </div>
                     </div>
                 </Card>
+                <div className="card mt-3">
+                    <BalanceTable balanceAccounts={currentBalanceAccounts} year={currentYear} title={`Balancete Atual - ${currentYear}`} />
+                </div>
+                <div className="card mt-3">
+                    <BalanceTable balanceAccounts={previousBalanceAccounts} year={currentYear -1} title={`Balancete Anterior - ${currentYear -1}`} />
+                </div>
             </div>
         </div>
     );

@@ -109,3 +109,38 @@ export async function createAccount(accountData: { companyId: string;  configs: 
     }
   }
 }
+
+
+export const deleteAccount = async (companyId: string, accountingAccount: string) => {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get('token')?.value;
+
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    const res = await serverApi.delete(
+      `/config/company/${companyId}`,
+      {
+        data: { accountingAccount },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': `token=${token}`
+        },
+      }
+    );
+
+    return res.data;
+  } catch (error: any) {
+    console.error('Erro ao excluir conta:', error);
+    
+    if (error.response?.status === 404) {
+      throw new Error(error.response.data?.message || 'Conta não encontrada');
+    } else if (error.response?.status === 400) {
+      throw new Error(error.response.data?.message || 'Dados inválidos');
+    } else {
+      throw new Error(error.response?.data?.message || 'Falha ao excluir conta');
+    }
+  }
+};

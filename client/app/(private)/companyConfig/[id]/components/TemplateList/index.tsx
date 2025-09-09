@@ -11,6 +11,7 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
+import api from '@/app/api/api';
 
 export default function TemplateList({ companyId, initialData }: TemplateListProps) {
   const {
@@ -29,10 +30,13 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     setSelectedSource,
     setSelectedTarget,
     handleDePara,
-    handleCreateAccount
+    handleCreateAccount,
+    deleteLoading,
+    handleDeleteAccount
   } = useTemplateList(companyId, initialData);
 
   const [accountDialog, setAccountDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [newAccount, setNewAccount] = useState({
     name: '',
@@ -61,6 +65,10 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
   const openCreateDialog = () => {
     // Lógica para abrir o diálogo de criação
     setAccountDialog(true);
+  }
+
+  const openDeleteDialog = () => {
+    setDeleteDialog(true);
   }
 
   const LeftToolbar = memo(() => (
@@ -103,6 +111,25 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     }
   };
 
+  const deleteAccount = async () => {
+    if (!selectedSource) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione uma conta para excluir',
+        life: 3000
+      });
+      return;
+    }
+
+    try {
+      await handleDeleteAccount(selectedSource.accountingAccount);
+      setDeleteDialog(false);
+    } catch (error) {
+      console.error('Erro ao excluir conta:', error);
+    }
+  };
+
    const hideDialog = () => {
     setAccountDialog(false);
     setSubmitted(false);
@@ -125,6 +152,13 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
       />
     </div>
   );
+
+  const deleteDialogFooter = (
+      <>
+        <Button label="Cancelar" icon="pi pi-times" text onClick={() => setDeleteDialog(false)} />
+        <Button label="Excluir" icon="pi pi-check" text onClick={deleteAccount} loading={deleteLoading} />
+      </>
+    );
   
 
   return (
@@ -142,6 +176,7 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
             toolbar={<LeftToolbar />}
             header={sourceHeader}
             handleCreateAccount={openCreateDialog}
+            handleDeleteAccount={openDeleteDialog}
           />
         </div>
 
@@ -173,7 +208,7 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
         className="p-fluid" 
         footer={dialogFooter}
         onHide={hideDialog}
-      >
+      > 
         <div className="field">
           <label htmlFor="name">Nome da Conta</label>
           <InputText
@@ -205,7 +240,15 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
         </div>
       </Dialog>
 
-      
+      <Dialog visible={deleteDialog} style={{ width: '450px' }} header="Excluir Conta" modal className="p-fluid" footer={deleteDialogFooter} onHide={() => setDeleteDialog(false)}>
+        <div className="field">
+          <p>
+            Tem certeza que deseja excluir a conta{' '}
+            <strong>{selectedSource?.accountingAccount}</strong> - {selectedSource?.accountName}?
+          </p>
+          <p className="text-sm text-500">Esta ação não pode ser desfeita.</p>
+        </div>
+      </Dialog>
     </div>
   );
 }

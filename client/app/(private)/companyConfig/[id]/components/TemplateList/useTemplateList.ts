@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Toast } from 'primereact/toast';
-import { createAccount, getSourceData, relateAccounts } from './actions';
+import { createAccount, deleteAccount, getSourceData, relateAccounts } from './actions';
 import { Account } from './types';
 
 interface CreateAccountData {
@@ -19,6 +19,7 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
   const [loading, setLoading] = useState(false);
   const [sourceLoading, setSourceLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   
   const toast = useRef<Toast>(null);
 
@@ -132,6 +133,38 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
   }
 }, [companyId, loadSourceData]);
 
+const handleDeleteAccount = useCallback(async (accountingAccount: string) => {
+    setDeleteLoading(true);
+    try {
+      await deleteAccount(companyId, accountingAccount);
+      
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Conta excluída com sucesso',
+        life: 3000
+      });
+      
+      // Recarregar os dados
+      await loadSourceData();
+      setSelectedSource(null);
+      
+    } catch (error: any) {
+      console.error('Erro ao excluir conta:', error);
+      
+      const errorMessage = error.message || 'Falha ao excluir conta';
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erro',
+        detail: errorMessage,
+        life: 5000
+      });
+      throw error;
+    } finally {
+      setDeleteLoading(false);
+    }
+  }, [companyId, loadSourceData]);
+
   // Filtros aplicados localmente (igual para ambas as tabelas)
   const filteredTarget = useMemo(() => {
     if (!targetFilter) return target;
@@ -165,6 +198,8 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
     setSelectedTarget: useCallback((value: Account | null) => setSelectedTarget(value), []),
     handleDePara,
     createLoading,
-    handleCreateAccount
+    handleCreateAccount,
+    deleteLoading,
+    handleDeleteAccount
   };
 };

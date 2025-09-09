@@ -148,7 +148,7 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
 
     useEffect(()=> {
         getBalanceteData();
-    }, [])
+    }, [handleUpload])
 
     return (
         <div className="grid">

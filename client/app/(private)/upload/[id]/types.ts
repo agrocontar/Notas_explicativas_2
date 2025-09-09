@@ -47,7 +47,7 @@ export interface BalanceteRow {
 
 export interface ExcelData {
   companyId: string;
-  referenceDate: string;
+  referenceDate: number;
   balanceteData: BalanceteRow[];
 }
 

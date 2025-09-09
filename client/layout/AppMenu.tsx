@@ -38,11 +38,11 @@ const AppMenu = () => {
         label: company.name,
         icon: 'pi pi-fw pi-building',
         items: [
-            { label: 'Notas Explicativas', icon: 'pi pi-fw pi-bookmark', },
-            { label: 'Balanço', icon: 'pi pi-fw pi-bookmark', },
-            { label: 'DRE', icon: 'pi pi-fw pi-bookmark', },
-            { label: 'DMPL', icon: 'pi pi-fw pi-bookmark', },
-            { label: 'DFC', icon: 'pi pi-fw pi-bookmark', },
+            { label: 'Notas Explicativas', icon: 'pi pi-fw pi-bookmark', to: '/'},
+            { label: 'Balanço', icon: 'pi pi-fw pi-bookmark', to: '/'},
+            { label: 'DRE', icon: 'pi pi-fw pi-bookmark', to: '/'},
+            { label: 'DMPL', icon: 'pi pi-fw pi-bookmark', to: '/'},
+            { label: 'DFC', icon: 'pi pi-fw pi-bookmark', to: '/'},
             { label: 'Plano de Contas', icon: 'pi pi-fw pi-cog', to: `/companyConfig/${company.id}`},
             { label: 'Upload de Balancete', icon: 'pi pi-fw pi-upload', to:`/upload/${company.id}`}
 

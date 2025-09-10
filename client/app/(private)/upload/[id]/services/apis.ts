@@ -81,3 +81,18 @@ export const fetchBalanceAccounts = async ({year, companyId}: {year: number, com
     return [];
   }
 };
+
+export const fetchCompanyPlan = async (companyId: string) => {
+  try {
+    const response = await api.get(`/companies/plan/${companyId}`);
+
+    if (!response.status || response.status !== 200) {
+      throw new Error(response.data?.error || 'Erro ao buscar plano da empresa');
+    }
+
+    return response.data as {planOfCountsAgrocontar: boolean};
+  } catch (error) {
+    console.error('Erro ao buscar plano da empresa:', error);
+    return 
+  }
+};

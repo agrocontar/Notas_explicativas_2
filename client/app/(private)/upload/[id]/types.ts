@@ -3,6 +3,7 @@ export interface AccountValidationResult {
   invalidAccounts: string[];
   validData: BalanceteRow[];
   mappings?: MappedAccount[];
+  usesStandardPlan: boolean;
 }
 
 export interface CompanyAccount {
@@ -47,7 +48,7 @@ export interface BalanceteRow {
 
 export interface ExcelData {
   companyId: string;
-  referenceDate: string;
+  referenceDate: number;
   balanceteData: BalanceteRow[];
 }
 

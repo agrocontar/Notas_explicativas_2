@@ -25,14 +25,11 @@ export const processMappedData = (balanceteData: any[], mappings: any[]) => {
         currentBalance: new Decimal(existingRow.currentBalance).plus(new Decimal(row.currentBalance || 0)),
       });
     } else {
-      const accountName = mappingsMap.get(accountCode) 
-        ? `Agrupamento - ${row.accountName}`
-        : row.accountName;
       
       groupedData.set(targetAccount, {
         ...row,
         accountingAccount: targetAccount,
-        accountName: accountName
+        accountName: row.accountName
       });
     }
   });

@@ -27,6 +27,23 @@ export const listCompanies = async () => {
   return prisma.company.findMany()
 }
 
+export const checkCompanyPlan = async (companyId: string) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new Error('Empresa não encontrada!')
+  return company.planOfCountsAgrocontar
+}
+
+export const updateCompanyPlan = async (companyId: string) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new Error('Empresa não encontrada!')
+  
+  const updatedCompany = await prisma.company.update({
+    where: { id: companyId },
+    data: { planOfCountsAgrocontar: !company.planOfCountsAgrocontar }
+  })
+
+  return updatedCompany
+}
 
 // List Companies per user group
 export const listUserCompanies = async (userId: string) => {

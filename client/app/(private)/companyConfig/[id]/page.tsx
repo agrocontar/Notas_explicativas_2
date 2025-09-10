@@ -1,3 +1,5 @@
+
+import InputPlan from "./components/inputPlan/InputPlan";
 import MappingTable from "./components/MappingTable";
 import TemplateList from "./components/TemplateList";
 import { getCompanyData } from "./components/TemplateList/actions";
@@ -9,6 +11,7 @@ interface CompanyConfigPageProps {
   }
 }
 
+
 const CompanyConfigPage = async ({ params }: CompanyConfigPageProps) => {
   // Get initial data of the company
   const initialData = await getCompanyData(params.id);
@@ -17,9 +20,9 @@ const CompanyConfigPage = async ({ params }: CompanyConfigPageProps) => {
     <div className="grid">
       <div className="col-12">
         <div className="card">
-          <div className="mb-4 p-2 border-bottom-1 surface-border">
-
+          <div className="mb-4 p-2 border-bottom-1 surface-border flex align-items-center justify-content-between"  >
             <h2>Configuração do Plano de Contas</h2>
+            <InputPlan companyId={params.id} />
           </div>
           <TemplateList companyId={params.id} initialData={initialData} />
         </div>

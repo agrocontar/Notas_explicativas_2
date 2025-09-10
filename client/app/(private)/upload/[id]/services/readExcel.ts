@@ -128,7 +128,7 @@ export const readExcelFile = async (file: File, companyId: string, date: Date): 
 
     return {
       companyId,
-      referenceDate: date.toISOString().split('T')[0],
+      referenceDate: date.getFullYear(),
       balanceteData
     };
 

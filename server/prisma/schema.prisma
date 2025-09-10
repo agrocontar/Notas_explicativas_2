@@ -41,6 +41,7 @@ model Company {
   id        String   @id @default(uuid())
   name      String
   cnpj      String   @unique
+  planOfCountsAgrocontar Boolean @default(true)
   createdAt DateTime @default(now())
 
   groups     GroupCompanies[] @relation("CompanyGroup")

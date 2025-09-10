@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Card } from 'primereact/card';
 import { FileUpload } from 'primereact/fileupload';
 import { Calendar } from 'primereact/calendar';
@@ -9,7 +9,6 @@ import api from '@/app/api/api';
 import { Balancete, ExcelData } from './types';
 import { validateAccountingAccounts } from './services/validateAccountingAccounts';
 import { processMappedAccounts } from './services/processMappedAccounts';
-import { DataTable } from 'primereact/datatable';
 import { fetchBalanceAccounts } from './services/apis';
 import BalanceTable from './components/BalanceTable';
 
@@ -19,17 +18,12 @@ interface CompanyUploadPageProps {
   }
 }
 
-export interface Company {
-    id: string;
-    name: string;
-}
-
 const uploadBalanceteData = async (data: ExcelData): Promise<{ success: boolean; inserted: number }> => {
     try {
         const response = await api.post('/balancete', data);
         const dataResponse = response.data
 
-        if (response.status != 200) {
+        if (response.status !== 200) {
             throw new Error(`Erro no servidor: ${response.status}`);
         }
 
@@ -41,16 +35,21 @@ const uploadBalanceteData = async (data: ExcelData): Promise<{ success: boolean;
 };
 
 const UploadPage = ({ params }: CompanyUploadPageProps) => {
-    const [date, setDate] = useState<any>(null);
+    const [date, setDate] = useState<Date | null>(null);
     const [uploading, setUploading] = useState(false);
-    const toast = React.useRef<Toast>(null);
+    const toast = useRef<Toast>(null);
     const fileUploadRef = useRef<any>(null);
     const [currentBalanceAccounts, setCurrentBalanceAccounts] = useState<Balancete[]>([]);
     const [previousBalanceAccounts, setPreviousBalanceAccounts] = useState<Balancete[]>([]);
     const currentYear = new Date().getFullYear();
     
+    // Usar useCallback para evitar recriação desnecessária
+    const showToast = useCallback((severity: 'success' | 'error', summary: string, detail: string) => {
+        toast.current?.show({ severity, summary, detail, life: 3000 });
+    }, []);
 
-    const handleUpload = async (event: any) => {
+    // Mover handleUpload para useCallback
+    const handleUpload = useCallback(async (event: any) => {
         const file: File = event.files[0];
         
         setUploading(true);
@@ -64,9 +63,9 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
             }
 
             // Ler o arquivo Excel
-            const excelData = await readExcelFile(file, 'company-id', new Date());
+            const excelData = await readExcelFile(file, params.id, date);
 
-            console.log('Dados processados para envio:', excelData.balanceteData.slice(0, 10)); // Mostrar as primeiras 10 linhas
+            console.log('Dados processados para envio:', excelData.balanceteData.slice(0, 10));
 
             // Verificar se há dados válidos
             if (!excelData.balanceteData || excelData.balanceteData.length === 0) {
@@ -80,7 +79,7 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
 
             if (!validationResult.isValid) {
                 const invalidList = validationResult.invalidAccounts.join(', ');
-                showToast('error', 'Erro', `Foi encontrado contas não mapeadas, verifique o plano de contas!`);
+                showToast('error', 'Erro', `Foram encontradas contas não mapeadas, verifique o plano de contas!`);
                 console.log(`Contas contábeis inválidas encontradas: ${invalidList}`);
                 return;
             }
@@ -108,7 +107,6 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
 
             console.log('Payload enviado:', payload);
 
-
             // Enviar para o backend
             const result = await uploadBalanceteData(payload);
 
@@ -119,9 +117,12 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
 
             showToast('success', 'Sucesso', `Dados enviados com sucesso! ${result.inserted} registros inseridos.`);
 
-        } catch (error) {
+            // Recarregar os dados do balancete após upload bem-sucedido
+            getBalanceteData();
+
+        } catch (error: any) {
             console.error('Erro no upload:', error);
-            showToast('error', 'Erro', 'Falha ao processar o arquivo. Verifique o formato.');
+            showToast('error', 'Erro', error.message || 'Falha ao processar o arquivo. Verifique o formato.');
             // Limpar o arquivo selecionado após o erro
             if (fileUploadRef.current) {
                 fileUploadRef.current.clear();
@@ -129,13 +130,10 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
         } finally {
             setUploading(false);
         }
-    };
+    }, [date, params.id, showToast]);
 
-    const showToast = (severity: 'success' | 'error', summary: string, detail: string) => {
-        toast.current?.show({ severity, summary, detail, life: 3000 });
-    };
-
-    const getBalanceteData = async () => {
+    // Mover getBalanceteData para useCallback
+    const getBalanceteData = useCallback(async () => {
         try {
             const currentBalance = await fetchBalanceAccounts({ year: currentYear, companyId: params.id });
             setCurrentBalanceAccounts(currentBalance);
@@ -143,12 +141,14 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
             setPreviousBalanceAccounts(previousBalance);
         } catch (error) {
             console.error('Erro ao buscar dados do balancete:', error);
+            showToast('error', 'Erro', 'Falha ao carregar dados do balancete');
         }
-    }
+    }, [currentYear, params.id, showToast]);
 
-    useEffect(()=> {
+    // Corrigir o useEffect - remover handleUpload das dependências
+    useEffect(() => {
         getBalanceteData();
-    }, [handleUpload])
+    }, [getBalanceteData]); // Apenas getBalanceteData como dependência
 
     return (
         <div className="grid">
@@ -162,7 +162,7 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
                                     <span>Ano Referencia:</span>
                                     <Calendar
                                         value={date}
-                                        onChange={(e) => setDate(e.value)}
+                                        onChange={(e) => setDate(e.value as Date)}
                                         view="year"
                                         dateFormat="yy"
                                         showIcon
@@ -185,16 +185,25 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
                                         auto
                                     />
                                 </div>
-                                
                             </div>
                         </div>
                     </div>
                 </Card>
+                
                 <div className="card mt-3">
-                    <BalanceTable balanceAccounts={currentBalanceAccounts} year={currentYear} title={`Balancete Atual - ${currentYear}`} />
+                    <BalanceTable 
+                        balanceAccounts={currentBalanceAccounts} 
+                        year={currentYear} 
+                        title={`Balancete Atual - ${currentYear}`} 
+                    />
                 </div>
+                
                 <div className="card mt-3">
-                    <BalanceTable balanceAccounts={previousBalanceAccounts} year={currentYear -1} title={`Balancete Anterior - ${currentYear -1}`} />
+                    <BalanceTable 
+                        balanceAccounts={previousBalanceAccounts} 
+                        year={currentYear - 1} 
+                        title={`Balancete Anterior - ${currentYear - 1}`} 
+                    />
                 </div>
             </div>
         </div>

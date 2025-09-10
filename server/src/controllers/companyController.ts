@@ -49,6 +49,16 @@ export const checkCompanyPlan = async (req: Request, res: Response) => {
   }
 }
 
+export const updateCompanyPlan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const updatedPlan = await companyService.updateCompanyPlan(id)
+    res.json({ planOfCountsAgrocontar: updatedPlan })
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : error });
+  }
+}
+
 export const listUserCompanies = async (req: Request, res: Response) => {
 
   try {

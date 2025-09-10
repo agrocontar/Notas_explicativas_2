@@ -3,6 +3,7 @@ export interface AccountValidationResult {
   invalidAccounts: string[];
   validData: BalanceteRow[];
   mappings?: MappedAccount[];
+  usesStandardPlan: boolean;
 }
 
 export interface CompanyAccount {

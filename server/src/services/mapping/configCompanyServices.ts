@@ -133,3 +133,32 @@ export const deleteOneConfigCompany = async (companyId: string, accountingAccoun
 
   return { message: "Configuração deletada com sucesso!" }
 }
+
+export const deleteConfigNotMappedOfCompany = async (companyId: string) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
+  const deletedConfigs = await prisma.configCompany.deleteMany({
+    where: {
+      companyId,
+      // Filtra apenas as configurações que não têm mapeamento
+      ConfigMapping: {
+        none: {} // Nenhum mapeamento relacionado existe
+      }
+    }
+  })
+
+  return deletedConfigs
+}
+
+export const deleteConfigCompany = async (companyId: string) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
+
+  const deletedConfigs = await prisma.configCompany.deleteMany({
+    where: {
+      companyId
+    }
+  })
+
+  return deletedConfigs
+}

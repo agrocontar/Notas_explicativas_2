@@ -11,6 +11,7 @@ router.delete("/:id", authMiddleware,requireAdmin, companyController.deleteCompa
 
 router.get("/user/", authMiddleware, companyController.listUserCompanies)
 router.get("/plan/:id", authMiddleware, companyController.checkCompanyPlan)
+router.put("/plan/:id", authMiddleware, companyController.updateCompanyPlan)
 
 
 export default router;

@@ -5,10 +5,7 @@ export const validateAccountingAccounts = async (
   balanceteData: BalanceteRow[],
   companyId: string
 ): Promise<AccountValidationResult> => {
-  try {
-    // Buscar contas da empresa via API
-    const companyMappedAccounts = await fetchCompanyAccounts(companyId);
-    
+  try {    
     // Buscar contas padrão do sistema via API
     const defaultAccounts = await fetchDefaultAccounts();
     

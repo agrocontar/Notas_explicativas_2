@@ -38,6 +38,17 @@ export const listCompanies = async (_: Request, res: Response) => {
   res.json(companies)
 }
 
+export const checkCompanyPlan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const plan = await companyService.checkCompanyPlan(id)
+    res.json({ planOfCountsAgrocontar: plan })
+    
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : error });
+  }
+}
+
 export const listUserCompanies = async (req: Request, res: Response) => {
 
   try {

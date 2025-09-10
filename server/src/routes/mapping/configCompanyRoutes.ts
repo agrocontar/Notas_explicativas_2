@@ -11,6 +11,7 @@ router.post("/company", authMiddleware ,configCompany.createConfig);
 router.get("/company/:id", authMiddleware, configCompany.listConfigCompany);
 router.put("/company", authMiddleware, configCompany.updateConfigCompany);
 router.delete("/company/:id", authMiddleware, configCompany.deleteConfigCompany);
+router.delete("/company/notMapped/:id", authMiddleware, configCompany.deleteConfigNotMappedOfCompany);
 
 // mapping routes
 router.post("/mapping", authMiddleware ,configMapping.createMapping);

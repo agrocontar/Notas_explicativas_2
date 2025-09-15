@@ -48,6 +48,7 @@ model Company {
   balancetes BalanceteData[]
   config     ConfigCompany[]
   mappings   ConfigMapping[]
+  balancos   Balanco[]
 }
 
 /// Dados de balancete enviados pelos clientes, serão normalizados usando o de/para
@@ -109,4 +110,30 @@ model ConfigTemplate {
   createdAt         DateTime @default(now())
 
   ConfigMapping ConfigMapping[]
+}
+
+
+/// Tabela de Balanço para agrupamento de contas contábeis
+model Balanco {
+  id                String   @id @default(uuid())
+  name              String
+  group             BalancoGroup
+  accountingAccounts String[] // Array de códigos contábeis
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([group])
+}
+
+/// Grupos do balanço patrimonial
+enum BalancoGroup {
+  ATIVO_CIRCULANTE
+  ATIVO_NAO_CIRCULANTE
+  PASSIVO_CIRCULANTE
+  PASSIVO_NAO_CIRCULANTE
+  PATRIMONIO_LIQUIDO
 }

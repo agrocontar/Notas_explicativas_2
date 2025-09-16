@@ -48,7 +48,6 @@ model Company {
   balancetes BalanceteData[]
   config     ConfigCompany[]
   mappings   ConfigMapping[]
-  balancos   Balanco[]
 }
 
 /// Dados de balancete enviados pelos clientes, serão normalizados usando o de/para
@@ -113,19 +112,14 @@ model ConfigTemplate {
 }
 
 
-/// Tabela de Balanço para agrupamento de contas contábeis
-model Balanco {
-  id                String   @id @default(uuid())
-  name              String
+model BalancoTemplate {
+  id                Int     @id @default(autoincrement())
+  name              String  
   group             BalancoGroup
-  accountingAccounts String[] // Array de códigos contábeis
+  accountingAccounts String[] 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@index([companyId])
   @@index([group])
 }
 

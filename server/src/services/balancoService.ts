@@ -16,34 +16,11 @@ export interface CreateBalancoData {
   name: string
   group: string
   accountingAccounts: string[]
-  companyId: string
 }
 
 
 export const createBalanco = async (data: CreateBalancoData) => {
   try {
-    // Verificar se a empresa existe
-    const company = await prisma.company.findUnique({
-      where: {
-        id: data.companyId
-      }
-    })
-
-    if (!company) {
-      throw new NotFoundError('Empresa não encontrada!')
-    }
-
-    // Verificar se já existe um balanço com o mesmo nome para esta empresa
-    const existingBalanco = await prisma.balanco.findFirst({
-      where: {
-        companyId: data.companyId,
-        name: data.name
-      }
-    })
-
-    if (existingBalanco) {
-      throw new Error('Já existe um balanço com este nome para esta empresa!')
-    }
 
     // Validar se o grupo é válido
     const validGroups = ['ATIVO_CIRCULANTE', 'ATIVO_NAO_CIRCULANTE', 'PASSIVO_CIRCULANTE', 'PASSIVO_NAO_CIRCULANTE', 'PATRIMONIO_LIQUIDO']
@@ -58,12 +35,11 @@ export const createBalanco = async (data: CreateBalancoData) => {
     }
 
     // Criar o balanço
-    const balanco = await prisma.balanco.create({
+    const balanco = await prisma.balancoTemplate.create({
       data: {
         name: data.name,
         group: data.group as any, // Cast para o enum do Prisma
         accountingAccounts: data.accountingAccounts,
-        companyId: data.companyId
       }
     })
 
@@ -85,17 +61,14 @@ export const createBalanco = async (data: CreateBalancoData) => {
 export const listBalancoWithTotals = async (data: { companyId: string, year: number }) => {
   try {
     // Buscar todos os itens de balanço da empresa
-    const balancos = await prisma.balanco.findMany({
-      where: {
-        companyId: data.companyId
-      },
+    const balancos = await prisma.balancoTemplate.findMany({
       orderBy: {
         group: 'asc'
       }
     })
 
     if (!balancos || balancos.length === 0) {
-      throw new NotFoundError('Nenhum item de balanço encontrado para esta empresa!')
+      throw new NotFoundError('Nenhum item de balanço encontrado!')
     }
 
     // Buscar todos os balancetes do ano especificado
@@ -110,12 +83,14 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
       throw new NotFoundError('Nenhum balancete encontrado para o ano especificado!')
     }
 
-    // Calcular o total para cada item do balanço
+     // Calcular o total para cada item do balanço
     const balancosWithTotals: BalancoWithTotal[] = await Promise.all(
       balancos.map(async (balanco: any) => {
-        // Filtrar balancetes que possuem accountingAccount no array do balanço
+        // Filtrar balancetes cuja accountingAccount COMEÇA com algum dos códigos do array
         const balancetesFiltrados = balancetes.filter(balancete =>
-          balanco.accountingAccounts.includes(balancete.accountingAccount)
+          balanco.accountingAccounts.some((accountCode: string) =>
+            balancete.accountingAccount.startsWith(accountCode)
+          )
         )
 
         // Somar os currentBalance dos balancetes filtrados
@@ -125,7 +100,9 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
 
         return {
           ...balanco,
-          total
+          total,
+          // Opcional: incluir quantidade de contas encontradas para debug
+          contasEncontradas: balancetesFiltrados.length
         }
       })
     )
@@ -139,10 +116,7 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
 
 export const listBalancosByCompany = async (companyId: string) => {
   try {
-    const balancos = await prisma.balanco.findMany({
-      where: {
-        companyId,
-      },
+    const balancos = await prisma.balancoTemplate.findMany({
       orderBy: {
         createdAt: 'desc'
       }

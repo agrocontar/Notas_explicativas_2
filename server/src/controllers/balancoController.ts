@@ -5,7 +5,6 @@ import z from "zod";
 import { Request, Response } from "express";
 
 const balancoSchema = z.object({
-  companyId: z.string().uuid(),
   name: z.string().min(1),
   group: z.enum(['ATIVO_CIRCULANTE', 'ATIVO_NAO_CIRCULANTE', 'PASSIVO_CIRCULANTE', 'PASSIVO_NAO_CIRCULANTE', 'PATRIMONIO_LIQUIDO']),
   accountingAccounts: z.array(z.string().min(1)).min(1)
@@ -29,3 +28,29 @@ export const createBalanco = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao salvar balancete" });
   }
 };
+
+const listBalancoTotalSchema = z.object({
+  year: z.number(),
+  companyId: z.string()
+})
+
+export const listBalancoTotal = async (req: Request, res: Response) => {
+
+  try{
+    const body = req.body
+    const parsed = listBalancoTotalSchema.parse(body)
+    const {companyId, year} = parsed
+    const result = await balancoService.listBalancoWithTotals({companyId, year})
+    
+    res.json(result)
+  }catch(error){
+    if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: handleZodError(error) });
+      }
+      if (error instanceof NotFoundError) {
+      return res.status(404).json({ error: error.message });
+    }
+    console.error(error);
+    res.status(500).json({ error: "Erro ao listar balancete" });
+  }
+}

@@ -5,6 +5,7 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 const router = Router();
 
 router.post("/", authMiddleware ,balancoController.createBalanco);
+router.get("/", authMiddleware ,balancoController.listBalancoTotal);
 
 
 export default router;

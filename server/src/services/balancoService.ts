@@ -1,5 +1,6 @@
 import { prisma } from "../prismaClient"
 import { NotFoundError } from "../utils/errors"
+import { normalizeAccountingAccount } from "../utils/normalizeAccountingAccount"
 
 export interface BalancoWithTotal {
   id: string
@@ -110,14 +111,14 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
         // Filtrar balancetes do ano atual
         const balancetesAnoAtualFiltrados = balancetesAnoAtual.filter(balancete =>
           balanco.accountingAccounts.some((accountCode: string) =>
-            balancete.accountingAccount.startsWith(accountCode)
+            balancete.accountingAccount === normalizeAccountingAccount(accountCode)
           )
         )
 
         // Filtrar balancetes do ano anterior
         const balancetesAnoAnteriorFiltrados = balancetesAnoAnterior.filter(balancete =>
           balanco.accountingAccounts.some((accountCode: string) =>
-            balancete.accountingAccount.startsWith(accountCode)
+            balancete.accountingAccount === normalizeAccountingAccount(accountCode)
           )
         )
 
@@ -132,10 +133,11 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
 
         return {
           ...balanco,
+          accountingAccounts: balanco.accountingAccounts.map((accountCode:any)  => normalizeAccountingAccount(accountCode)),
           totalCurrentYear,
           totalPreviousYear,
           accountingsFoundCurrentYear: balancetesAnoAtualFiltrados.length,
-          accountingsFoundPreviousYear: balancetesAnoAnteriorFiltrados.length
+          accountingsFoundPreviousYear: balancetesAnoAnteriorFiltrados
         }
       })
     )
@@ -146,6 +148,8 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
     throw error
   }
 }
+
+
 export const listBalancosByCompany = async (companyId: string) => {
   try {
     const balancos = await prisma.balancoTemplate.findMany({

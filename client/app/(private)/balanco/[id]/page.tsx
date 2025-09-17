@@ -15,7 +15,7 @@ const BalancoPage = () => {
   const [loading, setLoading] = useState(true);
   const params = useParams();
   const year = new Date().getFullYear();
-  const [showCents, setShowCents] = useState(false);
+  const [showCents, setShowCents] = useState(true);
 
   const fetchBalances = async () => {
     try {
@@ -107,12 +107,12 @@ const BalancoPage = () => {
 
           {/* Ativo Circulante */}
           <div className="mb-4">
-            <BalancoTable balances={balances} year={year} group={'ATIVO_CIRCULANTE'} />
+            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'ATIVO_CIRCULANTE'} />
           </div>
 
           {/* Ativo Não Circulante */}
           <div className="mb-4">
-            <BalancoTable balances={balances} year={year} group={'ATIVO_NAO_CIRCULANTE'} />
+            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'ATIVO_NAO_CIRCULANTE'} />
           </div>
         </div>
 
@@ -122,12 +122,12 @@ const BalancoPage = () => {
 
           {/* Passivo Circulante */}
           <div className="mb-4">
-            <BalancoTable balances={balances} year={year} group={'PASSIVO_CIRCULANTE'} />
+            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'PASSIVO_CIRCULANTE'} />
           </div>
 
           {/* Passivo Não Circulante */}
           <div className="mb-4">
-            <BalancoTable balances={balances} year={year} group={'PASSIVO_NAO_CIRCULANTE'} />
+            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'PASSIVO_NAO_CIRCULANTE'} />
           </div>
         </div>
 
@@ -137,7 +137,7 @@ const BalancoPage = () => {
 
           {/* Patrimônio Líquido */}
           <div>
-            <BalancoTable balances={balances} year={year} group={'PATRIMONIO_LIQUIDO'} />
+            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'PATRIMONIO_LIQUIDO'} />
           </div>
         </div>
 
@@ -154,14 +154,5 @@ const BalancoPage = () => {
     </div>
   );
 }
-
-// Função auxiliar para formatação de moeda
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(value);
-};
 
 export default BalancoPage;

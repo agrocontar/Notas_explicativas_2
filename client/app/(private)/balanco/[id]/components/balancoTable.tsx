@@ -1,16 +1,14 @@
 'use client'
 import { Balanco } from "../../types";
 
-// Formata para moeda BRL
-const formatCurrency = (value: string | number) => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(Number(value));
-};
+interface BalancoTableProps {
+  balances: Balanco[];
+  year: number;
+  group: string;
+  formatCurrency: (value: number) => string;
+}
 
-const BalancoTable = ({ balances, year, group }: any) => {
+const BalancoTable = ({ balances, year, group, formatCurrency }: BalancoTableProps) => {
   console.log('balances no table', balances);
 
   let titulo = '';

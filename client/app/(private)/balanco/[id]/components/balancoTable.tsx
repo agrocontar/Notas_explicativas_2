@@ -1,9 +1,7 @@
-import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
-import { useRef } from "react";
+'use client'
 import { Balanco } from "../../types";
 
-//Formata para moeda BRL
+// Formata para moeda BRL
 const formatCurrency = (value: string | number) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -12,53 +10,69 @@ const formatCurrency = (value: string | number) => {
   }).format(Number(value));
 };
 
-const BalancoTable = ({ balances , year, group}: any) => {
-  const dt = useRef<DataTable<any>>(null);
+const BalancoTable = ({ balances, year, group }: any) => {
+  console.log('balances no table', balances);
 
   let titulo = '';
-  if (group == 'ATIVO_CIRCULANTE') {titulo = 'Ativo Circulante';}
-  else if (group == 'ATIVO_NAO_CIRCULANTE') {titulo = 'Ativo Não Circulante';}
-  else if (group == 'PASSIVO_CIRCULANTE') {titulo = 'Passivo Circulante';}
-  else if (group == 'PASSIVO_NAO_CIRCULANTE') {titulo = 'Passivo Não Circulante';}
-  else if (group == 'PATRIMONIO_LIQUIDO') {titulo = 'Patrimônio Líquido';}
-  else {titulo = 'Não agrupado';}
+  if (group === 'ATIVO_CIRCULANTE') { titulo = 'Ativo Circulante'; }
+  else if (group === 'ATIVO_NAO_CIRCULANTE') { titulo = 'Ativo Não Circulante'; }
+  else if (group === 'PASSIVO_CIRCULANTE') { titulo = 'Passivo Circulante'; }
+  else if (group === 'PASSIVO_NAO_CIRCULANTE') { titulo = 'Passivo Não Circulante'; }
+  else if (group === 'PATRIMONIO_LIQUIDO') { titulo = 'Patrimônio Líquido'; }
+  else { titulo = 'Não agrupado'; }
 
-    const nameTemplate = (rowData: Balanco) => <span>{rowData.name}</span>;
-    const atualTemplate = (rowData: Balanco) => <span>{formatCurrency(rowData.totalCurrentYear)}</span>;
-    const anteriorTemplate = (rowData: Balanco) => <span>{formatCurrency(rowData.totalPreviousYear)}</span>;
+  const filteredBalances = balances?.filter((bal: Balanco) => bal.group === group) || [];
 
-    const header = (
-      <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-        <h5 className="m-0">{titulo}</h5>
+  // Calcular totais
+  const totalAnoAtual = filteredBalances.reduce((sum: number, bal: Balanco) => sum + bal.totalCurrentYear, 0);
+  const totalAnoAnterior = filteredBalances.reduce((sum: number, bal: Balanco) => sum + bal.totalPreviousYear, 0);
+
+  if (filteredBalances.length === 0) {
+    return (
+      <div className="border-1 surface-border border-round p-4">
+        <h3 className="text-lg font-medium mb-3">{titulo}</h3>
+        <p className="text-color-secondary">Nenhum dado encontrado para este grupo.</p>
       </div>
     );
-
-    const filteredBalances = balances?.filter((bal: Balanco) => bal.group === group) || [];
+  }
 
   return (
-    <DataTable
-      ref={dt}
-      value={filteredBalances}
-      // selection={selectedUsers}
-      // onSelectionChange={(e) => setSelectedUsers(e.value as any)}
-      paginator
-      rows={5}
-      rowsPerPageOptions={[5, 10, 25]}
-      className="datatable-responsive"
-      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-      currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} Balancos"
-      emptyMessage="Nenhum Balanco encontrado."
-      header={header}
-      responsiveLayout="scroll"
-      filterDisplay="row"
-      
-    >
+    <div className="border-1 surface-border border-round p-4">
+      <h3 className="text-lg font-medium mb-4">{titulo}</h3>
 
-      <Column field="name" header="Nomenclatura" sortable body={nameTemplate} headerStyle={{ minWidth: '15rem' }} />
-      <Column field="totalCurrentYear" header={year} body={atualTemplate} sortable />
-      <Column field="totalPreviousYear" header={year - 1} body={anteriorTemplate} sortable />
-    </DataTable>
-  )
+      {/* Cabeçalho da tabela */}
+      <div className="grid mb-2 font-semibold border-bottom-1 surface-border pb-2">
+        <div className="col-6">Nomenclatura</div>
+        <div className="col-3 text-right">{year}</div>
+        <div className="col-3 text-right">{year - 1}</div>
+      </div>
+
+      {/* Linhas dos itens */}
+      {filteredBalances.map((balanco: Balanco) => (
+        <div key={balanco.id} className="grid border-bottom-1 surface-border py-3">
+          <div className="col-6">{balanco.name}</div>
+          <div className="col-3 text-right text-blue-600">
+            {formatCurrency(balanco.totalCurrentYear)}
+          </div>
+          <div className="col-3 text-right text-blue-600">
+            {formatCurrency(balanco.totalPreviousYear)}
+          </div>
+        </div>
+      ))}
+
+      {/* Linha de totais */}
+      <div className="grid font-bold pt-3 border-top-2 surface-border mt-2">
+        <div className="col-6">Total {titulo}</div>
+        <div className="col-3 text-right text-blue-600">
+          {formatCurrency(totalAnoAtual)}
+        </div>
+        <div className="col-3 text-right text-blue-600">
+          {formatCurrency(totalAnoAnterior)}
+        </div>
+      </div>
+
+    </div>
+  );
 }
 
 export default BalancoTable;

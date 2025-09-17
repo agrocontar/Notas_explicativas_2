@@ -39,6 +39,7 @@
     "group": "ATIVO_CIRCULANTE",
     "accountingAccounts": ["1134"]
   },
+  
   {
     "name": "Outras contas a receber",
     "group": "ATIVO_NAO_CIRCULANTE",

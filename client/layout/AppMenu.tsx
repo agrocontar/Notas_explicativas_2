@@ -39,7 +39,7 @@ const AppMenu = () => {
         icon: 'pi pi-fw pi-building',
         items: [
             { label: 'Notas Explicativas', icon: 'pi pi-fw pi-bookmark', to: '/'},
-            { label: 'Balanço', icon: 'pi pi-fw pi-bookmark', to: '/'},
+            { label: 'Balanço', icon: 'pi pi-fw pi-bookmark', to: '/balanco'},
             { label: 'DRE', icon: 'pi pi-fw pi-bookmark', to: '/'},
             { label: 'DMPL', icon: 'pi pi-fw pi-bookmark', to: '/'},
             { label: 'DFC', icon: 'pi pi-fw pi-bookmark', to: '/'},

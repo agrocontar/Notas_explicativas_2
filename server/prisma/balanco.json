@@ -1,0 +1,132 @@
+[
+  {
+    "name": "Caixa e equivalentes de caixa",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["1111", "1112"]
+  },
+  {
+    "name": "Aplicações financeiras",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["1113"]
+  },
+  {
+    "name": "Clientes a receber",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["112"]
+  },
+  {
+    "name": "Adiantamentos",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["1113"]
+  },
+  {
+    "name": "Despesas antecipadas",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["1132", "1133"]
+  },
+  {
+    "name": "Estoques",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["115"]
+  },
+  {
+    "name": "Impostos a recuperar",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["1134"]
+  },
+  {
+    "name": "Outras Contas a Receber",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["1134"]
+  },
+  {
+    "name": "Outras contas a receber",
+    "group": "ATIVO_NAO_CIRCULANTE",
+    "accountingAccounts": []
+  },
+  {
+    "name": "Investimentos",
+    "group": "ATIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["121", "122"]
+  },
+  {
+    "name": "Imobilizado",
+    "group": "ATIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["123"]
+  },
+  {
+    "name": "Intangível",
+    "group": "ATIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["124"]
+  },
+  {
+    "name": "Obrigações trabalhistas",
+    "group": "PASSIVO_CIRCULANTE",
+    "accountingAccounts": ["211101"]
+  },
+  {
+    "name": "Obrigações fiscais",
+    "group": "PASSIVO_CIRCULANTE",
+    "accountingAccounts": ["211103"]
+  },
+  {
+    "name": "Fornecedores",
+    "group": "PASSIVO_CIRCULANTE",
+    "accountingAccounts": ["211102"]
+  },
+  {
+    "name": "Empréstimos e financiamentos",
+    "group": "PASSIVO_CIRCULANTE",
+    "accountingAccounts": ["211104"]
+  },
+  {
+    "name": "Adiantamentos de clientes",
+    "group": "PASSIVO_CIRCULANTE",
+    "accountingAccounts": ["215", "216"]
+  },
+  {
+    "name": "Outras Obrigações",
+    "group": "PASSIVO_CIRCULANTE",
+    "accountingAccounts": ["211106"]
+  },
+  {
+    "name": "Provisões",
+    "group": "PASSIVO_CIRCULANTE",
+    "accountingAccounts": ["211107"]
+  },
+  {
+    "name": "Obrigações fiscais",
+    "group": "PASSIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["221104"]
+  },
+  {
+    "name": "Empréstimos e financiamentos",
+    "group": "PASSIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["221101"]
+  },
+  {
+    "name": "Outras Obrigações",
+    "group": "PASSIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["221102", "221106"]
+  },
+  {
+    "name": "Capital social",
+    "group": "PATRIMONIO_LIQUIDO",
+    "accountingAccounts": ["231101"]
+  },
+  {
+    "name": "Ajustes de avaliação patrimonial",
+    "group": "PATRIMONIO_LIQUIDO",
+    "accountingAccounts": ["231106"]
+  },
+  {
+    "name": "Reservas de lucros",
+    "group": "PATRIMONIO_LIQUIDO",
+    "accountingAccounts": ["231102", "231103", "231104", "231107"]
+  },
+  {
+    "name": "Lucro / Prejuízos acumulados",
+    "group": "PATRIMONIO_LIQUIDO",
+    "accountingAccounts": []
+  }
+]

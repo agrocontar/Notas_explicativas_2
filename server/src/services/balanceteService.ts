@@ -2,23 +2,20 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "../prismaClient";
 import { NotFoundError } from "../utils/errors";
 import { processMappedData } from "../utils/processMappeddata";
-
 interface uploadInput {
   companyId: string
   referenceDate: number
-  balanceteData:
-    { 
-      accountingAccount: string,
-      accountName: string,
-      previousBalance: number,
-      debit: number,
-      credit: number,
-      monthBalance: number,
-      currentBalance: number,
+  balanceteData: {
+    accountingAccount: string,
+    accountName: string,
+    previousBalance: number,
+    debit: number,
+    credit: number,
+    monthBalance: number,
+    currentBalance: number,
   }[]
 }
 
-// Create Balancetes
 // Create Balancetes
 export const createBalancete = async (data: uploadInput) => {
   const company = await prisma.company.findUnique({
@@ -27,16 +24,16 @@ export const createBalancete = async (data: uploadInput) => {
 
   if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!");
 
-  // Buscar mapeamentos da empresa
-  const mappings = await prisma.configMapping.findMany({
-    where: { companyId: data.companyId },
-    include: {
-      defaultAccount: true
-    }
-  });
+  // REMOVER o processamento de mapeamentos - os dados já foram processados no frontend
+  // const mappings = await prisma.configMapping.findMany({
+  //   where: { companyId: data.companyId },
+  //   include: {
+  //     defaultAccount: true
+  //   }
+  // });
 
-  // Processar mapeamentos e somar valores
-  const processedData = processMappedData(data.balanceteData, mappings);
+  // REMOVER - não processar novamente
+  // const processedData = processMappedData(data.balanceteData, mappings);
 
   // Verificar se já existe balancete para esta empresa e data de referência
   const existingBalancete = await prisma.balanceteData.findFirst({
@@ -56,12 +53,12 @@ export const createBalancete = async (data: uploadInput) => {
     });
   }
 
-  // Criar os novos registros do balancete
+  // Criar os novos registros do balancete - usar os dados JÁ PROCESSADOS do frontend
   const balances = await prisma.balanceteData.createMany({
-    data: processedData.map((row) => ({
+    data: data.balanceteData.map((row) => ({
       companyId: data.companyId,
       referenceDate: data.referenceDate,
-      accountingAccount: row.accountingAccount.replace(/\W/g, ""),
+      accountingAccount: row.accountingAccount, // Já está normalizado no frontend
       accountName: row.accountName,
       previousBalance: row.previousBalance,
       debit: row.debit,
@@ -73,7 +70,6 @@ export const createBalancete = async (data: uploadInput) => {
 
   return balances;
 };
-
 // Search of Company and year
 export const listBalancetePerYear = async (data: {companyId: string, year:number}) => {
 

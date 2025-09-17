@@ -4,7 +4,7 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-router.post("/", authMiddleware ,balanceteController.createBalancete);
+router.post("/", authMiddleware ,balanceteController.createBalanceteController);
 router.patch("/", authMiddleware, balanceteController.listBalancetePerYear)
 router.get("/:companyId", authMiddleware, balanceteController.listBalancetesCompany)
 

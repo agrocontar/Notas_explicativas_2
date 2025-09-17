@@ -101,6 +101,8 @@ export const readExcelFile = async (file: File, companyId: string, date: Date): 
           currentBalance: parseFinancialNumber(row[columnMapping.saldoAtual])
         };
 
+        console.log(`Linha ${i + 1}: Original: "${String(row[columnMapping.contaContabil] || '').trim()}" -> Normalizado: "${rowData.accountingAccount}"`);
+
         // Validar dados básicos - pelo menos a conta contábil deve existir
         if (!rowData.accountingAccount.trim()) {
           console.log(`Linha ${i + 1} sem conta contábil, pulando...`);

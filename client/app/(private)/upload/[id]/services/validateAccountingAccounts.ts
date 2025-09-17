@@ -16,102 +16,85 @@ export const validateAccountingAccounts = async (
     const companyPlan = companyPlanResult.planOfCountsAgrocontar;
     // Buscar mapeamentos da empresa
     const companyMappings = await fetchCompanyMappings(companyId);
+    // Buscar contas da empresa
+    const existingCompanyAccounts = await fetchCompanyAccounts(companyId);
 
     const invalidAccountCodes: string[] = [];
-    const invalidAccountsWithNames: CompanyAccount[] = [];
+    const accountsToCreate: CompanyAccount[] = [];
     const validData: BalanceteRow[] = [];
 
-    // Criar um Set para busca mais eficiente
-    const validAccountsSet = new Set<string>();
-
-    // SEMPRE adicionar contas padrão do sistema (ambos os casos)
-    defaultAccounts.forEach(account => {
-      validAccountsSet.add(account.accountingAccount);
+    // Criar conjuntos para busca eficiente
+    const defaultAccountsSet = new Set(defaultAccounts.map(acc => acc.accountingAccount));
+    const companyAccountsSet = new Set(existingCompanyAccounts.map(acc => acc.accountingAccount));
+    const mappingsMap = new Map<string, MappedAccount>();
+    companyMappings.forEach(mapping => {
+      mappingsMap.set(mapping.companyAccount, mapping);
     });
 
-    // Se a empresa utiliza plano padrão (companyPlan = true)
-    if (companyPlan) {
-      // Adicionar contas mapeadas da empresa
-      companyMappings.forEach(account => {
-        validAccountsSet.add(account.companyAccount);
-      });
+    // Para cada conta no balancete
+    for (const row of balanceteData) {
+      const accountCode = row.accountingAccount.trim();
+      
+      console.log(`Validando conta: ${accountCode}`);
 
-      console.log('Contas válidas para validação:', Array.from(validAccountsSet).slice(0, 10));
+      // REGRA 2.1.3 e 2.2.3: Se a conta tem mapeamento, é válida
+      if (mappingsMap.has(accountCode)) {
+        console.log(`Conta ${accountCode} tem mapeamento direto`);
+        validData.push(row);
+        continue;
+      }
 
-      // Validar cada conta contra o conjunto válido
-      balanceteData.forEach(row => {
-        const accountCode = row.accountingAccount.trim();
+      // REGRA 2.1.2: Se empresa usa plano padrão E conta existe no template
+      if (companyPlan && defaultAccountsSet.has(accountCode)) {
+        console.log(`Conta ${accountCode} existe no template (plano padrão)`);
+        validData.push(row);
+        continue;
+      }
 
-        if (validAccountsSet.has(accountCode)) {
-          validData.push(row);
-        } else {
-          if (!invalidAccountCodes.includes(accountCode)) {
-            invalidAccountCodes.push(accountCode);
-            invalidAccountsWithNames.push({
-              accountingAccount: accountCode,
-              accountName: row.accountName.trim() || 'Conta não mapeada'
-            });
-          }
-        }
-      });
-    }
-    // Se a empresa NÃO utiliza plano padrão (companyPlan = false)
-    else {
-      // Coletar todas as contas únicas para verificação
-      const uniqueAccounts = new Map<string, string>();
-      balanceteData.forEach(row => {
-        const accountCode = row.accountingAccount.trim();
-        if (!uniqueAccounts.has(accountCode)) {
-          uniqueAccounts.set(accountCode, row.accountName.trim() || 'Conta não mapeada');
-        }
-      });
+      // Verificar se a conta existe na configCompany (com código normalizado)
+      const accountExists = Array.from(companyAccountsSet).some(existingAccount => 
+        existingAccount.startsWith(accountCode) || accountCode.startsWith(existingAccount)
+      );
 
-      console.log('Contas únicas para validação:', Array.from(uniqueAccounts.keys()).slice(0, 10));
+      if (!accountExists) {
+        // Conta não existe na configCompany, precisa criar
+        console.log(`Conta ${accountCode} não existe, criando...`);
+        accountsToCreate.push({
+          accountingAccount: accountCode,
+          accountName: row.accountName.trim() || 'Conta não mapeada'
+        });
+      } else {
+        console.log(`Conta ${accountCode} já existe na empresa`);
+      }
 
-      // Verificar se as contas estão mapeadas
-      uniqueAccounts.forEach((accountName, accountCode) => {
-        const isMapped = companyMappings.some(mapping =>
-          mapping.companyAccount === accountCode
-        );
-
-        if (isMapped) {
-          // Se está mapeada, adicionar todas as linhas dessa conta aos dados válidos
-          balanceteData.filter(row => row.accountingAccount.trim() === accountCode)
-            .forEach(row => validData.push(row));
-        } else {
-          // Se não está mapeada, é inválida
-          invalidAccountCodes.push(accountCode);
-          invalidAccountsWithNames.push({
-            accountingAccount: accountCode,
-            accountName: accountName
-          });
-        }
-      });
+      // Adicionar à lista de inválidas (usuário precisa mapear)
+      if (!invalidAccountCodes.includes(accountCode)) {
+        invalidAccountCodes.push(accountCode);
+      }
     }
 
-    // Criar contas inválidas/novas automaticamente se houver (em background)
-    if (invalidAccountsWithNames.length > 0) {
+    // Criar contas automaticamente se houver
+    if (accountsToCreate.length > 0) {
       try {
-        // Primeiro, buscar as contas existentes da empresa
+        // Filtrar contas que já existem (pode haver conflito de normalização)
         const existingCompanyAccounts = await fetchCompanyAccounts(companyId);
         const existingAccountSet = new Set(existingCompanyAccounts.map(acc => acc.accountingAccount));
-
-        // Filtrar apenas as contas que realmente não existem
-        const accountsToCreate = invalidAccountsWithNames.filter(account =>
+        
+        const filteredAccountsToCreate = accountsToCreate.filter(account => 
           !existingAccountSet.has(account.accountingAccount)
         );
 
-        if (accountsToCreate.length > 0) {
+        if (filteredAccountsToCreate.length > 0) {
           createCompanyConfigs({
             companyId,
-            configs: accountsToCreate
+            configs: filteredAccountsToCreate
           })
-            .then(() => {
-              console.log(`✅ ${accountsToCreate.length} contas criadas automaticamente em background`);
-            })
-            .catch(createError => {
-              console.error('Erro ao criar contas automaticamente:', createError);
-            });
+          .then(() => {
+            console.log(`✅ ${filteredAccountsToCreate.length} contas criadas automaticamente em background`);
+          })
+          .catch(createError => {
+            console.error('Erro ao criar contas automaticamente:', createError);
+          });
         } else {
           console.log('📝 Todas as contas já existem, nenhuma criação necessária');
         }
@@ -120,8 +103,6 @@ export const validateAccountingAccounts = async (
       }
     }
 
-    // SEMPRE retornar isValid baseado na existência de contas não mapeadas
-    // (comportamento consistente independente do tipo de plano)
     const isValid = invalidAccountCodes.length === 0;
 
     return {

@@ -5,6 +5,13 @@ import * as balanceteService from '../services/balanceteService'
 import { handleZodError } from "../utils/handleZodError";
 import { NotFoundError } from "../utils/errors";
 
+
+const listBalancetePerYearSchema = z.object({
+  year: z.number(),
+  companyId: z.string()
+})
+
+
 const balanceteSchema = z.object({
   companyId: z.string().uuid(),
   referenceDate: z.number(),
@@ -21,21 +28,16 @@ const balanceteSchema = z.object({
   ),
 });
 
-const listBalancetePerYearSchema = z.object({
-  year: z.number(),
-  companyId: z.string()
-})
-
-export const createBalancete = async (req: Request, res: Response) => {
+export const createBalanceteController = async (req: Request, res: Response) => {
   try {
     const parsed = balanceteSchema.parse(req.body);
-    const result = await balanceteService.createBalancete(parsed)
+    const result = await balanceteService.createBalancete(parsed);
 
     res.json({ success: true, inserted: result.count });
   } catch (err) {
     if (err instanceof z.ZodError) {
-        return res.status(400).json({ errors: handleZodError(err) });
-      }
+      return res.status(400).json({ errors: handleZodError(err) });
+    }
     if (err instanceof NotFoundError) {
       return res.status(404).json({ error: err.message });
     }
@@ -43,7 +45,6 @@ export const createBalancete = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao salvar balancete" });
   }
 };
-
 
 export const listBalancetePerYear = async (req: Request, res: Response) => {
 

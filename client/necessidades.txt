@@ -7,3 +7,21 @@ Nome x = total de um array de contas do balancete
 futuramente as notas explicativas vai seguir um caminho parecido
 
 O BALANCO NÃO E INDIVIDUAL DE CADA EMPRESA, FAZER 1 TABELA PADRAO
+
+
+
+
+
+O erro se manteve, valide as duas funções se a regra abaixo não estiver sendo feita, altere os arquivos
+
+1-Ao realizar o upload, o sistema deve ler o arquivo excel
+2- Após ler o sistema irá validar: 
+        2.1 -Se o plano de contas da empresa estiver como true:
+              2.1.1 - caso a conta não exista na configTemplate ou não exista na configCompany ou existe na configCompany mas ainda não foi mapeada, ele deve criar automaticamente essa conta no configCompany para o usuário mapear posteriormente e retornar o erro
+              2.1.2 - caso a conta exista na configTemplate e não exista mapeamento o sistema cria a linha no balanceteData com os dados de valores da planilha mas com o name da configTemplate
+              2.1.3 - se a conta tiver mapeamento cria a linha no balanceteData com os dados de valores da planilha e com o nome e codigo da conta padrão mapeada
+        2.2 - Se o plano de contas da empresa estiver como false:
+              2.2.1 - caso a conta não exista na configTemplate ou não exista na configCompany ou existe na configCompany mas ainda não foi mapeada, ele deve criar automaticamente essa conta no configCompany para o usuário mapear posteriormente e retornar o erro
+              2.2.2 - caso a conta exista na configTemplate exista na configCompany mas não tem mapeamento, o sistema deve retornar o erro para o usuario ir la mapear 
+              2.1.3 - se a conta tiver mapeamento cria a linha no balanceteData com os dados de valores da planilha e com o nome e codigo da conta padrão mapeada
+

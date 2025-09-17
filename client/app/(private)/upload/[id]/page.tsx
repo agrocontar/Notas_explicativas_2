@@ -88,7 +88,8 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
             const processedData = processMappedAccounts(
                 validationResult.validData,
                 validationResult.mappings || [],
-                defaultAccounts
+                defaultAccounts,
+                validationResult.usesStandardPlan
             );
 
             // Preparar dados para envio

@@ -19,6 +19,9 @@ async function main() {
     return str
   }
 
+  // Deleta todas as configTemplate antes de inserir
+  await prisma.configTemplate.deleteMany()
+
   // Insere ConfigTemplate no banco
   await prisma.configTemplate.createMany({
     data: configs.map((row) => ({
@@ -63,6 +66,9 @@ async function main() {
       return normalized
     })
   }
+
+  // Deleta todas as balancoTemplate antes de inserir
+  await prisma.balancoTemplate.deleteMany()
 
   // Insere BalancoTemplate no banco
   await prisma.balancoTemplate.createMany({

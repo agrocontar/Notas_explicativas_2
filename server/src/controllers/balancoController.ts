@@ -10,6 +10,10 @@ const balancoSchema = z.object({
   accountingAccounts: z.array(z.string().min(1)).min(1)
 });
 
+const listBalancoTotalQuerySchema = z.object({
+  companyId: z.string().uuid('ID da empresa inválido'),
+  year: z.coerce.number().int('Ano deve ser um número inteiro').min(2000).max(2100)
+});
 
 export const createBalanco = async (req: Request, res: Response) => {
   try {
@@ -37,9 +41,8 @@ const listBalancoTotalSchema = z.object({
 export const listBalancoTotal = async (req: Request, res: Response) => {
 
   try{
-    const body = req.body
-    const parsed = listBalancoTotalSchema.parse(body)
-    const {companyId, year} = parsed
+    const parsed = listBalancoTotalQuerySchema.parse(req.query);
+    const { companyId, year } = parsed;
     const result = await balancoService.listBalancoWithTotals({companyId, year})
     
     res.json(result)

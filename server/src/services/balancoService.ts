@@ -58,9 +58,22 @@ export const createBalanco = async (data: CreateBalancoData) => {
 }
 
 
+export interface BalancoWithTotals {
+  id: number
+  name: string
+  group: string
+  accountingAccounts: string[]
+  createdAt: Date
+  updatedAt: Date
+  totalAnoAtual: number
+  totalAnoAnterior: number
+  contasEncontradasAnoAtual: number
+  contasEncontradasAnoAnterior: number
+}
+
 export const listBalancoWithTotals = async (data: { companyId: string, year: number }) => {
   try {
-    // Buscar todos os itens de balanço da empresa
+    // Buscar todos os itens de balanço
     const balancos = await prisma.balancoTemplate.findMany({
       orderBy: {
         group: 'asc'
@@ -71,38 +84,58 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
       throw new NotFoundError('Nenhum item de balanço encontrado!')
     }
 
-    // Buscar todos os balancetes do ano especificado
-    const balancetes = await prisma.balanceteData.findMany({
-      where: {
-        companyId: data.companyId,
-        referenceDate: data.year
-      }
-    })
+    // Buscar balancetes do ano atual e do ano anterior
+    const [balancetesAnoAtual, balancetesAnoAnterior] = await Promise.all([
+      prisma.balanceteData.findMany({
+        where: {
+          companyId: data.companyId,
+          referenceDate: data.year // Ano atual (2025)
+        }
+      }),
+      prisma.balanceteData.findMany({
+        where: {
+          companyId: data.companyId,
+          referenceDate: data.year - 1 // Ano anterior (2024)
+        }
+      })
+    ])
 
-    if (!balancetes || balancetes.length === 0) {
-      throw new NotFoundError('Nenhum balancete encontrado para o ano especificado!')
+    if (!balancetesAnoAtual.length && !balancetesAnoAnterior.length) {
+      throw new NotFoundError('Nenhum balancete encontrado para os anos especificados!')
     }
 
-     // Calcular o total para cada item do balanço
-    const balancosWithTotals: BalancoWithTotal[] = await Promise.all(
+    // Calcular os totais para cada item do balanço
+    const balancosWithTotals: BalancoWithTotals[] = await Promise.all(
       balancos.map(async (balanco: any) => {
-        // Filtrar balancetes cuja accountingAccount COMEÇA com algum dos códigos do array
-        const balancetesFiltrados = balancetes.filter(balancete =>
+        // Filtrar balancetes do ano atual
+        const balancetesAnoAtualFiltrados = balancetesAnoAtual.filter(balancete =>
+          balanco.accountingAccounts.some((accountCode: string) =>
+            balancete.accountingAccount.startsWith(accountCode)
+          )
+        )
+
+        // Filtrar balancetes do ano anterior
+        const balancetesAnoAnteriorFiltrados = balancetesAnoAnterior.filter(balancete =>
           balanco.accountingAccounts.some((accountCode: string) =>
             balancete.accountingAccount.startsWith(accountCode)
           )
         )
 
         // Somar os currentBalance dos balancetes filtrados
-        const total = balancetesFiltrados.reduce((sum, balancete) => {
+        const totalCurrentYear = parseFloat(balancetesAnoAtualFiltrados.reduce((sum, balancete) => {
           return sum + Number(balancete.currentBalance)
-        }, 0)
+        }, 0).toFixed(2))
+
+        const totalPreviousYear = parseFloat(balancetesAnoAnteriorFiltrados.reduce((sum, balancete) => {
+          return sum + Number(balancete.currentBalance)
+        }, 0).toFixed(2))
 
         return {
           ...balanco,
-          total,
-          // Opcional: incluir quantidade de contas encontradas para debug
-          contasEncontradas: balancetesFiltrados.length
+          totalCurrentYear,
+          totalPreviousYear,
+          accountingsFoundCurrentYear: balancetesAnoAtualFiltrados.length,
+          accountingsFoundPreviousYear: balancetesAnoAnteriorFiltrados.length
         }
       })
     )
@@ -113,7 +146,6 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
     throw error
   }
 }
-
 export const listBalancosByCompany = async (companyId: string) => {
   try {
     const balancos = await prisma.balancoTemplate.findMany({

@@ -89,23 +89,3 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
     throw error
   }
 }
-
-
-export const listBalancosByCompany = async (companyId: string) => {
-  try {
-    const balancos = await prisma.balancoTemplate.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
-
-    if (!balancos || balancos.length === 0) {
-      throw new NotFoundError('Nenhum item de balanço encontrado para esta empresa!')
-    }
-
-    return balancos
-  } catch (error) {
-    console.error('Error in listBalancosByCompany:', error)
-    throw error
-  }
-}

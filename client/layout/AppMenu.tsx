@@ -40,7 +40,7 @@ const AppMenu = () => {
         items: [
             { label: 'Notas Explicativas', icon: 'pi pi-fw pi-bookmark', to: '/'},
             { label: 'Balanço', icon: 'pi pi-fw pi-bookmark', to: `/balanco/${company.id}`},
-            { label: 'DRE', icon: 'pi pi-fw pi-bookmark', to: '/'},
+            { label: 'DRE', icon: 'pi pi-fw pi-bookmark', to: `/dre/${company.id}`},
             { label: 'DMPL', icon: 'pi pi-fw pi-bookmark', to: '/'},
             { label: 'DFC', icon: 'pi pi-fw pi-bookmark', to: '/'},
             { label: 'Plano de Contas', icon: 'pi pi-fw pi-cog', to: `/companyConfig/${company.id}`},

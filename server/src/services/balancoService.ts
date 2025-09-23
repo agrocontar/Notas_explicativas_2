@@ -20,45 +20,6 @@ export interface CreateBalancoData {
 }
 
 
-export const createBalanco = async (data: CreateBalancoData) => {
-  try {
-
-    // Validar se o grupo é válido
-    const validGroups = ['ATIVO_CIRCULANTE', 'ATIVO_NAO_CIRCULANTE', 'PASSIVO_CIRCULANTE', 'PASSIVO_NAO_CIRCULANTE', 'PATRIMONIO_LIQUIDO']
-    
-    if (!validGroups.includes(data.group)) {
-      throw new Error('Grupo inválido! Os grupos válidos são: ATIVO_CIRCULANTE, ATIVO_NAO_CIRCULANTE, PASSIVO_CIRCULANTE, PASSIVO_NAO_CIRCULANTE, PATRIMONIO_LIQUIDO')
-    }
-
-    // Validar se há accountingAccounts
-    if (!data.accountingAccounts || data.accountingAccounts.length === 0) {
-      throw new Error('É necessário informar pelo menos uma conta contábil!')
-    }
-
-    // Criar o balanço
-    const balanco = await prisma.balancoTemplate.create({
-      data: {
-        name: data.name,
-        group: data.group as any, // Cast para o enum do Prisma
-        accountingAccounts: data.accountingAccounts,
-      }
-    })
-
-    return balanco
-  } catch (error:any) {
-    console.error('Error in createBalanco:', error)
-    
-    // Se já for um erro conhecido, apenas propaga
-    if (error instanceof NotFoundError ) {
-      throw error
-    }
-    
-    // Para outros erros, lança um erro genérico
-    throw new Error('Erro ao criar balanço: ' + error.message)
-  }
-}
-
-
 export interface BalancoWithTotals {
   id: number
   name: string

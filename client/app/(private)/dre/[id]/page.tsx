@@ -6,31 +6,33 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { InputSwitch } from "primereact/inputswitch";
 import { Dre } from "../types";
+import Resumo from "./components/resumo";
+import DreTable from "./components/dreTable";
 
 
 const BalancoPage = () => {
   const toast = useRef<Toast>(null);
-  const [balances, setBalances] = useState<Dre[]>([]);
+  const [dre, setDre] = useState<Dre[]>([]);
   const [loading, setLoading] = useState(true);
   const params = useParams();
   const year = new Date().getFullYear();
   const [showCents, setShowCents] = useState(true);
 
-  const fetchBalances = async () => {
+  const fetchDre = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/balanco', {
+      const res = await api.get('/dre', {
         params: { companyId: params.id, year: year }
       });
 
       if (res.status >= 200 && res.status < 300) {
-        setBalances(res.data);
+        setDre(res.data);
       } else {
-        console.error('Erro ao buscar os balanços:', res.statusText);
+        console.error('Erro ao buscar a DRE:', res.statusText);
         toast.current?.show({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Erro ao buscar os balanços.',
+          detail: 'Erro ao buscar a DRE.',
           life: 3000,
         });
       }
@@ -49,7 +51,7 @@ const BalancoPage = () => {
 
   useEffect(() => {
     if (params.id) {
-      fetchBalances();
+      fetchDre();
     }
   }, [params.id]);
 
@@ -67,7 +69,7 @@ const BalancoPage = () => {
       <div className="flex justify-content-center align-items-center" style={{ height: '50vh' }}>
         <div className="text-center">
           <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
-          <p className="mt-3">Carregando balanços...</p>
+          <p className="mt-3">Carregando DRE...</p>
         </div>
       </div>
     );
@@ -82,7 +84,7 @@ const BalancoPage = () => {
         <div className="card mb-4">
           <div className="flex justify-content-between align-items-center">
             <div>
-              <h1 className="text-2xl font-bold m-0">Balanço Patrimonial</h1>
+              <h1 className="text-2xl font-bold m-0">DRE</h1>
               <span className="text-lg text-color-secondary">Ano: {year}</span>
             </div>
 
@@ -100,52 +102,62 @@ const BalancoPage = () => {
           </div>
         </div>
 
-        {/* ATIVO */}
+        {/* RECEITAS LIQUIDAS */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">ATIVO</h2>
+          <h2 className="text-xl font-semibold mb-3">RECEITAS LIQUIDAS</h2>
 
-          {/* Ativo Circulante */}
+          {/* Receitas Líquidas */}
           <div className="mb-4">
-            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'ATIVO_CIRCULANTE'} />
-          </div>
-
-          {/* Ativo Não Circulante */}
-          <div className="mb-4">
-            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'ATIVO_NAO_CIRCULANTE'} />
+            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'RECEITAS_LIQUIDAS'} />
           </div>
         </div>
 
-        {/* PASSIVO*/}
+        {/* CUSTOS */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">PASSIVO</h2>
+          <h2 className="text-xl font-semibold mb-3">CUSTOS</h2>
 
-          {/* Passivo Circulante */}
+          {/* Custos */}
           <div className="mb-4">
-            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'PASSIVO_CIRCULANTE'} />
+            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'CUSTOS'} />
           </div>
 
-          {/* Passivo Não Circulante */}
-          <div className="mb-4">
-            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'PASSIVO_NAO_CIRCULANTE'} />
-          </div>
         </div>
 
-        {/* PATRIMÔNIO LÍQUIDO */}
+        {/* DESPESAS OPERACIONAIS */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">PATRIMÔNIO LÍQUIDO</h2>
+          <h2 className="text-xl font-semibold mb-3">DESPESAS OPERACIONAIS</h2>
 
-          {/* Patrimônio Líquido */}
+          {/* Despesas Operacionais */}
           <div>
-            <BalancoTable formatCurrency={formatCurrency} balances={balances} year={year} group={'PATRIMONIO_LIQUIDO'} />
+            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'DESPESAS_OPERACIONAIS'} />
+          </div>
+        </div>
+
+        {/* RESULTADO FINANCEIRO */}
+        <div className="card mb-4">
+          <h2 className="text-xl font-semibold mb-3">RESULTADO FINANCEIRO</h2>
+
+          {/* Resultado Financeiro */}
+          <div>
+            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'RESULTADO_FINANCEIRO'} />
+          </div>
+        </div>
+
+        {/* IMPOSTOS */}
+        <div className="card mb-4">
+          <h2 className="text-xl font-semibold mb-3">IMPOSTOS</h2>
+          {/* Impostos */}
+          <div>
+            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'IMPOSTOS'} />
           </div>
         </div>
 
         {/* Resumo */}
         <div className="card">
           <h2 className="text-xl font-semibold mb-3">RESUMO {year}</h2>
-          <Resumo balances={balances} formatCurrency={formatCurrency} currentYear={true} />
+          <Resumo dre={dre} formatCurrency={formatCurrency} currentYear={true} />
           <h2 className="text-xl font-semibold mb-3">RESUMO {year - 1}</h2>
-          <Resumo balances={balances} formatCurrency={formatCurrency} currentYear={false} />
+          <Resumo dre={dre} formatCurrency={formatCurrency} currentYear={false} />
 
 
         </div>

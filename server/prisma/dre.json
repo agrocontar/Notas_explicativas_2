@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Receita com vendas de Mercadorias",
+    "group": "RECEITAS_LIQUIDAS",
+    "accountingAccounts": ["3111"]
+  },
+  {
+    "name": "Receita com Prestação de serviços",
+    "group": "RECEITAS_LIQUIDAS",
+    "accountingAccounts": ["3113"]
+  },
+  {
+    "name": "Deduções da receita",
+    "group": "RECEITAS_LIQUIDAS",
+    "accountingAccounts": ["312"]
+  },
+  {
+    "name": "Custos de Mercadorias Vendidas",
+    "group": "CUSTOS",
+    "accountingAccounts": ["4111"]
+  },
+
+  {
+    "name": "Despesas gerais e administrativas",
+    "group": "DESPESAS_OPERACIONAIS",
+    "accountingAccounts": ["421101","421102","421103","421104","421105","421108","421109","421110","421112","421113","421114"]
+  },{
+    "name": "Despesas Tributárias",
+    "group": "DESPESAS_OPERACIONAIS",
+    "accountingAccounts": ["421118"]
+  },{
+    "name": "Outras despesas",
+    "group": "DESPESAS_OPERACIONAIS",
+    "accountingAccounts": ["421120"]
+  },
+
+  {
+    "name": "Despesas financeiras",
+    "group": "RESULTADO_FINANCEIRO",
+    "accountingAccounts": ["4311"]
+  },
+  {
+    "name": "Receitas financeiras",
+    "group": "RESULTADO_FINANCEIRO",
+    "accountingAccounts": ["4312"]
+  },
+  {
+    "name": "IRRF a recolher/compensar",
+    "group": "IMPOSTOS",
+    "accountingAccounts": ["421120"]
+  },
+  {
+    "name": "CSLL a recolher/compensar",
+    "group": "IMPOSTOS",
+    "accountingAccounts": ["421120"]
+  }
+]

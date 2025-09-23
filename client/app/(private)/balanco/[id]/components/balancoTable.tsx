@@ -9,7 +9,6 @@ interface BalancoTableProps {
 }
 
 const BalancoTable = ({ balances, year, group, formatCurrency }: BalancoTableProps) => {
-  console.log('balances no table', balances);
 
   let titulo = '';
   if (group === 'ATIVO_CIRCULANTE') { titulo = 'Ativo Circulante'; }

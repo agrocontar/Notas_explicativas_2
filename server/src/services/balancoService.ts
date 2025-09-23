@@ -136,8 +136,6 @@ export const listBalancoWithTotals = async (data: { companyId: string, year: num
           accountingAccounts: balanco.accountingAccounts.map((accountCode:any)  => normalizeAccountingAccount(accountCode)),
           totalCurrentYear,
           totalPreviousYear,
-          accountingsFoundCurrentYear: balancetesAnoAtualFiltrados.length,
-          accountingsFoundPreviousYear: balancetesAnoAnteriorFiltrados
         }
       })
     )

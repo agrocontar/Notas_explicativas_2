@@ -1,30 +1,30 @@
 'use client'
-import { Balanco } from "../../types";
+import { Dre } from "../../types";
 
-interface BalancoTableProps {
-  balances: Balanco[];
+interface DreTableProps {
+  dre: Dre[];
   year: number;
   group: string;
   formatCurrency: (value: number) => string;
 }
 
-const BalancoTable = ({ balances, year, group, formatCurrency }: BalancoTableProps) => {
+const DreTable = ({ dre, year, group, formatCurrency }: DreTableProps) => {
 
   let titulo = '';
-  if (group === 'ATIVO_CIRCULANTE') { titulo = 'Ativo Circulante'; }
-  else if (group === 'ATIVO_NAO_CIRCULANTE') { titulo = 'Ativo Não Circulante'; }
-  else if (group === 'PASSIVO_CIRCULANTE') { titulo = 'Passivo Circulante'; }
-  else if (group === 'PASSIVO_NAO_CIRCULANTE') { titulo = 'Passivo Não Circulante'; }
-  else if (group === 'PATRIMONIO_LIQUIDO') { titulo = 'Patrimônio Líquido'; }
+  if (group === 'RECEITAS_LIQUIDAS') { titulo = 'Receitas Líquidas'; }
+  else if (group === 'CUSTOS') { titulo = 'Custos'; }
+  else if (group === 'DESPESAS_OPERACIONAIS') { titulo = 'Despesas Operacionais'; }
+  else if (group === 'RESULTADO_FINANCEIRO') { titulo = 'Resultado Financeiro'; }
+  else if (group === 'IMPOSTOS') { titulo = 'Impostos'; }
   else { titulo = 'Não agrupado'; }
 
-  const filteredBalances = balances?.filter((bal: Balanco) => bal.group === group) || [];
+  const filteredDre = dre?.filter((item: Dre) => item.group === group) || [];
 
   // Calcular totais
-  const totalAnoAtual = filteredBalances.reduce((sum: number, bal: Balanco) => sum + bal.totalCurrentYear, 0);
-  const totalAnoAnterior = filteredBalances.reduce((sum: number, bal: Balanco) => sum + bal.totalPreviousYear, 0);
+  const totalAnoAtual = filteredDre.reduce((sum: number, item: Dre) => sum + item.totalCurrentYear, 0);
+  const totalAnoAnterior = filteredDre.reduce((sum: number, item: Dre) => sum + item.totalPreviousYear, 0);
 
-  if (filteredBalances.length === 0) {
+  if (filteredDre.length === 0) {
     return (
       <div className="border-1 surface-border border-round p-4">
         <h3 className="text-lg font-medium mb-3">{titulo}</h3>
@@ -45,14 +45,14 @@ const BalancoTable = ({ balances, year, group, formatCurrency }: BalancoTablePro
       </div>
 
       {/* Linhas dos itens */}
-      {filteredBalances.map((balanco: Balanco) => (
-        <div key={balanco.id} className="grid border-bottom-1 surface-border py-3">
-          <div className="col-6">{balanco.name}</div>
+      {filteredDre.map((item: Dre) => (
+        <div key={item.id} className="grid border-bottom-1 surface-border py-3">
+          <div className="col-6">{item.name}</div>
           <div className="col-3 text-right text-blue-600">
-            {formatCurrency(balanco.totalCurrentYear)}
+            {formatCurrency(item.totalCurrentYear)}
           </div>
           <div className="col-3 text-right text-blue-600">
-            {formatCurrency(balanco.totalPreviousYear)}
+            {formatCurrency(item.totalPreviousYear)}
           </div>
         </div>
       ))}
@@ -72,4 +72,4 @@ const BalancoTable = ({ balances, year, group, formatCurrency }: BalancoTablePro
   );
 }
 
-export default BalancoTable;
+export default DreTable;

@@ -60,30 +60,10 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     accountingAccount: ''
   });
 
-  // Componentes com display name
-  const SourceHeaderComponent = ({ filterValue, onFilterChange, selectedAccount, placeholder }:any) => (
-    <FilterHeader
-      filterValue={filterValue}
-      onFilterChange={onFilterChange}
-      selectedAccount={selectedAccount}
-      placeholder={placeholder}
-    />
-  );
-  SourceHeaderComponent.displayName = 'SourceHeaderComponent';
-
-  const TargetHeaderComponent = ({ filterValue, onFilterChange, selectedAccount, placeholder }:any) => (
-    <FilterHeader
-      filterValue={filterValue}
-      onFilterChange={onFilterChange}
-      selectedAccount={selectedAccount}
-      placeholder={placeholder}
-    />
-  );
-  TargetHeaderComponent.displayName = 'TargetHeaderComponent';
 
   // Headers memoizados - dependências corrigidas
   const sourceHeader = useMemo(() => (
-    <SourceHeaderComponent
+    <FilterHeader
       filterValue={sourceFilter}
       onFilterChange={setSourceFilter}
       selectedAccount={selectedSource}
@@ -92,7 +72,7 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
   ), [sourceFilter, selectedSource, setSourceFilter]);
 
   const targetHeader = useMemo(() => (
-    <TargetHeaderComponent
+    <FilterHeader
       filterValue={targetFilter}
       onFilterChange={setTargetFilter}
       selectedAccount={selectedTarget}

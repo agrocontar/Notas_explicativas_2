@@ -8,6 +8,7 @@ import configRoutes from './routes/mapping/configCompanyRoutes'
 import authRoutes from './routes/authRoutes'
 import cookieParser from "cookie-parser";
 import cors from 'cors'
+import dreRoutes from "./routes/dreRoutes";
 
 const app = express();
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use("/companies", companyRoutes);
 app.use("/groupCompanies", groupCompaniesRoutes)
 app.use("/balancete", balanceteRoutes)
 app.use("/balanco", balancoRoutes)
+app.use("/dre", dreRoutes)
 app.use("/config", configRoutes)
 app.use("/auth", authRoutes)
 

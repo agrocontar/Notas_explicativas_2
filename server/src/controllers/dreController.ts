@@ -1,21 +1,21 @@
 import { handleZodError } from "../utils/handleZodError";
 import { NotFoundError } from "../utils/errors";
-import * as balancoService from "../services/balancoService"
+import * as dreService from "../services/dreService"
 import z from "zod";
 import { Request, Response } from "express";
 
-const listBalancoTotalQuerySchema = z.object({
+const listDreTotalQuerySchema = z.object({
   companyId: z.string().uuid('ID da empresa inválido'),
   year: z.coerce.number().int('Ano deve ser um número inteiro').min(2000).max(2100)
 });
 
 
-export const listBalancoTotal = async (req: Request, res: Response) => {
+export const listDreTotal = async (req: Request, res: Response) => {
 
   try{
-    const parsed = listBalancoTotalQuerySchema.parse(req.query);
+    const parsed = listDreTotalQuerySchema.parse(req.query);
     const { companyId, year } = parsed;
-    const result = await balancoService.listBalancoWithTotals({companyId, year})
+    const result = await dreService.listDreWithTotals({companyId, year})
     
     res.json(result)
   }catch(error){
@@ -26,6 +26,6 @@ export const listBalancoTotal = async (req: Request, res: Response) => {
       return res.status(404).json({ error: error.message });
     }
     console.error(error);
-    res.status(500).json({ error: "Erro ao listar balancete" });
+    res.status(500).json({ error: "Erro ao listar DRE" });
   }
 }

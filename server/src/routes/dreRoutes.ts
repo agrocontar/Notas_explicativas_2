@@ -1,10 +1,10 @@
 import { Router } from "express";
-import * as balancoController from "../controllers/balancoController";
+import * as dreController from "../controllers/dreController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-router.get("/", authMiddleware ,balancoController.listBalancoTotal);
+router.get("/", authMiddleware , dreController.listDreTotal);
 
 
 export default router;

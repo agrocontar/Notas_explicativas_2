@@ -9,7 +9,7 @@ import api from '@/app/api/api';
 import { Balancete, ExcelData } from './types';
 import { validateAccountingAccounts } from './services/validateAccountingAccounts';
 import { processMappedAccounts } from './services/processMappedAccounts';
-import { fetchBalanceAccounts } from './services/apis';
+import { fetchBalanceAccounts, fetchDefaultAccounts } from './services/apis';
 import BalanceTable from './components/BalanceTable';
 
 interface CompanyUploadPageProps {
@@ -65,8 +65,6 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
             // Ler o arquivo Excel
             const excelData = await readExcelFile(file, params.id, date);
 
-            console.log('Dados processados para envio:', excelData.balanceteData.slice(0, 10));
-
             // Verificar se há dados válidos
             if (!excelData.balanceteData || excelData.balanceteData.length === 0) {
                 throw new Error('Nenhum dado válido encontrado no arquivo');
@@ -84,10 +82,14 @@ const UploadPage = ({ params }: CompanyUploadPageProps) => {
                 return;
             }
 
+            const defaultAccounts = await fetchDefaultAccounts();
+
             // Processar mapeamentos e somar valores
             const processedData = processMappedAccounts(
                 validationResult.validData,
-                validationResult.mappings || []
+                validationResult.mappings || [],
+                defaultAccounts,
+                validationResult.usesStandardPlan
             );
 
             // Preparar dados para envio

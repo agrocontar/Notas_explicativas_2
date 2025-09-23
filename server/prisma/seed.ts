@@ -1,4 +1,4 @@
-import { BalancoGroup, PrismaClient } from "@prisma/client"
+import { BalancoGroup, DreGroup, PrismaClient } from "@prisma/client"
 import fs from "fs"
 
 const prisma = new PrismaClient()
@@ -19,6 +19,9 @@ async function main() {
     return str
   }
 
+  // Deleta todas as configTemplate antes de inserir
+  await prisma.configTemplate.deleteMany()
+
   // Insere ConfigTemplate no banco
   await prisma.configTemplate.createMany({
     data: configs.map((row) => ({
@@ -32,10 +35,10 @@ async function main() {
 
   // Load json de balanço
   const balancoData = fs.readFileSync("prisma/balanco.json", "utf-8")
-  const balancoItems: { 
-    name: string, 
-    group: string, 
-    accountingAccounts: string[] 
+  const balancoItems: {
+    name: string,
+    group: string,
+    accountingAccounts: string[]
   }[] = JSON.parse(balancoData)
 
   // Função para validar e converter o grupo
@@ -64,6 +67,9 @@ async function main() {
     })
   }
 
+  // Deleta todas as balancoTemplate antes de inserir
+  await prisma.balancoTemplate.deleteMany()
+
   // Insere BalancoTemplate no banco
   await prisma.balancoTemplate.createMany({
     data: balancoItems.map(item => ({
@@ -75,6 +81,47 @@ async function main() {
   })
 
   console.log("✅ Balanço Template concluído com sucesso!")
+
+
+  const dreData = fs.readFileSync("prisma/dre.json", "utf-8")
+  const dreItems: {
+    name: string,
+    group: string,
+    accountingAccounts: string[]
+  }[] = JSON.parse(dreData)
+
+  // Função para validar e converter o grupo
+  const parseDreGroup = (group: string): DreGroup => {
+    switch (group) {
+      case "RECEITAS_LIQUIDAS":
+        return DreGroup.RECEITAS_LIQUIDAS
+      case "CUSTOS":
+        return DreGroup.CUSTOS
+      case "DESPESAS_OPERACIONAIS":
+        return DreGroup.DESPESAS_OPERACIONAIS
+      case "RESULTADO_FINANCEIRO":
+        return DreGroup.RESULTADO_FINANCEIRO
+      case "IMPOSTOS":
+        return DreGroup.IMPOSTOS
+      default:
+        throw new Error(`Grupo inválido: ${group}`)
+    }
+  }
+
+  // Deleta todas as dreTemplate antes de inserir
+  await prisma.dreTemplate.deleteMany()
+
+  // Insere DreTemplate no banco
+  await prisma.dreTemplate.createMany({
+    data: dreItems.map(item => ({
+      name: item.name,
+      group: parseDreGroup(item.group),
+      accountingAccounts: normalizeBalancoAccounts(item.accountingAccounts)
+    })),
+    skipDuplicates: true
+  })
+
+  console.log("✅ DRE Template concluído com sucesso!")
 }
 
 main()

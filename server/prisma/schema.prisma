@@ -111,6 +111,25 @@ model ConfigTemplate {
   ConfigMapping ConfigMapping[]
 }
 
+model DreTemplate {
+  id                Int     @id @default(autoincrement())
+  name              String  
+  group             DreGroup
+  accountingAccounts String[] 
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([group])
+}
+
+/// Grupos do DRE
+enum DreGroup {
+  RECEITAS_LIQUIDAS
+  CUSTOS
+  DESPESAS_OPERACIONAIS
+  RESULTADO_FINANCEIRO
+  IMPOSTOS
+}
 
 model BalancoTemplate {
   id                Int     @id @default(autoincrement())

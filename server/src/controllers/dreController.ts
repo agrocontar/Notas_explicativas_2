@@ -10,7 +10,7 @@ const listDreTotalQuerySchema = z.object({
 });
 
 
-export const listBalancoTotal = async (req: Request, res: Response) => {
+export const listDreTotal = async (req: Request, res: Response) => {
 
   try{
     const parsed = listDreTotalQuerySchema.parse(req.query);

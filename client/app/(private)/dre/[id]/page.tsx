@@ -6,13 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { InputSwitch } from "primereact/inputswitch";
 import { Dre } from "../types";
-import Resumo from "./components/resumo";
 import DreTable from "./components/dreTable";
 
 
 const BalancoPage = () => {
   const toast = useRef<Toast>(null);
-  const [dre, setDre] = useState<Dre[]>([]);
+  const [data, setData] = useState<Dre>({} as Dre);
   const [loading, setLoading] = useState(true);
   const params = useParams();
   const year = new Date().getFullYear();
@@ -26,7 +25,7 @@ const BalancoPage = () => {
       });
 
       if (res.status >= 200 && res.status < 300) {
-        setDre(res.data);
+        setData(res.data);
       } else {
         console.error('Erro ao buscar a DRE:', res.statusText);
         toast.current?.show({
@@ -84,7 +83,7 @@ const BalancoPage = () => {
         <div className="card mb-4">
           <div className="flex justify-content-between align-items-center">
             <div>
-              <h1 className="text-2xl font-bold m-0">DRE</h1>
+              <h1 className="text-2xl font-bold m-0">Demonstração do Resultado do Exercício</h1>
               <span className="text-lg text-color-secondary">Ano: {year}</span>
             </div>
 
@@ -108,7 +107,7 @@ const BalancoPage = () => {
 
           {/* Receitas Líquidas */}
           <div className="mb-4">
-            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'RECEITAS_LIQUIDAS'} />
+            <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'RECEITAS_LIQUIDAS'} />
           </div>
         </div>
 
@@ -118,7 +117,7 @@ const BalancoPage = () => {
 
           {/* Custos */}
           <div className="mb-4">
-            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'CUSTOS'} />
+            <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'CUSTOS'} />
           </div>
 
         </div>
@@ -129,7 +128,7 @@ const BalancoPage = () => {
 
           {/* Despesas Operacionais */}
           <div>
-            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'DESPESAS_OPERACIONAIS'} />
+            <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'DESPESAS_OPERACIONAIS'} />
           </div>
         </div>
 
@@ -139,7 +138,7 @@ const BalancoPage = () => {
 
           {/* Resultado Financeiro */}
           <div>
-            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'RESULTADO_FINANCEIRO'} />
+            <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'RESULTADO_FINANCEIRO'} />
           </div>
         </div>
 
@@ -148,19 +147,10 @@ const BalancoPage = () => {
           <h2 className="text-xl font-semibold mb-3">IMPOSTOS</h2>
           {/* Impostos */}
           <div>
-            <DreTable formatCurrency={formatCurrency} dre={dre} year={year} group={'IMPOSTOS'} />
+            <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'IMPOSTOS'} />
           </div>
         </div>
 
-        {/* Resumo */}
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-3">RESUMO {year}</h2>
-          <Resumo dre={dre} formatCurrency={formatCurrency} currentYear={true} />
-          <h2 className="text-xl font-semibold mb-3">RESUMO {year - 1}</h2>
-          <Resumo dre={dre} formatCurrency={formatCurrency} currentYear={false} />
-
-
-        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-export interface Dre {
+export interface DreItem{
   id: number,
   name: string,
   group: string,
@@ -9,4 +9,13 @@ export interface Dre {
   totalPreviousYear: number,
   accountingsFoundCurrentYear: number,
   accountingsFoundPreviousYear: number
+}
+
+export interface Dre {
+  despesaOperacional: number,
+  totalImpostos: number,
+  resultadoFinanceiro: number,
+  receitaLiquida: number,
+  custos: number,
+  dre: DreItem[]
 }

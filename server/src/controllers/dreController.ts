@@ -29,17 +29,18 @@ export const listDreTotal = async (req: Request, res: Response) => {
       throw new NotFoundError('Dados insuficientes para calcular DRE total');
     }
 
-      const despesaOperacional = despesaOperacionalfirst.currentBalance.add(despesaOperacionalsecond.currentBalance)
+      despesaOperacionalfirst.currentBalance.add(despesaOperacionalsecond.currentBalance)
+      despesaOperacionalfirst.previousBalance.add(despesaOperacionalsecond.previousBalance)
 
  
     
     res.json(
       { 
-        despesaOperacional,
-        totalImpostos: totalImpostos.currentBalance,
-        resultadoFinanceiro: resultadoFinanceiro.currentBalance,
-        receitaLiquida: receitaLiquida.currentBalance,
-        custos: custos.currentBalance, 
+        despesaOperacional: despesaOperacionalfirst,
+        totalImpostos: totalImpostos,
+        resultadoFinanceiro: resultadoFinanceiro,
+        receitaLiquida: receitaLiquida,
+        custos: custos, 
         dre: result
       }
     )

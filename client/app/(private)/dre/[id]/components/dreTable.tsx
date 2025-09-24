@@ -9,9 +9,41 @@ interface DreTableProps {
 }
 
 const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
-  let titulo = '';
-
   const filteredDre = data.dre?.filter((item: DreItem) => item.group === group) || [];
+  
+  let titulo = '';
+  let margemBrutaCurrent = 0;
+  let margemBrutaPrevious = 0;
+
+  // Calcular margem bruta apenas se o grupo for CUSTOS
+  if (group === 'CUSTOS') {
+    const custosMercadorias = data.dre.find(item => item.name === 'Custos de Mercadorias Vendidas');
+    const receitaComVendasDeMercadorias = data.dre.find(item => item.name === 'Receita com vendas de Mercadorias');
+    const receitaComPrestacaoDeServicos = data.dre.find(item => item.name === 'Receita com Prestação de serviços');
+
+    if (custosMercadorias && receitaComVendasDeMercadorias && receitaComPrestacaoDeServicos) {
+      // Calcular o lucro bruto
+      const lucroBrutoCurrent = (custosMercadorias.totalCurrentYear * -1) + 
+                               receitaComVendasDeMercadorias.totalCurrentYear + 
+                               receitaComPrestacaoDeServicos.totalCurrentYear;
+      
+      const lucroBrutoPrevious = (custosMercadorias.totalPreviousYear * -1) + 
+                                receitaComVendasDeMercadorias.totalPreviousYear + 
+                                receitaComPrestacaoDeServicos.totalPreviousYear;
+
+      // Calcular a receita total
+      const receitaTotalCurrent = receitaComVendasDeMercadorias.totalCurrentYear + 
+                                 receitaComPrestacaoDeServicos.totalCurrentYear;
+      
+      const receitaTotalPrevious = receitaComVendasDeMercadorias.totalPreviousYear + 
+                                  receitaComPrestacaoDeServicos.totalPreviousYear;
+
+      // Calcular a margem bruta (percentual)
+      margemBrutaCurrent = receitaTotalCurrent !== 0 ? (lucroBrutoCurrent / receitaTotalCurrent) * 100 : 0;
+      margemBrutaPrevious = receitaTotalPrevious !== 0 ? (lucroBrutoPrevious / receitaTotalPrevious) * 100 : 0;
+    }
+  }
+
   if (filteredDre.length === 0) {
     return (
       <div className="border-1 surface-border border-round p-4">
@@ -20,10 +52,12 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
     );
   }
 
-  
+  // Adicionar linhas totais conforme o grupo
+  const enhancedDre = [...filteredDre];
+
   if (group === 'RECEITAS_LIQUIDAS') { 
     titulo = 'Receitas Líquidas';
-    filteredDre.push({
+    enhancedDre.push({
       id: 0,
       name: 'Receitas Líquidas',
       group: 'RECEITAS_LIQUIDAS',
@@ -34,26 +68,40 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       totalPreviousYear: 0,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
-    })
+    });
   }
   else if (group === 'CUSTOS') { 
     titulo = 'Custos'; 
-    filteredDre.push({
-      id: 0,
-      name: 'Custos',
-      group: 'CUSTOS',
-      accountingAccounts: [],
-      createdAt: '',
-      updatedAt: '',
-      totalCurrentYear: data.custos,
-      totalPreviousYear: 0,
-      accountingsFoundCurrentYear: 0,
-      accountingsFoundPreviousYear: 0
-    })
+    enhancedDre.push(
+      {
+        id: 0,
+        name: 'Custos',
+        group: 'CUSTOS',
+        accountingAccounts: [],
+        createdAt: '',
+        updatedAt: '',
+        totalCurrentYear: data.custos,
+        totalPreviousYear: 0,
+        accountingsFoundCurrentYear: 0,
+        accountingsFoundPreviousYear: 0
+      },
+      {
+        id: 0,
+        name: 'Margem Bruta (%)',
+        group: 'CUSTOS',
+        accountingAccounts: [],
+        createdAt: '',
+        updatedAt: '',
+        totalCurrentYear: margemBrutaCurrent,
+        totalPreviousYear: margemBrutaPrevious,
+        accountingsFoundCurrentYear: 0,
+        accountingsFoundPreviousYear: 0
+      }
+    );
   }
   else if (group === 'DESPESAS_OPERACIONAIS') { 
     titulo = 'Despesas Operacionais'; 
-    filteredDre.push({
+    enhancedDre.push({
       id: 0,
       name: 'Despesas Operacionais',
       group: 'DESPESAS_OPERACIONAIS',
@@ -64,11 +112,11 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       totalPreviousYear: 0,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
-    })
+    });
   }
   else if (group === 'RESULTADO_FINANCEIRO') { 
     titulo = 'Resultado Financeiro'; 
-    filteredDre.push({
+    enhancedDre.push({
       id: 0,
       name: 'Resultado Financeiro',
       group: 'RESULTADO_FINANCEIRO',
@@ -79,11 +127,11 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       totalPreviousYear: 0,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
-    })
+    });
   }
   else if (group === 'IMPOSTOS') { 
     titulo = 'Impostos'; 
-    filteredDre.push({
+    enhancedDre.push({
       id: 0,
       name: 'Impostos',
       group: 'IMPOSTOS',
@@ -94,16 +142,20 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       totalPreviousYear: 0,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
-    })
+    });
   }
   else { 
     titulo = 'Não agrupado'; 
-    
   }
-  
+
+  // Função para formatar percentuais
+  const formatPercent = (value: number) => {
+    return `${value.toFixed(2)}%`;
+  };
 
   return (
     <div className="border-1 surface-border border-round p-4">
+      <h3 className="text-lg font-semibold mb-4">{titulo}</h3>
 
       {/* Cabeçalho da tabela */}
       <div className="grid mb-2 font-semibold border-bottom-1 surface-border pb-2">
@@ -113,19 +165,23 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       </div>
 
       {/* Linhas dos itens */}
-      {filteredDre.map((item: DreItem) => (
-        <div key={item.id} className="grid border-bottom-1 surface-border py-3">
+      {enhancedDre.map((item: DreItem) => (
+        <div key={`${item.id}-${item.name}`} className="grid border-bottom-1 surface-border py-3">
           <div className="col-6">{item.name}</div>
           <div className="col-3 text-right text-blue-600">
-            {formatCurrency(item.totalCurrentYear)}
+            {item.name.includes('Margem Bruta') 
+              ? formatPercent(item.totalCurrentYear)
+              : formatCurrency(item.totalCurrentYear)
+            }
           </div>
           <div className="col-3 text-right text-blue-600">
-            {formatCurrency(item.totalPreviousYear)}
+            {item.name.includes('Margem Bruta') 
+              ? formatPercent(item.totalPreviousYear)
+              : formatCurrency(item.totalPreviousYear)
+            }
           </div>
         </div>
       ))}
-
-
     </div>
   );
 }

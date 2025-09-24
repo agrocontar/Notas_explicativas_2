@@ -73,6 +73,29 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
     };
   };
 
+  // Função para aplicar negativo nas linhas específicas
+  const aplicarNegativoSeNecessario = (item: DreItem): DreItem => {
+    // Lista de linhas que devem ser exibidas como negativas
+    const linhasParaNegativar = [
+      'Despesas gerais e administrativas',
+      'Despesas Tributárias',
+      'Outras despesas',
+      'Despesas financeiras',
+      'IRRF a recolher/compensar',
+      'CSLL a recolher/compensar'
+    ];
+
+    if (linhasParaNegativar.includes(item.name)) {
+      return {
+        ...item,
+        totalCurrentYear: -Math.abs(item.totalCurrentYear), // Garante que seja negativo
+        totalPreviousYear: -Math.abs(item.totalPreviousYear) // Garante que seja negativo
+      };
+    }
+    
+    return item;
+  };
+
   // Configuração dos grupos
   const getGroupConfig = () => {
     const resultadoOperacional = calcularResultadoOperacional();
@@ -107,8 +130,8 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
             {
               id: 0, name: 'Custos', group,
               accountingAccounts: [], createdAt: '', updatedAt: '',
-              totalCurrentYear: data.custos.currentBalance,
-              totalPreviousYear: data.custos.previousBalance,
+              totalCurrentYear: data.custos.currentBalance * -1,
+              totalPreviousYear: data.custos.previousBalance * -1,
               accountingsFoundCurrentYear: 0, accountingsFoundPreviousYear: 0
             },
             {
@@ -129,8 +152,8 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
             {
               id: 0, name: 'Despesas Operacionais', group,
               accountingAccounts: [], createdAt: '', updatedAt: '',
-              totalCurrentYear: data.despesaOperacional.currentBalance,
-              totalPreviousYear: data.despesaOperacional.previousBalance,
+              totalCurrentYear: data.despesaOperacional.currentBalance * -1,
+              totalPreviousYear: data.despesaOperacional.previousBalance * -1,
               accountingsFoundCurrentYear: 0, accountingsFoundPreviousYear: 0
             },
             {
@@ -193,6 +216,7 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
   };
 
   const groupConfig = getGroupConfig();
+  
   // Separar a linha do título das demais linhas adicionais
   const linhaTitulo = groupConfig.linhasAdicionais.find(item => 
     item.name === groupConfig.titulo
@@ -202,11 +226,19 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
     item.name !== groupConfig.titulo
   );
 
-  // Juntar as linhas normais com as outras linhas adicionais (exceto a do título)
-  const linhasDaTabela = [...filteredDre, ...outrasLinhasAdicionais];
+  // Aplicar negativo nas linhas filtradas antes de juntar
+  const linhasFiltradasComNegativo = filteredDre.map(aplicarNegativoSeNecessario);
+  
+  // Juntar as linhas normais (com negativo aplicado) com as outras linhas adicionais
+  const linhasDaTabela = [...linhasFiltradasComNegativo, ...outrasLinhasAdicionais];
 
   // Função para formatar percentuais
   const formatPercent = (value: number) => `${value.toFixed(2)}%`;
+
+  // Função para formatar currency com tratamento de negativo
+  const formatCurrencyComNegativo = (value: number) => {
+    return formatCurrency(value);
+  };
 
   return (
     <div>
@@ -221,25 +253,25 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
         </div>
 
         {/* Linha do título separada fora da tabela */}
-      {linhaTitulo && (
-        <div className="border-bottom-1 surface-border py-3">
-          <div className="grid font-bold text-lg">
-            <div className="col-6">{linhaTitulo.name}</div>
-            <div className="col-3 text-right text-blue-600">
-              {linhaTitulo.name.includes('Margem Bruta') 
-                ? formatPercent(linhaTitulo.totalCurrentYear)
-                : formatCurrency(linhaTitulo.totalCurrentYear)
-              }
-            </div>
-            <div className="col-3 text-right text-blue-600">
-              {linhaTitulo.name.includes('Margem Bruta') 
-                ? formatPercent(linhaTitulo.totalPreviousYear)
-                : formatCurrency(linhaTitulo.totalPreviousYear)
-              }
+        {linhaTitulo && (
+          <div className="border-bottom-1 surface-border py-3">
+            <div className="grid font-bold text-lg">
+              <div className="col-6">{linhaTitulo.name}</div>
+              <div className="col-3 text-right text-blue-600">
+                {linhaTitulo.name.includes('Margem Bruta') 
+                  ? formatPercent(linhaTitulo.totalCurrentYear)
+                  : formatCurrencyComNegativo(linhaTitulo.totalCurrentYear)
+                }
+              </div>
+              <div className="col-3 text-right text-blue-600">
+                {linhaTitulo.name.includes('Margem Bruta') 
+                  ? formatPercent(linhaTitulo.totalPreviousYear)
+                  : formatCurrencyComNegativo(linhaTitulo.totalPreviousYear)
+                }
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
         {/* Linhas da tabela (normais + outras adicionais) */}
         {linhasDaTabela.map((item: DreItem) => (
@@ -248,20 +280,18 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
             <div className="col-3 text-right text-blue-600">
               {item.name.includes('Margem Bruta') 
                 ? formatPercent(item.totalCurrentYear)
-                : formatCurrency(item.totalCurrentYear)
+                : formatCurrencyComNegativo(item.totalCurrentYear)
               }
             </div>
             <div className="col-3 text-right text-blue-600">
               {item.name.includes('Margem Bruta') 
                 ? formatPercent(item.totalPreviousYear)
-                : formatCurrency(item.totalPreviousYear)
+                : formatCurrencyComNegativo(item.totalPreviousYear)
               }
             </div>
           </div>
         ))}
       </div>
-
-      
     </div>
   );
 };

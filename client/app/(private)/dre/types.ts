@@ -12,10 +12,25 @@ export interface DreItem{
 }
 
 export interface Dre {
-  despesaOperacional: number,
-  totalImpostos: number,
-  resultadoFinanceiro: number,
-  receitaLiquida: number,
-  custos: number,
+  despesaOperacional: {
+    currentBalance: number,
+    previousBalance: number
+  },
+  totalImpostos: {
+    currentBalance: number,
+    previousBalance: number
+  },
+  resultadoFinanceiro: {
+    currentBalance: number,
+    previousBalance: number
+  },
+  receitaLiquida: {
+    currentBalance: number,
+    previousBalance: number
+  },
+  custos: {
+    currentBalance: number,
+    previousBalance: number
+  },
   dre: DreItem[]
 }

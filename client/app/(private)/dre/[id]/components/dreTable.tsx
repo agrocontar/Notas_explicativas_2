@@ -14,6 +14,8 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
   let titulo = '';
   let margemBrutaCurrent = 0;
   let margemBrutaPrevious = 0;
+  const resultadoOperacionalCurrent = data.receitaLiquida.currentBalance - data.custos.currentBalance - data.despesaOperacional.currentBalance
+  const resultadoOperacionalPrevious = data.receitaLiquida.previousBalance - data.custos.previousBalance - data.despesaOperacional.previousBalance
 
   // Calcular margem bruta apenas se o grupo for CUSTOS
   if (group === 'CUSTOS') {
@@ -64,8 +66,8 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       accountingAccounts: [],
       createdAt: '',
       updatedAt: '',
-      totalCurrentYear: data.receitaLiquida,
-      totalPreviousYear: 0,
+      totalCurrentYear: data.receitaLiquida.currentBalance,
+      totalPreviousYear: data.receitaLiquida.previousBalance,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
     });
@@ -80,8 +82,8 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
         accountingAccounts: [],
         createdAt: '',
         updatedAt: '',
-        totalCurrentYear: data.custos,
-        totalPreviousYear: 0,
+        totalCurrentYear: data.custos.currentBalance,
+        totalPreviousYear: data.custos.previousBalance,
         accountingsFoundCurrentYear: 0,
         accountingsFoundPreviousYear: 0
       },
@@ -108,11 +110,24 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       accountingAccounts: [],
       createdAt: '',
       updatedAt: '',
-      totalCurrentYear: data.despesaOperacional,
-      totalPreviousYear: 0,
+      totalCurrentYear: data.despesaOperacional.currentBalance,
+      totalPreviousYear: data.despesaOperacional.previousBalance,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
-    });
+    },
+    {
+      id: 0,
+      name: 'Resultado Operacional',
+      group: 'DESPESAS_OPERACIONAIS',
+      accountingAccounts: [],
+      createdAt: '',
+      updatedAt: '',
+      totalCurrentYear: resultadoOperacionalCurrent,
+      totalPreviousYear: resultadoOperacionalPrevious,
+      accountingsFoundCurrentYear: 0,
+      accountingsFoundPreviousYear: 0
+    }
+  );
   }
   else if (group === 'RESULTADO_FINANCEIRO') { 
     titulo = 'Resultado Financeiro'; 
@@ -123,11 +138,23 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       accountingAccounts: [],
       createdAt: '',
       updatedAt: '',
-      totalCurrentYear: data.resultadoFinanceiro,
-      totalPreviousYear: 0,
+      totalCurrentYear: data.resultadoFinanceiro.currentBalance,
+      totalPreviousYear: data.resultadoFinanceiro.previousBalance,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
     });
+    enhancedDre.push({
+      id: 0,
+      name: 'Resultado Antes dos Impostos',
+      group: 'RESULTADO_FINANCEIRO',
+      accountingAccounts: [],
+      createdAt: '',
+      updatedAt: '',
+      totalCurrentYear: data.resultadoFinanceiro.currentBalance - resultadoOperacionalCurrent,
+      totalPreviousYear: data.resultadoFinanceiro.previousBalance - resultadoOperacionalPrevious,
+      accountingsFoundCurrentYear: 0,
+      accountingsFoundPreviousYear: 0
+    })
   }
   else if (group === 'IMPOSTOS') { 
     titulo = 'Impostos'; 
@@ -138,8 +165,8 @@ const DreTable = ({ data, year, group, formatCurrency }: DreTableProps) => {
       accountingAccounts: [],
       createdAt: '',
       updatedAt: '',
-      totalCurrentYear: data.totalImpostos,
-      totalPreviousYear: 0,
+      totalCurrentYear: data.totalImpostos.currentBalance,
+      totalPreviousYear: data.totalImpostos.previousBalance,
       accountingsFoundCurrentYear: 0,
       accountingsFoundPreviousYear: 0
     });

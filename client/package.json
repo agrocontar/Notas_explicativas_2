@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:network": "next start -H 0.0.0.0 -p 3004",
+    "dev:network": "next dev -H 0.0.0.0 -p 3004",
     "format": "prettier --write \"{app,demo,layout,types}/**/*.{js,ts,tsx,d.ts}\"",
     "lint": "next lint"
   },

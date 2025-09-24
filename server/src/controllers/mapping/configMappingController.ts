@@ -95,3 +95,36 @@ export const deleteMappingCompany = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao deletar Mapeamento" });
   }
 }
+
+
+const bulkMappingSchema = z.object({
+  companyId: z.string().uuid(),
+  mappings: z.array(z.object({
+    companyAccount: z.string(),
+    defaultAccount: z.string(),
+  }))
+});
+
+export const createBulkMappingsController = async (req: Request, res: Response) => {
+  try {
+    const parsed = bulkMappingSchema.parse(req.body);
+    const result = await mappingService.createBulkMappings(parsed);
+
+    res.json({
+      success: true,
+      summary: {
+        total: parsed.mappings.length,
+        success: result.success.length,
+        errors: result.errors.length,
+        skipped: result.skipped.length
+      },
+      details: result
+    });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ errors: handleZodError(err) });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erro ao criar mapeamentos em massa" });
+  }
+};

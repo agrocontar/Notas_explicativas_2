@@ -2,6 +2,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "../prismaClient";
 import { NotFoundError } from "../utils/errors";
 import { processMappedData } from "../utils/processMappeddata";
+import { normalizeAccountingAccount } from "../utils/normalizeAccountingAccount";
 interface uploadInput {
   companyId: string
   referenceDate: number
@@ -99,6 +100,34 @@ export const listBalancetesCompany = async (companyId: string) => {
     })
 
     return balancetes
+  } catch (error) {
+    console.log(Error)
+    return error
+  }
+}
+
+export const listBalanceEspecific = async (companyId: string, year: number, accounting: string) => {
+
+
+  if(!companyId || !year || !accounting) {
+    throw new NotFoundError('Parâmetros insuficientes para a busca do balancete!')
+  }
+  
+  try {
+
+    const balancete = await prisma.balanceteData.findFirst({
+      where: {
+        companyId,
+        referenceDate: year,
+        accountingAccount: normalizeAccountingAccount(accounting)
+      }
+    });
+
+    if (!balancete) {
+      throw new NotFoundError('Nenhum balancete encontrado para os critérios especificados!');
+    }
+
+    return balancete
   } catch (error) {
     console.log(Error)
     return error

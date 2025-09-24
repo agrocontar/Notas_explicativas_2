@@ -128,3 +128,119 @@ export const deleteMappingCompany = async (mappingId: number) => {
   return { message: "Mapeamento deletado com sucesso!" }
 }
       
+
+
+interface BulkMappingItem {
+  companyAccount: string;
+  defaultAccount: string;
+}
+
+interface BulkMappingRequest {
+  companyId: string;
+  mappings: BulkMappingItem[];
+}
+
+// Create bulk mappings automatically
+export const createBulkMappings = async (data: BulkMappingRequest) => {
+  const company = await prisma.company.findUnique({ 
+    where: { id: data.companyId } 
+  });
+  
+  if (!company) {
+    throw new NotFoundError("Empresa com este ID não existe no banco de dados!");
+  }
+
+  const results = {
+    success: [] as any[],
+    errors: [] as any[],
+    skipped: [] as any[]
+  };
+
+  // Processar cada mapeamento
+  for (const mapping of data.mappings) {
+    try {
+      const normalizedCompanyAccount = normalizeAccountingAccount(mapping.companyAccount);
+      const normalizedDefaultAccount = normalizeAccountingAccount(mapping.defaultAccount);
+
+      // Verificar se a conta da empresa existe
+      const companyAccountExists = await prisma.configCompany.findUnique({
+        where: {
+          companyId_accountingAccount: {
+            companyId: data.companyId,
+            accountingAccount: normalizedCompanyAccount
+          }
+        }
+      });
+
+      if (!companyAccountExists) {
+        results.errors.push({
+          companyAccount: mapping.companyAccount,
+          defaultAccount: mapping.defaultAccount,
+          error: `Conta ${normalizedCompanyAccount} não existe na empresa`
+        });
+        continue;
+      }
+
+      // Verificar se a conta padrão existe
+      const defaultAccountExists = await prisma.configTemplate.findFirst({
+        where: {
+          accountingAccount: normalizedDefaultAccount
+        }
+      });
+
+      if (!defaultAccountExists) {
+        results.errors.push({
+          companyAccount: mapping.companyAccount,
+          defaultAccount: mapping.defaultAccount,
+          error: `Conta padrão ${normalizedDefaultAccount} não encontrada`
+        });
+        continue;
+      }
+
+      // Verificar se o mapeamento já existe
+      const existingMapping = await prisma.configMapping.findFirst({
+        where: {
+          companyId: data.companyId,
+          companyAccount: normalizedCompanyAccount
+        }
+      });
+
+      if (existingMapping) {
+        results.skipped.push({
+          companyAccount: mapping.companyAccount,
+          defaultAccount: mapping.defaultAccount,
+          message: `Mapeamento já existe (ID: ${existingMapping.id})`
+        });
+        continue;
+      }
+
+      // Criar o mapeamento
+      const newMapping = await prisma.configMapping.create({
+        data: {
+          companyId: data.companyId,
+          companyAccount: normalizedCompanyAccount,
+          defaultAccountId: defaultAccountExists.id
+        },
+        include: {
+          defaultAccount: true
+        }
+      });
+
+      results.success.push({
+        companyAccount: mapping.companyAccount,
+        defaultAccount: mapping.defaultAccount,
+        mappingId: newMapping.id,
+        message: "Mapeamento criado com sucesso"
+      });
+
+    } catch (error) {
+      results.errors.push({
+        companyAccount: mapping.companyAccount,
+        defaultAccount: mapping.defaultAccount,
+        error: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  }
+
+  return results;
+};

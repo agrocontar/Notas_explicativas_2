@@ -15,8 +15,28 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(cors({
-  origin: true, // Aceita qualquer origem
-  credentials: true, // Permite cookies e autenticação
+  origin: function(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Permite todas as origens em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // Em produção, restringe às origens permitidas
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://192.168.62.50:3004',
+      'https://seu-dominio.com'
+    ];
+    
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie']
 }));
 
 // Rotas
@@ -29,7 +49,9 @@ app.use("/dre", dreRoutes)
 app.use("/config", configRoutes)
 app.use("/auth", authRoutes)
 
+// Converter PORT para número explicitamente
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log(`🚀 Server running at http://localhost:${process.env.PORT || 3000}`)
+app.listen(PORT, "0.0.0.0", () =>
+  console.log(`🚀 Server running at http://"0.0.0.0":${process.env.PORT || 3000}`)
 );

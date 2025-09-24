@@ -103,8 +103,7 @@ const BalancoPage = () => {
 
         {/* RECEITAS LIQUIDAS */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">RECEITAS LIQUIDAS</h2>
-
+          
           {/* Receitas Líquidas */}
           <div className="mb-4">
             <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'RECEITAS_LIQUIDAS'} />
@@ -113,8 +112,6 @@ const BalancoPage = () => {
 
         {/* CUSTOS */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">CUSTOS</h2>
-
           {/* Custos */}
           <div className="mb-4">
             <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'CUSTOS'} />
@@ -124,7 +121,6 @@ const BalancoPage = () => {
 
         {/* DESPESAS OPERACIONAIS */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">DESPESAS OPERACIONAIS</h2>
 
           {/* Despesas Operacionais */}
           <div>
@@ -134,7 +130,6 @@ const BalancoPage = () => {
 
         {/* RESULTADO FINANCEIRO */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">RESULTADO FINANCEIRO</h2>
 
           {/* Resultado Financeiro */}
           <div>
@@ -144,7 +139,6 @@ const BalancoPage = () => {
 
         {/* IMPOSTOS */}
         <div className="card mb-4">
-          <h2 className="text-xl font-semibold mb-3">IMPOSTOS</h2>
           {/* Impostos */}
           <div>
             <DreTable formatCurrency={formatCurrency} data={data} year={year} group={'IMPOSTOS'} />

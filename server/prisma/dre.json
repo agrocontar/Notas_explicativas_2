@@ -31,7 +31,7 @@
   },{
     "name": "Outras despesas",
     "group": "DESPESAS_OPERACIONAIS",
-    "accountingAccounts": ["421120"]
+    "accountingAccounts": ["433"]
   },
 
   {
@@ -47,11 +47,11 @@
   {
     "name": "IRRF a recolher/compensar",
     "group": "IMPOSTOS",
-    "accountingAccounts": ["421120"]
+    "accountingAccounts": ["4341010003"]
   },
   {
     "name": "CSLL a recolher/compensar",
     "group": "IMPOSTOS",
-    "accountingAccounts": ["421120"]
+    "accountingAccounts": ["4341010004"]
   }
 ]

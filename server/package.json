@@ -5,9 +5,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:network": "npm run dev -- --host 0.0.0.0 --port 3000",
     "seed": "ts-node prisma/seed.ts",
+    "devMapping": "ts-node createBulkMappings.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "start:network": "node dist/server.js --host 0.0.0.0 --port 3000"
   },
   "keywords": [],
   "author": "",

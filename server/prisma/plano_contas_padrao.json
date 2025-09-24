@@ -8218,5 +8218,39 @@
  {
   "accountingAccount": 9111090010,
   "accountName": "TRANSITORIA - FETHAB"
- }
+ },
+
+
+  {
+    "accountingAccount": 6113000000,
+    "accountName": "COMPENSAÇÃO ENTRE LOJAS"
+  },
+  {
+    "accountingAccount": 6113010000,
+    "accountName": "TRANSFERENCIA MERCADORIA ENTRE LOJAS"
+  },
+  {
+    "accountingAccount": 6113010001,
+    "accountName": "TRANSFERENCIAS ENTRE LOJAS - EMITIDAS"
+  },
+  {
+    "accountingAccount": 6113010002,
+    "accountName": "TRANSFERENCIAS EM TRANSITO"
+  },
+  {
+    "accountingAccount": 6213000000,
+    "accountName": "COMPENSACOES ENTRE LOJAS"
+  },
+  {
+    "accountingAccount": 6213010000,
+    "accountName": "TRANSFERENCIA MERCADORIA ENTRE LOJAS"
+  },
+  {
+    "accountingAccount": 6213010001,
+    "accountName": "TRANSFERENCIAS ENTRE LOJAS - RECEBIDAS"
+  },
+  {
+    "accountingAccount": 6213010002,
+    "accountName": "TRANSFERENCIAS EM TRANSITO"
+  }
 ]

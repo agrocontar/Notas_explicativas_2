@@ -2,17 +2,17 @@
   {
     "name": "Receita com vendas de Mercadorias",
     "group": "RECEITAS_LIQUIDAS",
-    "accountingAccounts": ["3111"]
+    "accountingAccounts": ["311101", "311102", "311103", "311104", "311108", "311150"]
   },
   {
     "name": "Receita com Prestação de serviços",
     "group": "RECEITAS_LIQUIDAS",
-    "accountingAccounts": ["3113"]
+    "accountingAccounts": ["3113", "311105"]
   },
   {
     "name": "Deduções da receita",
     "group": "RECEITAS_LIQUIDAS",
-    "accountingAccounts": ["312"]
+    "accountingAccounts": ["312", "3112"]
   },
   {
     "name": "Custos de Mercadorias Vendidas",
@@ -23,7 +23,7 @@
   {
     "name": "Despesas gerais e administrativas",
     "group": "DESPESAS_OPERACIONAIS",
-    "accountingAccounts": ["421101","421102","421103","421104","421105","421108","421109","421110","421112","421113","421114"]
+    "accountingAccounts": ["421101","421102","421103","421104","421105","421108","421109","421110","421112","421113","421114", "421120","421125" ]
   },{
     "name": "Despesas Tributárias",
     "group": "DESPESAS_OPERACIONAIS",

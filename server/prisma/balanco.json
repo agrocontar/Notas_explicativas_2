@@ -17,12 +17,12 @@
   {
     "name": "Adiantamentos",
     "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["1113"]
+    "accountingAccounts": ["1132", "1133"]
   },
   {
     "name": "Despesas antecipadas",
     "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["1132", "1133"]
+    "accountingAccounts": ["117"]
   },
   {
     "name": "Estoques",
@@ -37,18 +37,18 @@
   {
     "name": "Outras Contas a Receber",
     "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["1134"]
+    "accountingAccounts": ["1131"]
   },
   
   {
     "name": "Outras contas a receber",
     "group": "ATIVO_NAO_CIRCULANTE",
-    "accountingAccounts": []
+    "accountingAccounts": ["121"]
   },
   {
     "name": "Investimentos",
     "group": "ATIVO_NAO_CIRCULANTE",
-    "accountingAccounts": ["121", "122"]
+    "accountingAccounts": ["122"]
   },
   {
     "name": "Imobilizado",
@@ -128,6 +128,6 @@
   {
     "name": "Lucro / Prejuízos acumulados",
     "group": "PATRIMONIO_LIQUIDO",
-    "accountingAccounts": []
+    "accountingAccounts": ["231105"]
   }
 ]

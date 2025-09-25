@@ -110,28 +110,42 @@ export const updateConfigCompany = async (data: createConfigInput) => {
 }
 
 
+export const deleteConfigsCompany = async (companyId: string, accountingAccounts: string[]) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } });
+  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!");
 
-export const deleteOneConfigCompany = async (companyId: string, accountingAccount: number) => {
-  const company = await prisma.company.findUnique({ where: { id: companyId } })
-  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
+  if (!accountingAccounts || accountingAccounts.length === 0) {
+    throw new NotFoundError("Nenhuma conta contábil fornecida para exclusão!");
+  }
 
-  const config = await prisma.configCompany.findUnique({
+  // Normaliza todas as contas antes de buscar/deletar
+  const normalizedAccounts = accountingAccounts.map(normalizeAccountingAccount);
+
+  // Verifica se todas as contas existem para a empresa
+  const existingConfigs = await prisma.configCompany.findMany({
     where: {
-      companyId_accountingAccount: {
-        companyId,
-        accountingAccount: normalizeAccountingAccount(accountingAccount)
-      }
+      companyId,
+      accountingAccount: { in: normalizedAccounts }
     }
-  })
-  if (!config) throw new NotFoundError("Configuração não encontrada nessa empresa!")
+  });
 
-  await prisma.configCompany.delete({
+  const notFoundAccounts = normalizedAccounts.filter(
+    acc => !existingConfigs.some(cfg => cfg.accountingAccount === acc)
+  );
+
+  if (notFoundAccounts.length > 0) {
+    throw new NotFoundError(`Configuração(ões) não encontrada(s) nessa empresa: ${notFoundAccounts.join(', ')}`);
+  }
+
+  // Deleta todas as configs encontradas
+  const deleted = await prisma.configCompany.deleteMany({
     where: {
-      id: config.id
+      companyId,
+      accountingAccount: { in: normalizedAccounts }
     }
-  })
+  });
 
-  return { message: "Configuração deletada com sucesso!" }
+  return { message: "Configurações deletadas com sucesso!", deletedCount: deleted.count };
 }
 
 export const deleteConfigNotMappedOfCompany = async (companyId: string) => {
@@ -144,19 +158,6 @@ export const deleteConfigNotMappedOfCompany = async (companyId: string) => {
       ConfigMapping: {
         none: {} // Nenhum mapeamento relacionado existe
       }
-    }
-  })
-
-  return deletedConfigs
-}
-
-export const deleteConfigCompany = async (companyId: string) => {
-  const company = await prisma.company.findUnique({ where: { id: companyId } })
-  if (!company) throw new NotFoundError("Empresa com este ID não existe no banco de dados!")
-
-  const deletedConfigs = await prisma.configCompany.deleteMany({
-    where: {
-      companyId
     }
   })
 

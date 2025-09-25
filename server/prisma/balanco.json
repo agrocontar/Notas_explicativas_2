@@ -20,9 +20,9 @@
     "accountingAccounts": ["1132", "1133"]
   },
   {
-    "name": "Despesas antecipadas",
+    "name": "Impostos a recuperar",
     "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["117"]
+    "accountingAccounts": ["1134"]
   },
   {
     "name": "Estoques",
@@ -30,9 +30,9 @@
     "accountingAccounts": ["115"]
   },
   {
-    "name": "Impostos a recuperar",
+    "name": "Despesas antecipadas",
     "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["1134"]
+    "accountingAccounts": ["117"]
   },
   {
     "name": "Outras Contas a Receber",
@@ -96,14 +96,14 @@
     "accountingAccounts": ["211107"]
   },
   {
-    "name": "Obrigações fiscais",
-    "group": "PASSIVO_NAO_CIRCULANTE",
-    "accountingAccounts": ["221104"]
-  },
-  {
     "name": "Empréstimos e financiamentos",
     "group": "PASSIVO_NAO_CIRCULANTE",
     "accountingAccounts": ["221101"]
+  },
+  {
+    "name": "Obrigações fiscais",
+    "group": "PASSIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["221104"]
   },
   {
     "name": "Outras Obrigações",
@@ -116,14 +116,14 @@
     "accountingAccounts": ["231101"]
   },
   {
-    "name": "Ajustes de avaliação patrimonial",
-    "group": "PATRIMONIO_LIQUIDO",
-    "accountingAccounts": ["231106"]
-  },
-  {
     "name": "Reservas de lucros",
     "group": "PATRIMONIO_LIQUIDO",
     "accountingAccounts": ["231102", "231103", "231104", "231107"]
+  },
+  {
+    "name": "Ajustes de avaliação patrimonial",
+    "group": "PATRIMONIO_LIQUIDO",
+    "accountingAccounts": ["231106"]
   },
   {
     "name": "Lucro / Prejuízos acumulados",

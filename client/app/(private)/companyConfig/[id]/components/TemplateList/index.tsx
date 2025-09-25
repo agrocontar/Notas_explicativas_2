@@ -5,7 +5,6 @@ import { AccountTable } from './components/AccountTable';
 import { ActionButton } from './components/ActionButton';
 import { FilterHeader } from './components/FilterHeader';
 import { TemplateListProps } from './types';
-import './TemplateList.css';
 import { memo, useMemo, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';

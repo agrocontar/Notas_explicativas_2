@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Toast } from 'primereact/toast';
-import { createAccount, deleteAccount, deleteMultipleAccounts, getSourceData, relateAccounts } from './actions';
+import { createAccount, deleteMultipleAccounts, getSourceData, relateAccounts, relateMultipleAccounts } from './actions';
 import { Account } from './types';
 
 interface CreateAccountData {
@@ -12,15 +12,14 @@ interface CreateAccountData {
 export const useTemplateList = (companyId: string, initialData: Account[]) => {
   const [source, setSource] = useState<Account[]>([]);
   const [target, setTarget] = useState<Account[]>(initialData || []);
-  const [selectedSource, setSelectedSource] = useState<Account | null>(null);
   const [selectedTarget, setSelectedTarget] = useState<Account | null>(null);
-  const [selectedMultipleSources, setSelectedMultipleSources] = useState<Account[]>([]); // NOVO ESTADO
+  const [selectedMultipleSources, setSelectedMultipleSources] = useState<Account[]>([]);
   const [sourceFilter, setSourceFilter] = useState('');
   const [targetFilter, setTargetFilter] = useState('');
-  const [loading, setLoading] = useState(false);
   const [sourceLoading, setSourceLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
-  const [deleteMultipleLoading, setDeleteMultipleLoading] = useState(false); // NOVO LOADING
+  const [deleteMultipleLoading, setDeleteMultipleLoading] = useState(false);
+  const [bulkMappingLoading, setBulkMappingLoading] = useState(false); // NOVO LOADING
   
   const toast = useRef<Toast>(null);
 
@@ -58,82 +57,89 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
     loadSourceData();
   }, [loadSourceData]);
 
-  const handleDePara = useCallback(async () => {
-    if (!selectedSource || !selectedTarget) {
+  // NOVA FUNÇÃO: Mapeamento em massa de múltiplas contas para uma conta padrão
+  const handleBulkMapping = useCallback(async (sourceAccounts: Account[], targetAccount: Account) => {
+    if (!sourceAccounts || sourceAccounts.length === 0 || !targetAccount) {
       toast.current?.show({
         severity: 'warn',
         summary: 'Atenção',
-        detail: 'Selecione uma conta de cada tabela',
+        detail: 'Selecione pelo menos uma conta não parametrizada e uma conta padrão',
         life: 3000
       });
       return;
     }
-    
+
+    setBulkMappingLoading(true);
     try {
-      setLoading(true);
-      await relateAccounts(companyId, selectedSource.accountingAccount, selectedTarget.id);
+      const sourceAccountingAccounts = sourceAccounts.map(account => account.accountingAccount);
+      const result = await relateMultipleAccounts(companyId, sourceAccountingAccounts, targetAccount.accountingAccount);
       
       toast.current?.show({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Contas relacionadas com sucesso',
+        detail: `${sourceAccounts.length} conta(s) mapeada(s) para ${targetAccount.accountName} com sucesso`,
         life: 3000
       });
       
-      // Remover a conta da lista de não parametrizadas
-      setSource(prev => (prev || []).filter(item => item.id !== selectedSource.id));
+      // Remover as contas mapeadas da lista de não parametrizadas
+      const sourceAccountIds = sourceAccounts.map(account => account.id);
+      setSource(prev => (prev || []).filter(item => !sourceAccountIds.includes(item.id)));
       
-    } catch (error) {
-      console.error('Erro ao relacionar contas:', error);
+      // Limpar seleções
+      setSelectedMultipleSources([]);
+      setSelectedTarget(null);
+      
+      return result;
+      
+    } catch (error: any) {
+      console.error('Erro ao mapear contas em massa:', error);
+      
+      const errorMessage = error.message || 'Falha ao mapear contas';
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Falha ao relacionar contas',
-        life: 3000
+        detail: errorMessage,
+        life: 5000
       });
+      throw error;
     } finally {
-      setLoading(false);
-      setSelectedSource(null);
-      setSelectedTarget(null);
+      setBulkMappingLoading(false);
     }
-  }, [companyId, selectedSource, selectedTarget]);
+  }, [companyId]);
 
   const handleCreateAccount = useCallback(async (accountData: CreateAccountData) => {
-  setCreateLoading(true);
-  try {
-    const createdAccount = await createAccount({
-      companyId: companyId,
+    setCreateLoading(true);
+    try {
+      const createdAccount = await createAccount({
+        companyId: companyId,
         configs: [{
           accountName: accountData.accountName,
           accountingAccount: accountData.accountingAccount
         }]
-    });
-    
-    toast.current?.show({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Conta criada com sucesso',
-      life: 3000
-    });
-    
-    await loadSourceData();
-    
-    return createdAccount;
-    
-  } catch (error: any) {
-
-    toast.current?.show({
-      severity: 'error',
-      summary: 'Erro',
-      detail: error.message || 'Falha ao criar conta',
-      life: 5000
-    });
-
-  } finally {
-    setCreateLoading(false);
-  }
-}, [companyId, loadSourceData]);
-
+      });
+      
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Conta criada com sucesso',
+        life: 3000
+      });
+      
+      await loadSourceData();
+      
+      return createdAccount;
+      
+    } catch (error: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erro',
+        detail: error.message || 'Falha ao criar conta',
+        life: 5000
+      });
+    } finally {
+      setCreateLoading(false);
+    }
+  }, [companyId, loadSourceData]);
 
   const handleDeleteMultipleAccounts = useCallback(async (accounts: Account[]) => {
     if (!accounts || accounts.length === 0) {
@@ -198,23 +204,21 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
   return {
     source: filteredSource,
     target: filteredTarget,
-    selectedSource,
     selectedTarget,
     selectedMultipleSources,
     sourceFilter,
     targetFilter,
-    loading,
     sourceLoading,
+    createLoading,
+    deleteMultipleLoading,
+    bulkMappingLoading, // NOVO
     toast,
     setSourceFilter: useCallback((value: string) => setSourceFilter(value), []),
     setTargetFilter: useCallback((value: string) => setTargetFilter(value), []),
-    setSelectedSource: useCallback((value: Account | null) => setSelectedSource(value), []),
     setSelectedTarget: useCallback((value: Account | null) => setSelectedTarget(value), []),
     setSelectedMultipleSources: useCallback((value: Account[]) => setSelectedMultipleSources(value), []),
-    handleDePara,
-    createLoading,
+    handleBulkMapping, // NOVA FUNÇÃO
     handleCreateAccount,
-    deleteMultipleLoading, 
-    handleDeleteMultipleAccounts 
+    handleDeleteMultipleAccounts
   };
 };

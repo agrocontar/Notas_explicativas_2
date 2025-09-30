@@ -11,9 +11,7 @@ import { Button } from 'primereact/button';
 interface AccountTableProps {
   title: string;
   data: Account[];
-  selected: Account | null;
   selectedMultiple?: Account[];
-  onSelectionChange: (account: Account | null) => void;
   onMultipleSelectionChange?: (accounts: Account[]) => void;
   loading: boolean;
   emptyMessage: string;
@@ -42,13 +40,10 @@ const loadingTemplate = () => {
   );
 };
 
-// Componente memoizado igual para ambas as tabelas
 export const AccountTable = memo(({
   title,
   data,
-  selected,
   selectedMultiple = [],
-  onSelectionChange,
   onMultipleSelectionChange,
   loading,
   emptyMessage,
@@ -59,7 +54,6 @@ export const AccountTable = memo(({
   showCheckbox = false
 }: AccountTableProps) => {
 
-  // Botão para deletar múltiplas contas
   const MultipleDeleteButton = () => (
     <Button
       icon="pi pi-trash"
@@ -71,10 +65,9 @@ export const AccountTable = memo(({
     />
   );
 
-  // CORREÇÃO: Renderizar DataTable condicionalmente baseado no modo de seleção
   const renderDataTable = () => {
     if (showCheckbox) {
-      // Modo múltipla seleção (com checkbox)
+      // Modo múltipla seleção (com checkbox) - para contas não parametrizadas
       return (
         <DataTable
           value={data}
@@ -109,13 +102,13 @@ export const AccountTable = memo(({
         </DataTable>
       );
     } else {
-      // Modo seleção única (sem checkbox)
+      // Modo seleção única (sem checkbox) - para contas padrão
       return (
         <DataTable
           value={data}
           selectionMode="single"
-          selection={selected}
-          onSelectionChange={(e) => onSelectionChange(e.value as Account)}
+          selection={selectedMultiple.length > 0 ? selectedMultiple[0] : null} // Adaptado para usar selectedMultiple
+          onSelectionChange={(e) => onMultipleSelectionChange?.(e.value ? [e.value as Account] : [])}
           dataKey="id"
           scrollable
           scrollHeight="300px"

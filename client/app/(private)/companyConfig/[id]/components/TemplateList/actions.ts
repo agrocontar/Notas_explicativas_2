@@ -179,3 +179,44 @@ export const deleteMultipleAccounts = async (companyId: string, accountingAccoun
     }
   }
 };
+
+
+export const relateMultipleAccounts = async (companyId: string, sourceAccounts: string[], targetAccount: string) => {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get('token')?.value;
+
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    const res = await serverApi.post(
+      `/config/mappings/bulk`,
+      {
+        companyId,
+        mappings: sourceAccounts.map(companyAccount => ({
+          companyAccount,
+          defaultAccount: targetAccount
+        }))
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': `token=${token}`
+        },
+      }
+    );
+
+    return res.data;
+  } catch (error: any) {
+    console.error('Erro ao mapear contas em massa:', error);
+    
+    if (error.response?.status === 400) {
+      throw new Error(error.response.data?.message || 'Dados inválidos para mapeamento');
+    } else if (error.response?.status === 404) {
+      throw new Error(error.response.data?.message || 'Conta(s) não encontrada(s)');
+    } else {
+      throw new Error(error.response?.data?.message || 'Falha ao mapear contas');
+    }
+  }
+};

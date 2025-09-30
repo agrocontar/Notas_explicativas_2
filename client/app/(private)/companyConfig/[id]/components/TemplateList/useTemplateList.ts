@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Toast } from 'primereact/toast';
-import { createAccount, deleteAccount, getSourceData, relateAccounts } from './actions';
+import { createAccount, deleteAccount, deleteMultipleAccounts, getSourceData, relateAccounts } from './actions';
 import { Account } from './types';
 
 interface CreateAccountData {
@@ -14,12 +14,13 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
   const [target, setTarget] = useState<Account[]>(initialData || []);
   const [selectedSource, setSelectedSource] = useState<Account | null>(null);
   const [selectedTarget, setSelectedTarget] = useState<Account | null>(null);
+  const [selectedMultipleSources, setSelectedMultipleSources] = useState<Account[]>([]); // NOVO ESTADO
   const [sourceFilter, setSourceFilter] = useState('');
   const [targetFilter, setTargetFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [sourceLoading, setSourceLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteMultipleLoading, setDeleteMultipleLoading] = useState(false); // NOVO LOADING
   
   const toast = useRef<Toast>(null);
 
@@ -133,26 +134,38 @@ export const useTemplateList = (companyId: string, initialData: Account[]) => {
   }
 }, [companyId, loadSourceData]);
 
-const handleDeleteAccount = useCallback(async (accountingAccount: string) => {
-    setDeleteLoading(true);
+
+  const handleDeleteMultipleAccounts = useCallback(async (accounts: Account[]) => {
+    if (!accounts || accounts.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione pelo menos uma conta para excluir',
+        life: 3000
+      });
+      return;
+    }
+
+    setDeleteMultipleLoading(true);
     try {
-      await deleteAccount(companyId, accountingAccount);
+      const accountingAccounts = accounts.map(account => account.accountingAccount);
+      await deleteMultipleAccounts(companyId, accountingAccounts);
       
       toast.current?.show({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Conta excluída com sucesso',
+        detail: `${accounts.length} conta(s) excluída(s) com sucesso`,
         life: 3000
       });
       
       // Recarregar os dados
       await loadSourceData();
-      setSelectedSource(null);
+      setSelectedMultipleSources([]); // Limpar seleção
       
     } catch (error: any) {
-      console.error('Erro ao excluir conta:', error);
+      console.error('Erro ao excluir contas:', error);
       
-      const errorMessage = error.message || 'Falha ao excluir conta';
+      const errorMessage = error.message || 'Falha ao excluir contas';
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
@@ -161,7 +174,7 @@ const handleDeleteAccount = useCallback(async (accountingAccount: string) => {
       });
       throw error;
     } finally {
-      setDeleteLoading(false);
+      setDeleteMultipleLoading(false);
     }
   }, [companyId, loadSourceData]);
 
@@ -187,6 +200,7 @@ const handleDeleteAccount = useCallback(async (accountingAccount: string) => {
     target: filteredTarget,
     selectedSource,
     selectedTarget,
+    selectedMultipleSources,
     sourceFilter,
     targetFilter,
     loading,
@@ -196,10 +210,11 @@ const handleDeleteAccount = useCallback(async (accountingAccount: string) => {
     setTargetFilter: useCallback((value: string) => setTargetFilter(value), []),
     setSelectedSource: useCallback((value: Account | null) => setSelectedSource(value), []),
     setSelectedTarget: useCallback((value: Account | null) => setSelectedTarget(value), []),
+    setSelectedMultipleSources: useCallback((value: Account[]) => setSelectedMultipleSources(value), []),
     handleDePara,
     createLoading,
     handleCreateAccount,
-    deleteLoading,
-    handleDeleteAccount
+    deleteMultipleLoading, 
+    handleDeleteMultipleAccounts 
   };
 };

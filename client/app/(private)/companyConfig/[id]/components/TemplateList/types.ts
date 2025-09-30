@@ -9,3 +9,7 @@ export type TemplateListProps = {
   companyId: string;
   initialData: Account[];
 };
+
+export type DeleteMultipleAccountsPayload = {
+  accountingAccounts: string[];
+};

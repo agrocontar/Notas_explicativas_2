@@ -78,22 +78,27 @@ export const updateConfigCompany = async (req: Request, res: Response) => {
 
 export const deleteConfigCompany = async (req: Request, res: Response) => {
   try {
-    const companyId = req.params.id
-    const accountingAccount = req.body.accountingAccount
-    
-    const result = await configService.deleteOneConfigCompany(companyId, accountingAccount)
+    const companyId = req.params.id;
+    const accountingAccounts: string[] = req.body.accountingAccounts;
+
+    if (!Array.isArray(accountingAccounts) || accountingAccounts.length === 0) {
+      return res.status(400).json({ error: "accountingAccounts deve ser um array não vazio." });
+    }
+
+    const result = await configService.deleteConfigsCompany(companyId, accountingAccounts);
     res.json(result);
   } catch (err) {
     if (err instanceof z.ZodError) {
-        return res.status(400).json({ errors: handleZodError(err) });
-      }
+      return res.status(400).json({ errors: handleZodError(err) });
+    }
     if (err instanceof NotFoundError) {
       return res.status(404).json({ error: err.message });
     }
     console.error(err);
-    res.status(500).json({ error: "Erro ao deletar Configuração" });
+    res.status(500).json({ error: "Erro ao deletar Configurações" });
   }
 };
+
 
 
 export const deleteConfigNotMappedOfCompany = async (req: Request, res: Response) => {

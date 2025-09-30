@@ -11,14 +11,19 @@ import { Button } from 'primereact/button';
 interface AccountTableProps {
   title: string;
   data: Account[];
-  selected: Account | null;
-  onSelectionChange: (account: Account | null) => void;
+  // Para seleção múltipla (com checkbox)
+  selectedMultiple?: Account[];
+  onMultipleSelectionChange?: (accounts: Account[]) => void;
+  // Para seleção única (sem checkbox)  
+  selectedSingle?: Account | null;
+  onSingleSelectionChange?: (account: Account | null) => void;
   loading: boolean;
   emptyMessage: string;
   toolbar: React.ReactNode;
   header: React.ReactNode;
   handleCreateAccount?: () => void;
-  handleDeleteAccount?: () => void;
+  handleDeleteMultipleAccounts?: () => void;
+  showCheckbox?: boolean;
 }
 
 const accountTemplate = (rowData: Account) => {
@@ -39,71 +44,88 @@ const loadingTemplate = () => {
   );
 };
 
-// Componente memoizado igual para ambas as tabelas
 export const AccountTable = memo(({
   title,
   data,
-  selected,
-  onSelectionChange,
+  selectedMultiple = [],
+  onMultipleSelectionChange,
+  selectedSingle = null,
+  onSingleSelectionChange,
   loading,
   emptyMessage,
   toolbar,
   header,
   handleCreateAccount,
-  handleDeleteAccount
+  handleDeleteMultipleAccounts,
+  showCheckbox = false
 }: AccountTableProps) => {
-  return (
-    <Card className="h-full">
-      <Toolbar className="mb-2" left={toolbar} />
-      {(handleCreateAccount || handleDeleteAccount) &&
-        <div className='flex justify-content-end mb-2 my-2 gap-2'>
-          <Button
-            icon="pi pi-plus"
-            className="p-button-rounded p-button-success p-button-sm"
-            tooltip="Criar nova conta"
-            tooltipOptions={{ position: 'top' }}
-            onClick={handleCreateAccount}
-          />
 
-          {/* <Button
-            icon="pi pi-refresh"
-            className="p-button-rounded p-button-warning p-button-sm"
-            tooltip="Atualizar conta"
-            tooltipOptions={{ position: 'top' }}
-            onClick={handleCreateAccount}
-          /> */}
+  const MultipleDeleteButton = () => (
+    <Button
+      icon="pi pi-trash"
+      className="p-button-rounded p-button-danger p-button-sm"
+      tooltip={`Excluir ${selectedMultiple.length} conta(s) selecionada(s)`}
+      tooltipOptions={{ position: 'top' }}
+      onClick={handleDeleteMultipleAccounts}
+      disabled={!selectedMultiple || selectedMultiple.length === 0}
+    />
+  );
 
-          <Button
-            icon="pi pi-times"
-            className="p-button-rounded p-button-danger p-button-sm"
-            tooltip="Remover conta"
-            tooltipOptions={{ position: 'top' }}
-            onClick={handleDeleteAccount}
-          />
-
-          
-        </div>
-      }
-      {header}
-      <div className="table-container">
+  const renderDataTable = () => {
+    if (showCheckbox) {
+      // Modo múltipla seleção (com checkbox) - para contas não parametrizadas
+      return (
         <DataTable
           value={data}
-          selectionMode="single"
-          selection={selected}
-          onSelectionChange={(e) => onSelectionChange(e.value as Account)}
+          selectionMode="multiple"
+          selection={selectedMultiple}
+          onSelectionChange={(e) => onMultipleSelectionChange?.(e.value as Account[])}
           dataKey="id"
           scrollable
           scrollHeight="300px"
           loading={loading}
           className="p-datatable-sm"
           emptyMessage={emptyMessage}
-          // Configurações otimizadas para performance
           virtualScrollerOptions={{
             itemSize: 50,
             showLoader: true,
             loading: loading,
           }}
-          // Otimizações de performance
+          resizableColumns
+          columnResizeMode="fit"
+          showGridlines
+          size="small"
+        >
+          <Column 
+            selectionMode="multiple" 
+            headerStyle={{ width: '3rem' }}
+          />
+          <Column
+            body={loading ? loadingTemplate : accountTemplate}
+            header="Conta"
+            style={{ minWidth: '200px' }}
+          />
+        </DataTable>
+      );
+    } else {
+      // Modo seleção única (sem checkbox) - para contas padrão
+      return (
+        <DataTable
+          value={data}
+          selectionMode="single"
+          selection={selectedSingle}
+          onSelectionChange={(e) => onSingleSelectionChange?.(e.value as Account)}
+          dataKey="id"
+          scrollable
+          scrollHeight="300px"
+          loading={loading}
+          className="p-datatable-sm"
+          emptyMessage={emptyMessage}
+          virtualScrollerOptions={{
+            itemSize: 50,
+            showLoader: true,
+            loading: loading,
+          }}
           resizableColumns
           columnResizeMode="fit"
           showGridlines
@@ -115,6 +137,33 @@ export const AccountTable = memo(({
             style={{ minWidth: '200px' }}
           />
         </DataTable>
+      );
+    }
+  };
+
+  return (
+    <Card className="h-full">
+      <Toolbar className="mb-2" left={toolbar} />
+      {(handleCreateAccount || handleDeleteMultipleAccounts) && (
+        <div className='flex justify-content-end mb-2 my-2 gap-2'>
+          {handleCreateAccount && (
+            <Button
+              icon="pi pi-plus"
+              className="p-button-rounded p-button-success p-button-sm"
+              tooltip="Criar nova conta"
+              tooltipOptions={{ position: 'top' }}
+              onClick={handleCreateAccount}
+            />
+          )}
+
+          {handleDeleteMultipleAccounts && showCheckbox && (
+            <MultipleDeleteButton />
+          )}
+        </div>
+      )}
+      {header}
+      <div className="table-container">
+        {renderDataTable()}
       </div>
     </Card>
   );

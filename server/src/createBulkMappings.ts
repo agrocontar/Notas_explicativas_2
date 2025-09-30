@@ -1,5 +1,5 @@
 // createBulkMappingsScript.ts
-import { createBulkMappings } from './src/services/mapping/configMappingServices';
+import { createBulkMappings } from './services/mapping/configMappingServices';
 
 // Seus mapeamentos em formato de array
 const mappingsData = [

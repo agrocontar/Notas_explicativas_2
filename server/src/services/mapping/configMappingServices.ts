@@ -244,3 +244,29 @@ export const createBulkMappings = async (data: BulkMappingRequest) => {
 
   return results;
 };
+
+
+
+export const deleteMultipleMappings = async (mappingIds: number[]) => {
+  // Verificar se todos os mapeamentos existem
+  const existingMappings = await prisma.configMapping.findMany({
+    where: {
+      id: { in: mappingIds }
+    }
+  });
+
+  if (existingMappings.length !== mappingIds.length) {
+    const foundIds = existingMappings.map(mapping => mapping.id);
+    const notFoundIds = mappingIds.filter(id => !foundIds.includes(id));
+    throw new NotFoundError(`Mapeamento(s) não encontrado(s): ${notFoundIds.join(', ')}`);
+  }
+
+  // Deletar todos os mapeamentos
+  const deleted = await prisma.configMapping.deleteMany({
+    where: {
+      id: { in: mappingIds }
+    }
+  });
+
+  return { count: deleted.count };
+};

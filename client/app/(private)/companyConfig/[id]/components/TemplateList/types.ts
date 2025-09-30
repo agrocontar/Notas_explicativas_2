@@ -8,4 +8,9 @@ export type Account = {
 export type TemplateListProps = {
   companyId: string;
   initialData: Account[];
+  onMappingCreated?: () => void;
+};
+
+export type DeleteMultipleAccountsPayload = {
+  accountingAccounts: string[];
 };

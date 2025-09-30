@@ -144,3 +144,79 @@ export const deleteAccount = async (companyId: string, accountingAccount: string
     }
   }
 };
+
+
+export const deleteMultipleAccounts = async (companyId: string, accountingAccounts: string[]) => {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get('token')?.value;
+
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    const res = await serverApi.delete(
+      `/config/company/${companyId}`,
+      {
+        data: { accountingAccounts }, // Agora é um array
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': `token=${token}`
+        },
+      }
+    );
+
+    return res.data;
+  } catch (error: any) {
+    console.error('Erro ao excluir contas:', error);
+    
+    if (error.response?.status === 404) {
+      throw new Error(error.response.data?.message || 'Contas não encontradas');
+    } else if (error.response?.status === 400) {
+      throw new Error(error.response.data?.message || 'Dados inválidos');
+    } else {
+      throw new Error(error.response?.data?.message || 'Falha ao excluir contas');
+    }
+  }
+};
+
+
+export const relateMultipleAccounts = async (companyId: string, sourceAccounts: string[], targetAccount: string) => {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get('token')?.value;
+
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    const res = await serverApi.post(
+      `/config/mappings/bulk`,
+      {
+        companyId,
+        mappings: sourceAccounts.map(companyAccount => ({
+          companyAccount,
+          defaultAccount: targetAccount
+        }))
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': `token=${token}`
+        },
+      }
+    );
+
+    return res.data;
+  } catch (error: any) {
+    console.error('Erro ao mapear contas em massa:', error);
+    
+    if (error.response?.status === 400) {
+      throw new Error(error.response.data?.message || 'Dados inválidos para mapeamento');
+    } else if (error.response?.status === 404) {
+      throw new Error(error.response.data?.message || 'Conta(s) não encontrada(s)');
+    } else {
+      throw new Error(error.response?.data?.message || 'Falha ao mapear contas');
+    }
+  }
+};

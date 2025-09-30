@@ -25,7 +25,7 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:3000',
       'http://192.168.62.50:3004',
-      'https://seu-dominio.com'
+      'http://192.168.1.12:3000',
     ];
     
     if (!origin || allowedOrigins.includes(origin)) {
@@ -52,6 +52,6 @@ app.use("/auth", authRoutes)
 // Converter PORT para número explicitamente
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
-app.listen(PORT, "0.0.0.0", () =>
-  console.log(`🚀 Server running at http://"0.0.0.0":${process.env.PORT || 3000}`)
+app.listen(PORT, "localhost", () =>
+  console.log(`🚀 Server running at http://localhost:${process.env.PORT || 3000}`)
 );

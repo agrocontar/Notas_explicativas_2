@@ -18,6 +18,7 @@ router.post("/mapping", authMiddleware ,configMapping.createMapping);
 router.put("/mapping/:id", authMiddleware ,configMapping.updateMappingCompany);
 router.get("/mapping/:id", authMiddleware ,configMapping.listMappingCompany);
 router.delete("/mapping/:id", authMiddleware ,configMapping.deleteMappingCompany);
+router.delete('/mappings/bulk', authMiddleware, configMapping.deleteMultipleMappings);
 router.post('/mappings/bulk', authMiddleware, configMapping.createBulkMappingsController);
 
 

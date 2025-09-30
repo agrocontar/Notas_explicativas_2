@@ -17,17 +17,7 @@
   {
     "name": "Adiantamentos",
     "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["1113"]
-  },
-  {
-    "name": "Despesas antecipadas",
-    "group": "ATIVO_CIRCULANTE",
     "accountingAccounts": ["1132", "1133"]
-  },
-  {
-    "name": "Estoques",
-    "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["115"]
   },
   {
     "name": "Impostos a recuperar",
@@ -35,20 +25,30 @@
     "accountingAccounts": ["1134"]
   },
   {
+    "name": "Estoques",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["115"]
+  },
+  {
+    "name": "Despesas antecipadas",
+    "group": "ATIVO_CIRCULANTE",
+    "accountingAccounts": ["117"]
+  },
+  {
     "name": "Outras Contas a Receber",
     "group": "ATIVO_CIRCULANTE",
-    "accountingAccounts": ["1134"]
+    "accountingAccounts": ["1131"]
   },
   
   {
     "name": "Outras contas a receber",
     "group": "ATIVO_NAO_CIRCULANTE",
-    "accountingAccounts": []
+    "accountingAccounts": ["121"]
   },
   {
     "name": "Investimentos",
     "group": "ATIVO_NAO_CIRCULANTE",
-    "accountingAccounts": ["121", "122"]
+    "accountingAccounts": ["122"]
   },
   {
     "name": "Imobilizado",
@@ -96,14 +96,14 @@
     "accountingAccounts": ["211107"]
   },
   {
-    "name": "Obrigações fiscais",
-    "group": "PASSIVO_NAO_CIRCULANTE",
-    "accountingAccounts": ["221104"]
-  },
-  {
     "name": "Empréstimos e financiamentos",
     "group": "PASSIVO_NAO_CIRCULANTE",
     "accountingAccounts": ["221101"]
+  },
+  {
+    "name": "Obrigações fiscais",
+    "group": "PASSIVO_NAO_CIRCULANTE",
+    "accountingAccounts": ["221104"]
   },
   {
     "name": "Outras Obrigações",
@@ -116,18 +116,18 @@
     "accountingAccounts": ["231101"]
   },
   {
-    "name": "Ajustes de avaliação patrimonial",
-    "group": "PATRIMONIO_LIQUIDO",
-    "accountingAccounts": ["231106"]
-  },
-  {
     "name": "Reservas de lucros",
     "group": "PATRIMONIO_LIQUIDO",
     "accountingAccounts": ["231102", "231103", "231104", "231107"]
   },
   {
+    "name": "Ajustes de avaliação patrimonial",
+    "group": "PATRIMONIO_LIQUIDO",
+    "accountingAccounts": ["231106"]
+  },
+  {
     "name": "Lucro / Prejuízos acumulados",
     "group": "PATRIMONIO_LIQUIDO",
-    "accountingAccounts": []
+    "accountingAccounts": ["231105"]
   }
 ]

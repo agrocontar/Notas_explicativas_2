@@ -5,7 +5,6 @@ import { AccountTable } from './components/AccountTable';
 import { ActionButton } from './components/ActionButton';
 import { FilterHeader } from './components/FilterHeader';
 import { TemplateListProps } from './types';
-import './TemplateList.css';
 import { memo, useMemo, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -30,30 +29,31 @@ const RightToolbar = memo(() => (
 ));
 RightToolbar.displayName = 'RightToolbar'; // Adicione esta linha
 
-export default function TemplateList({ companyId, initialData }: TemplateListProps) {
-  const {
+export default function TemplateList({ companyId, initialData, onMappingCreated }: TemplateListProps) {
+ const {
     source,
     target,
-    selectedSource,
-    selectedTarget,
+    selectedMultipleSources,
+    selectedTarget, // Já é um único Account | null
     sourceFilter,
     targetFilter,
-    loading,
     sourceLoading,
     createLoading,
+    deleteMultipleLoading,
+    bulkMappingLoading,
     toast,
     setSourceFilter,
     setTargetFilter,
-    setSelectedSource,
-    setSelectedTarget,
-    handleDePara,
+    setSelectedMultipleSources,
+    setSelectedTarget, // Já é uma função que recebe Account | null
+    handleBulkMapping,
     handleCreateAccount,
-    deleteLoading,
-    handleDeleteAccount
+    handleDeleteMultipleAccounts
   } = useTemplateList(companyId, initialData);
 
   const [accountDialog, setAccountDialog] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteMultipleDialog, setDeleteMultipleDialog] = useState(false); 
+  const [bulkMappingDialog, setBulkMappingDialog] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [newAccount, setNewAccount] = useState({
     name: '',
@@ -66,10 +66,10 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     <FilterHeader
       filterValue={sourceFilter}
       onFilterChange={setSourceFilter}
-      selectedAccount={selectedSource}
+      selectedAccount={selectedMultipleSources.length > 0 ? selectedMultipleSources[0] : null} // Atualizado
       placeholder="Filtrar por código ou nome"
     />
-  ), [sourceFilter, selectedSource, setSourceFilter]);
+  ), [sourceFilter, selectedMultipleSources, setSourceFilter]);
 
   const targetHeader = useMemo(() => (
     <FilterHeader
@@ -85,13 +85,58 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     setAccountDialog(true);
   }
 
-  const openDeleteDialog = () => {
-    setDeleteDialog(true);
+  const openDeleteMultipleDialog = () => {
+    if (selectedMultipleSources.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione pelo menos uma conta para excluir',
+        life: 3000
+      });
+      return;
+    }
+    setDeleteMultipleDialog(true);
+  }
+
+  const openBulkMappingDialog = () => {
+    if (selectedMultipleSources.length === 0 || !selectedTarget) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione pelo menos uma conta não parametrizada e uma conta padrão',
+        life: 3000
+      });
+      return;
+    }
+    setBulkMappingDialog(true);
   }
 
    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const val = e.target?.value || '';
     setNewAccount({ ...newAccount, [field]: val });
+  };
+
+   const deleteMultipleAccounts = async () => {
+    try {
+      await handleDeleteMultipleAccounts(selectedMultipleSources);
+      setDeleteMultipleDialog(false);
+    } catch (error) {
+      console.error('Erro ao excluir contas:', error);
+    }
+  };
+
+  const executeBulkMapping = async () => {
+    try {
+      await handleBulkMapping(selectedMultipleSources, selectedTarget!);
+      setBulkMappingDialog(false);
+
+      if (onMappingCreated) {
+        onMappingCreated();
+      }
+
+    } catch (error) {
+      console.error('Erro ao mapear contas:', error);
+    }
   };
 
   const saveAccount = async () => {
@@ -112,25 +157,6 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
       
     } catch (error) {
       console.error('Erro ao criar conta:', error);
-    }
-  };
-
-  const deleteAccount = async () => {
-    if (!selectedSource) {
-      toast.current?.show({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'Selecione uma conta para excluir',
-        life: 3000
-      });
-      return;
-    }
-
-    try {
-      await handleDeleteAccount(selectedSource.accountingAccount);
-      setDeleteDialog(false);
-    } catch (error) {
-      console.error('Erro ao excluir conta:', error);
     }
   };
 
@@ -157,13 +183,32 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     </div>
   );
 
-  const deleteDialogFooter = (
-      <>
-        <Button label="Cancelar" icon="pi pi-times" text onClick={() => setDeleteDialog(false)} />
-        <Button label="Excluir" icon="pi pi-check" text onClick={deleteAccount} loading={deleteLoading} />
-      </>
-    );
   
+    const deleteMultipleDialogFooter = (
+    <>
+      <Button label="Cancelar" icon="pi pi-times" text onClick={() => setDeleteMultipleDialog(false)} />
+      <Button 
+        label={`Excluir ${selectedMultipleSources.length} conta(s)`} 
+        icon="pi pi-check" 
+        text 
+        onClick={deleteMultipleAccounts} 
+        loading={deleteMultipleLoading} 
+      />
+    </>
+  );
+
+  const bulkMappingDialogFooter = (
+    <>
+      <Button label="Cancelar" icon="pi pi-times" text onClick={() => setBulkMappingDialog(false)} />
+      <Button 
+        label={`Mapear ${selectedMultipleSources.length} conta(s)`} 
+        icon="pi pi-check" 
+        text 
+        onClick={executeBulkMapping} 
+        loading={bulkMappingLoading} 
+      />
+    </>
+  );
 
   return (
     <div className="template-list-container">
@@ -173,33 +218,36 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
           <AccountTable
             title="Contas não parametrizadas"
             data={source}
-            selected={selectedSource}
-            onSelectionChange={setSelectedSource}
+            selectedMultiple={selectedMultipleSources}
+            onMultipleSelectionChange={setSelectedMultipleSources}
             loading={sourceLoading || createLoading}
             emptyMessage="Nenhuma conta não parametrizada encontrada"
             toolbar={<LeftToolbar />}
             header={sourceHeader}
             handleCreateAccount={openCreateDialog}
-            handleDeleteAccount={openDeleteDialog}
+            handleDeleteMultipleAccounts={openDeleteMultipleDialog}
+            showCheckbox={true}
           />
         </div>
 
         <ActionButton
-          onClick={handleDePara}
-          disabled={!selectedSource || !selectedTarget || loading}
-          loading={loading}
+          onBulkMapping={openBulkMappingDialog}
+          bulkMappingDisabled={selectedMultipleSources.length === 0 || !selectedTarget}
+          bulkMappingLoading={bulkMappingLoading}
+          selectedMultipleCount={selectedMultipleSources.length}
         />
 
         <div className="col-12 md:col-5">
           <AccountTable
             title="Contas Padrão"
             data={target}
-            selected={selectedTarget}
-            onSelectionChange={setSelectedTarget}
+            selectedSingle={selectedTarget} // AGORA USA selectedSingle
+            onSingleSelectionChange={setSelectedTarget} // AGORA USA onSingleSelectionChange
             loading={false}
             emptyMessage="Nenhuma conta padrão encontrada"
             toolbar={<RightToolbar />}
             header={targetHeader}
+            showCheckbox={false}
           />
         </div>
       </div>
@@ -244,15 +292,54 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
         </div>
       </Dialog>
 
-      <Dialog visible={deleteDialog} style={{ width: '450px' }} header="Excluir Conta" modal className="p-fluid" footer={deleteDialogFooter} onHide={() => setDeleteDialog(false)}>
+       <Dialog visible={deleteMultipleDialog} style={{ width: '500px' }} header="Excluir Múltiplas Contas" modal className="p-fluid" footer={deleteMultipleDialogFooter} onHide={() => setDeleteMultipleDialog(false)}>
         <div className="field">
           <p>
-            Tem certeza que deseja excluir a conta{' '}
-            <strong>{selectedSource?.accountingAccount}</strong> - {selectedSource?.accountName}?
+            Tem certeza que deseja excluir as {selectedMultipleSources.length} contas selecionadas?
           </p>
-          <p className="text-sm text-500">Esta ação não pode ser desfeita.</p>
+          <div className="max-h-10rem overflow-auto border-1 surface-border border-round p-2 mt-2">
+            <ul>
+              {selectedMultipleSources.map(account => (
+                <li key={account.id} className="text-sm mb-1">
+                  <strong>{account.accountingAccount}</strong> - {account.accountName}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p className="text-sm text-500 mt-2">Esta ação não pode ser desfeita.</p>
         </div>
       </Dialog>
+
+      <Dialog visible={bulkMappingDialog} style={{ width: '500px' }} header="Mapear Múltiplas Contas" modal className="p-fluid" footer={bulkMappingDialogFooter} onHide={() => setBulkMappingDialog(false)}>
+        <div className="field">
+          <p>
+            Tem certeza que deseja mapear {selectedMultipleSources.length} conta(s) não parametrizadas para a conta padrão selecionada?
+          </p>
+          
+          <div className="mb-3">
+            <strong>Conta Padrão Destino:</strong>
+            <div className="p-2 border-1 surface-border border-round mt-1">
+              <strong>{selectedTarget?.accountingAccount}</strong> - {selectedTarget?.accountName}
+            </div>
+          </div>
+
+          <strong>Contas não parametrizadas selecionadas:</strong>
+          <div className="max-h-10rem overflow-auto border-1 surface-border border-round p-2 mt-1">
+            <ul>
+              {selectedMultipleSources.map(account => (
+                <li key={account.id} className="text-sm mb-1">
+                  <strong>{account.accountingAccount}</strong> - {account.accountName}
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <p className="text-sm text-500 mt-2">
+            Após o mapeamento, estas contas serão removidas da lista de não parametrizadas.
+          </p>
+        </div>
+      </Dialog>
+
     </div>
   );
 }

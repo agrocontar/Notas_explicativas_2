@@ -128,3 +128,33 @@ export const createBulkMappingsController = async (req: Request, res: Response) 
     res.status(500).json({ error: "Erro ao criar mapeamentos em massa" });
   }
 };
+
+
+
+
+
+const deleteMultipleMappingsSchema = z.object({
+  mappingIds: z.array(z.number()).min(1, "Pelo menos um ID de mapeamento deve ser fornecido")
+});
+
+export const deleteMultipleMappings = async (req: Request, res: Response) => {
+  try {
+    const { mappingIds } = deleteMultipleMappingsSchema.parse(req.body);
+    
+    const result = await mappingService.deleteMultipleMappings(mappingIds);
+
+    res.json({
+      message: `${result.count} mapeamento(s) deletado(s) com sucesso`,
+      deletedCount: result.count
+    });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ errors: handleZodError(err) });
+    }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erro ao deletar Mapeamentos" });
+  }
+};

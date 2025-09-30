@@ -11,8 +11,12 @@ import { Button } from 'primereact/button';
 interface AccountTableProps {
   title: string;
   data: Account[];
+  // Para seleção múltipla (com checkbox)
   selectedMultiple?: Account[];
   onMultipleSelectionChange?: (accounts: Account[]) => void;
+  // Para seleção única (sem checkbox)  
+  selectedSingle?: Account | null;
+  onSingleSelectionChange?: (account: Account | null) => void;
   loading: boolean;
   emptyMessage: string;
   toolbar: React.ReactNode;
@@ -45,6 +49,8 @@ export const AccountTable = memo(({
   data,
   selectedMultiple = [],
   onMultipleSelectionChange,
+  selectedSingle = null,
+  onSingleSelectionChange,
   loading,
   emptyMessage,
   toolbar,
@@ -107,8 +113,8 @@ export const AccountTable = memo(({
         <DataTable
           value={data}
           selectionMode="single"
-          selection={selectedMultiple.length > 0 ? selectedMultiple[0] : null} // Adaptado para usar selectedMultiple
-          onSelectionChange={(e) => onMultipleSelectionChange?.(e.value ? [e.value as Account] : [])}
+          selection={selectedSingle}
+          onSelectionChange={(e) => onSingleSelectionChange?.(e.value as Account)}
           dataKey="id"
           scrollable
           scrollHeight="300px"

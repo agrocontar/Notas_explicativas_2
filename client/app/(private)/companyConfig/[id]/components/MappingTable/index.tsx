@@ -4,10 +4,12 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
-import { useCallback, useEffect, useState } from "react";
+import { Toast } from "primereact/toast";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface MappingTableProps {
   companyId: string;
+  onMappingsDeleted?: (deletedAccounts: string[]) => void; // NOVO: Callback para quando mapeamentos são deletados
 }
 
 interface Mapping {
@@ -29,19 +31,20 @@ interface Mapping {
   }
 }
 
-export default function MappingTable({ companyId }: MappingTableProps) {
+export default function MappingTable({ companyId, onMappingsDeleted }: MappingTableProps) {
   const [mappingData, setMappingData] = useState<Mapping[]>([]);
-  const [selected, setSelected] = useState<Mapping | null>(null);
+  const [selectedMappings, setSelectedMappings] = useState<Mapping[]>([]);
   const [emptyMessage, setEmptyMessage] = useState('Nenhum mapeamento encontrado.');
-  const [deleteDialog, setDeleteDialog] = useState(false);
-
-  const onSelectionChange = (value: Mapping | null) => {
-    setSelected(value);
-  };
+  const [deleteMultipleDialog, setDeleteMultipleDialog] = useState(false);
+  const [deleteMultipleLoading, setDeleteMultipleLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  const toast = useRef<Toast>(null);
 
   // fetchMappings com useCallback
   const fetchMappings = useCallback(async () => {
     try {
+      setLoading(true);
       const res = await api.get(`/config/mapping/${companyId}`);
       const data = await res.data;
 
@@ -53,12 +56,77 @@ export default function MappingTable({ companyId }: MappingTableProps) {
       setMappingData(data);
     } catch (err) {
       console.error('Erro inesperado:', err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Falha ao carregar mapeamentos',
+        life: 3000
+      });
+    } finally {
+      setLoading(false);
     }
   }, [companyId]);
 
   useEffect(() => {
     fetchMappings();
   }, [companyId, fetchMappings]);
+
+  // Função para deletar múltiplos mapeamentos
+  const deleteMultipleMappingsHandler = async () => {
+    if (selectedMappings.length === 0) return;
+    
+    setDeleteMultipleLoading(true);
+    try {
+      const mappingIds = selectedMappings.map(mapping => mapping.id);
+      
+      // Chamada direta à API igual ao fetch
+      const res = await api.delete(`/config/mappings/bulk`, {
+        data: { mappingIds }
+      });
+
+      if (res.status) {
+        // Extrair as contas que foram desmapeadas (para atualizar o TemplateList)
+        const deletedAccounts = selectedMappings.map(mapping => mapping.companyAccount);
+        
+        // Remover os mapeamentos deletados da lista
+        setMappingData(prev => prev.filter(item => !mappingIds.includes(item.id)));
+        setDeleteMultipleDialog(false);
+        setSelectedMappings([]);
+        
+        // NOVO: Chamar o callback para notificar o componente pai
+        if (onMappingsDeleted) {
+          onMappingsDeleted(deletedAccounts);
+        }
+        
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: `${selectedMappings.length} mapeamento(s) excluído(s) com sucesso`,
+          life: 3000
+        });
+      } else {
+        throw new Error(res.data?.error || 'Erro ao excluir mapeamentos');
+      }
+    } catch (error: any) {
+      console.error('Erro ao excluir mapeamentos:', error);
+      
+      let errorMessage = 'Falha ao excluir mapeamentos';
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erro',
+        detail: errorMessage,
+        life: 5000
+      });
+    } finally {
+      setDeleteMultipleLoading(false);
+    }
+  };
 
   const companyAccount = (rowData: Mapping) => {
     return (
@@ -83,71 +151,96 @@ export default function MappingTable({ companyId }: MappingTableProps) {
     );
   }
 
+  // Botão para deletar múltiplos mapeamentos
+  const MultipleDeleteButton = () => (
+    <Button
+      icon="pi pi-trash"
+      className="p-button-rounded p-button-danger p-button-sm"
+      tooltip={`Excluir ${selectedMappings.length} mapeamento(s) selecionado(s)`}
+      tooltipOptions={{ position: 'top' }}
+      onClick={() => setDeleteMultipleDialog(true)}
+      disabled={selectedMappings.length === 0}
+    />
+  );
 
-  const confirmDeleteMapping = (mapping: Mapping) => {
-    setSelected(mapping);
-    setDeleteDialog(true);
-  };
-
-  const actionBodyTemplate = (rowData: Mapping) => {
-      return (
-        <>
-          <Button
-            icon="pi pi-trash"
-            rounded
-            severity="danger"
-            onClick={() => confirmDeleteMapping(rowData)}
-          />
-        </>
-      );
-    }
-
-    const deleteMapping = async () => {
-      if (!selected) return;
-      try {
-        await api.delete(`/config/mapping/${selected.id}`);
-        setMappingData(prev => prev.filter(item => item.id !== selected.id));
-        setDeleteDialog(false);
-        setSelected(null);
-        window.location.reload();
-      }
-      catch (err) {
-        console.error('Erro ao excluir mapeamento:', err);
-      }
-    };
-
-    const deleteDialogFooter = (
-      <>
-        <Button label="Cancelar" icon="pi pi-times" text onClick={() => setDeleteDialog(false)} />
-        <Button label="Excluir" icon="pi pi-check" text onClick={deleteMapping} />
-      </>
-    );
+  const deleteMultipleDialogFooter = (
+    <>
+      <Button 
+        label="Cancelar" 
+        icon="pi pi-times" 
+        text 
+        onClick={() => setDeleteMultipleDialog(false)} 
+        disabled={deleteMultipleLoading}
+      />
+      <Button 
+        label={`Excluir ${selectedMappings.length} mapeamento(s)`} 
+        icon="pi pi-check" 
+        text 
+        onClick={deleteMultipleMappingsHandler} 
+        loading={deleteMultipleLoading} 
+      />
+    </>
+  );
 
   return(
     <>
-    <DataTable
-      value={mappingData}
-      selectionMode="single"
-      selection={selected}
-      onSelectionChange={(e) => onSelectionChange(e.value as Mapping)}
-      dataKey="id"
-      scrollable
-      scrollHeight="400px"
-      className="p-datatable-sm"
-      emptyMessage={emptyMessage}
-    >
-      <Column body={companyAccount} header="Conta Parametrizada" style={{ minWidth: '100px' }} />
-      <Column body={arrowIcon} header="" style={{ minWidth: '50px' }} />
-      <Column body={defaultAccount} header="Conta Padrão" style={{ minWidth: '200px' }} />
-      <Column body={actionBodyTemplate} header="Ações" style={{ minWidth: '150px' }} />
-    
-    </DataTable>
-
-    <Dialog visible={deleteDialog} style={{ width: '450px' }} header="Excluir Mapeamento" modal className="p-fluid" footer={deleteDialogFooter} onHide={() => setDeleteDialog(false)}>
-      <div className="field">
-        <label htmlFor="deleteMapping">Tem certeza que deseja excluir este mapeamento?</label>
+      <Toast ref={toast} />
+      
+      {/* Botão para deletar múltiplos */}
+      <div className="flex justify-content-end mb-3">
+        <MultipleDeleteButton />
       </div>
-    </Dialog>
+
+      <DataTable
+        value={mappingData}
+        selectionMode="multiple"
+        selection={selectedMappings}
+        onSelectionChange={(e) => setSelectedMappings(e.value as Mapping[])}
+        dataKey="id"
+        scrollable
+        scrollHeight="400px"
+        className="p-datatable-sm"
+        emptyMessage={emptyMessage}
+        loading={loading}
+      >
+        <Column 
+          selectionMode="multiple" 
+          headerStyle={{ width: '3rem' }}
+        />
+        <Column body={companyAccount} header="Conta Parametrizada" style={{ minWidth: '100px' }} />
+        <Column body={arrowIcon} header="" style={{ minWidth: '50px' }} />
+        <Column body={defaultAccount} header="Conta Padrão" style={{ minWidth: '200px' }} />
+      </DataTable>
+
+      {/* Diálogo para deletar múltiplos mapeamentos */}
+      <Dialog 
+        visible={deleteMultipleDialog} 
+        style={{ width: '500px' }} 
+        header="Excluir Múltiplos Mapeamentos" 
+        modal 
+        className="p-fluid" 
+        footer={deleteMultipleDialogFooter} 
+        onHide={() => !deleteMultipleLoading && setDeleteMultipleDialog(false)}
+      >
+        <div className="field">
+          <p>Tem certeza que deseja excluir {selectedMappings.length} mapeamento(s) selecionado(s)?</p>
+          
+          <div className="max-h-10rem overflow-auto border-1 surface-border border-round p-2 mt-2">
+            <ul>
+              {selectedMappings.map(mapping => (
+                <li key={mapping.id} className="text-sm mb-1">
+                  <strong>{mapping.companyAccount}</strong> →{' '}
+                  <strong>{mapping.defaultAccount.accountingAccount}</strong> - {mapping.defaultAccount.accountName}
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <p className="text-sm text-500 mt-2">
+            As contas parametrizadas serão movidas de volta para a lista de contas não parametrizadas.
+          </p>
+        </div>
+      </Dialog>
     </>
   )
 }

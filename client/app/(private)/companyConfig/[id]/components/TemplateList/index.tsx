@@ -29,26 +29,26 @@ const RightToolbar = memo(() => (
 ));
 RightToolbar.displayName = 'RightToolbar'; // Adicione esta linha
 
-export default function TemplateList({ companyId, initialData }: TemplateListProps) {
-  const {
+export default function TemplateList({ companyId, initialData, onMappingCreated }: TemplateListProps) {
+ const {
     source,
     target,
-    selectedTarget,
-    selectedMultipleSources, 
+    selectedMultipleSources,
+    selectedTarget, // Já é um único Account | null
     sourceFilter,
     targetFilter,
     sourceLoading,
     createLoading,
-    deleteMultipleLoading, 
-    bulkMappingLoading, 
+    deleteMultipleLoading,
+    bulkMappingLoading,
     toast,
     setSourceFilter,
     setTargetFilter,
-    setSelectedTarget,
-    setSelectedMultipleSources, 
+    setSelectedMultipleSources,
+    setSelectedTarget, // Já é uma função que recebe Account | null
     handleBulkMapping,
     handleCreateAccount,
-    handleDeleteMultipleAccounts 
+    handleDeleteMultipleAccounts
   } = useTemplateList(companyId, initialData);
 
   const [accountDialog, setAccountDialog] = useState(false);
@@ -129,6 +129,11 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
     try {
       await handleBulkMapping(selectedMultipleSources, selectedTarget!);
       setBulkMappingDialog(false);
+
+      if (onMappingCreated) {
+        onMappingCreated();
+      }
+
     } catch (error) {
       console.error('Erro ao mapear contas:', error);
     }
@@ -236,13 +241,13 @@ export default function TemplateList({ companyId, initialData }: TemplateListPro
           <AccountTable
             title="Contas Padrão"
             data={target}
-            selectedMultiple={selectedTarget ? [selectedTarget] : []} // Adaptado
-            onMultipleSelectionChange={(accounts) => setSelectedTarget(accounts.length > 0 ? accounts[0] : null)}
+            selectedSingle={selectedTarget} // AGORA USA selectedSingle
+            onSingleSelectionChange={setSelectedTarget} // AGORA USA onSingleSelectionChange
             loading={false}
             emptyMessage="Nenhuma conta padrão encontrada"
             toolbar={<RightToolbar />}
             header={targetHeader}
-            showCheckbox={false} // Sem checkbox para contas padrão
+            showCheckbox={false}
           />
         </div>
       </div>

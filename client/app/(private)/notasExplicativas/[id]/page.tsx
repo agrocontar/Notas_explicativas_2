@@ -68,6 +68,38 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
     }
   };
 
+  const handleDelete = async (nota: NotaExplicativa) => {
+    try {
+      const res = await api.delete(`/notas/${params.id}/${nota.number}`);
+
+      if (res.status >= 200 && res.status < 300) {
+        // Remove a nota da lista
+        const updatedNotas = notas.filter(n => n.id !== nota.id);
+        setNotas(updatedNotas);
+        
+        // Se a nota deletada era a selecionada, limpa a seleção
+        if (selectedNota?.id === nota.id) {
+          setSelectedNota(null);
+        }
+
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Nota deletada com sucesso!',
+          life: 3000,
+        });
+      }
+    } catch (err) {
+      console.error('Erro ao deletar nota:', err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao deletar a nota.',
+        life: 3000,
+      });
+    }
+  };
+
   const handleSave = async () => {
     if (!selectedNota) return;
 
@@ -158,6 +190,7 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
           <NotaViewer
             selectedNota={selectedNota}
             onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         </div>
 

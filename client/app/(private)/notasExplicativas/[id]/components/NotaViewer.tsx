@@ -1,12 +1,26 @@
 import { Button } from "primereact/button";
-import { NotaExplicativa } from "../types"
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { NotaExplicativa } from "../types";
 
 interface NotaViewerProps {
   selectedNota: NotaExplicativa | null;
   onEdit: () => void;
+  onDelete: (nota: NotaExplicativa) => void;
 }
 
-export default function NotaViewer({ selectedNota, onEdit }: NotaViewerProps) {
+export default function NotaViewer({ selectedNota, onEdit, onDelete }: NotaViewerProps) {
+  
+  const handleDeleteClick = (nota: NotaExplicativa) => {
+    confirmDialog({
+      message: `Tem certeza que deseja deletar a nota "${nota.title}"? Esta ação não pode ser desfeita.`,
+      header: 'Confirmar Exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      acceptClassName: 'p-button-danger',
+      accept: () => onDelete(nota),
+      rejectClassName: 'p-button-secondary p-button-text',
+    });
+  };
+
   if (!selectedNota) {
     return (
       <div className="col-12 lg:col-6 xl:col-7 mt-3 lg:mt-0">
@@ -26,6 +40,8 @@ export default function NotaViewer({ selectedNota, onEdit }: NotaViewerProps) {
   return (
     <div className="col-12 lg:col-6 xl:col-7 mt-3 lg:mt-0">
       <div className="card h-full">
+        <ConfirmDialog />
+        
         <div className="flex flex-column h-full">
           <div className="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center gap-2 mb-3 pb-2 border-bottom-1 surface-border">
             <div className="flex-1 min-w-0">
@@ -35,12 +51,21 @@ export default function NotaViewer({ selectedNota, onEdit }: NotaViewerProps) {
                 Atualizada: {new Date(selectedNota.updatedAt).toLocaleDateString('pt-BR')}
               </span>
             </div>
-            <Button
-              icon="pi pi-pencil"
-              label="Editar"
-              className="p-button-outlined p-button-secondary flex-shrink-0 p-button-sm"
-              onClick={onEdit}
-            />
+            
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                icon="pi pi-pencil"
+                label="Editar"
+                className="p-button-outlined p-button-secondary p-button-sm"
+                onClick={onEdit}
+              />
+              <Button
+                icon="pi pi-trash"
+                label="Deletar"
+                className="p-button-outlined p-button-danger p-button-sm"
+                onClick={() => handleDeleteClick(selectedNota)}
+              />
+            </div>
           </div>
 
           <div 

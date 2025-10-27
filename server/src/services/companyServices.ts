@@ -17,7 +17,7 @@ interface updateCompanyInput {
 export const createCompany = async (data: CreateCompanyInput) => {
   try {
     const companyExists = await prisma.company.findFirst({ where: { name: data.name} })
-    if (companyExists) throw new Error('Empresa já existe!')
+    if (companyExists) throw new Error('Empresa com esse nome já existe!')
 
     const cnpjExists = await prisma.company.findFirst({ where: { cnpj: data.cnpj} })
     if (cnpjExists) throw new Error('CNPJ já está em uso!')

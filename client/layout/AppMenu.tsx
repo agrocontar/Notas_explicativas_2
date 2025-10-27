@@ -38,7 +38,7 @@ const AppMenu = () => {
         label: company.name,
         icon: 'pi pi-fw pi-building',
         items: [
-            { label: 'Notas Explicativas', icon: 'pi pi-fw pi-bookmark', to: '/'},
+            { label: 'Notas Explicativas', icon: 'pi pi-fw pi-bookmark', to: `/notasExplicativas/${company.id}`},
             { label: 'Balanço', icon: 'pi pi-fw pi-bookmark', to: `/balanco/${company.id}`},
             { label: 'DRE', icon: 'pi pi-fw pi-bookmark', to: `/dre/${company.id}`},
             { label: 'DMPL', icon: 'pi pi-fw pi-bookmark', to: '/'},

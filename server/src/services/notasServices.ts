@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { prisma } from '../prismaClient';
 
 // Types para as notas
 export interface CreateNotaData {

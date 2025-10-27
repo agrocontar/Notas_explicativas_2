@@ -1,4 +1,4 @@
-[
+export const NOTAS_PADRAO = [
   {
   "number": 1,
   "title": "informações Gerais",

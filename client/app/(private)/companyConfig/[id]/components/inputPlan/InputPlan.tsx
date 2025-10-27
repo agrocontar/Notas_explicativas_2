@@ -45,7 +45,7 @@ const InputPlan = ({ companyId }: { companyId: string }) => {
         }
       }
     )
-  },[])
+  },[companyId])
   return (
     <div className="flex items-center justify-between w-1/3 h-full gap-3 p-2">
       <span className="text-lg">Empresa utiliza o plano padrão?</span>

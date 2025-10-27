@@ -17,7 +17,10 @@ const BalancoPage = () => {
   const year = new Date().getFullYear();
   const [showCents, setShowCents] = useState(true);
 
-  const fetchBalances = async () => {
+  
+
+  useEffect(() => {
+    const fetchBalances = async () => {
     try {
       setLoading(true);
       const res = await api.get('/balanco', {
@@ -47,8 +50,7 @@ const BalancoPage = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
+  
     if (params.id) {
       fetchBalances();
     }

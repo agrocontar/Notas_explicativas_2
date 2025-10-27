@@ -3,6 +3,7 @@ import * as companyService from '../services/companyServices'
 import { handleZodError } from "../utils/handleZodError";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { NotFoundError } from "../utils/errors";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
@@ -25,10 +26,13 @@ export const createCompany = async (req: Request, res: Response) => {
     res.json(company)
 
   } catch (err) {
-
     if (err instanceof z.ZodError) {
-      return res.status(400).json({ errors: handleZodError(err) });
+        return res.status(400).json({ errors: handleZodError(err) });
+      }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
     }
+    
     res.status(400).json({ error: err instanceof Error ? err.message : err });
   }
 }

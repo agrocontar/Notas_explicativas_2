@@ -8,7 +8,15 @@ import { OrderList } from "primereact/orderlist";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { Editor } from "primereact/editor";
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
+
+// Carregar ReactQuill dinamicamente (SSR compatibility)
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <div className="flex align-items-center justify-content-center p-4">Carregando editor...</div>
+});
+
 
 interface NotaExplicativa {
   id: string;
@@ -34,6 +42,25 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
+
+  // Configuração do ReactQuill
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['link'],
+      ['clean']
+    ],
+  };
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet', 'indent',
+    'link'
+  ];
 
   const fetchNotas = async () => {
     try {
@@ -142,6 +169,18 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       life: 2000,
     });
   };
+
+  const handleDialogHide = () => {
+    setDialogVisible(false);
+    setEditMode(false);
+  };
+
+  useEffect(() => {
+    if (dialogVisible && selectedNota) {
+      setEditTitle(selectedNota.title);
+      setEditContent(selectedNota.content);
+    }
+  }, [dialogVisible, selectedNota]);
 
   const itemTemplate = (nota: NotaExplicativa) => {
     return (
@@ -276,30 +315,24 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
           </div>
         </div>
 
-        {/* Dialog de Edição - Compacto */}
+        {/* Dialog de Edição - Com React Quill */}
         <Dialog
           header={`Editar Nota ${selectedNota?.number}`}
           visible={dialogVisible}
           style={{ 
             width: '95vw', 
-            height: '85vh',
+            height: '90vh', // Aumentei um pouco para acomodar o editor
             maxWidth: '1000px'
           }}
           className="w-full max-w-4xl"
-          onHide={() => {
-            setDialogVisible(false);
-            setEditMode(false);
-          }}
+          onHide={handleDialogHide}
           footer={
             <div className="flex flex-wrap gap-2 justify-content-end">
               <Button
                 label="Cancelar"
                 icon="pi pi-times"
                 className="p-button-text p-button-sm"
-                onClick={() => {
-                  setDialogVisible(false);
-                  setEditMode(false);
-                }}
+                onClick={handleDialogHide}
               />
               <Button
                 label="Salvar"
@@ -325,13 +358,19 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
 
             <div className="field flex-grow-1 flex flex-column">
               <label htmlFor="content" className="font-semibold block mb-1 text-sm">
-                Conteúdo (HTML)
+                Conteúdo
               </label>
-              <div className="flex-grow-1" style={{ minHeight: '250px' }}>
-                <Editor
+              <div className="flex-grow-1" style={{ minHeight: '300px' }}>
+                <ReactQuill
                   value={editContent}
-                  onTextChange={(e) => setEditContent(e.htmlValue || '')}
-                  style={{ height: '100%', minHeight: '250px' }}
+                  onChange={setEditContent}
+                  modules={modules}
+                  formats={formats}
+                  theme="snow"
+                  style={{ 
+                    height: '300px',
+                    marginBottom: '50px' // Espaço para a toolbar não sobrepor
+                  }}
                 />
               </div>
             </div>

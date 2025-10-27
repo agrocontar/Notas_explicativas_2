@@ -5,6 +5,7 @@ import groupCompaniesRoutes from './routes/groupCompaniesRoutes'
 import balanceteRoutes from './routes/balanceteRoutes'
 import balancoRoutes from './routes/balancoRoutes'
 import configRoutes from './routes/mapping/configCompanyRoutes'
+import notasRoutes from './routes/notasRoutes'
 import authRoutes from './routes/authRoutes'
 import cookieParser from "cookie-parser";
 import cors from 'cors'
@@ -47,6 +48,7 @@ app.use("/balancete", balanceteRoutes)
 app.use("/balanco", balancoRoutes)
 app.use("/dre", dreRoutes)
 app.use("/config", configRoutes)
+app.use("/notas", notasRoutes)
 app.use("/auth", authRoutes)
 
 // Converter PORT para número explicitamente

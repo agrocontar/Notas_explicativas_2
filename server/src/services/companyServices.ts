@@ -1,4 +1,5 @@
 import { prisma } from "../prismaClient"
+import { NOTAS_PADRAO } from "../utils/notas_padrao"
 
 
 interface CreateCompanyInput {
@@ -14,12 +15,46 @@ interface updateCompanyInput {
 
 // Create Company
 export const createCompany = async (data: CreateCompanyInput) => {
+  try {
+    const companyExists = await prisma.company.findFirst({ where: { name: data.name} })
+    if (companyExists) throw new Error('Empresa já existe!')
 
-  const companyExists = await prisma.company.findFirst({ where: { name: data.name } })
-  if (companyExists) throw new Error('Empresa já existe!')
+    const cnpjExists = await prisma.company.findFirst({ where: { cnpj: data.cnpj} })
+    if (cnpjExists) throw new Error('CNPJ já está em uso!')
 
-  const company = prisma.company.create({ data })
-  return company
+    // Cria a empresa e as notas em uma transação
+      const result = await prisma.$transaction(async (tx) => {
+        // Cria a empresa
+        const company = await tx.company.create({ 
+          data: {
+            name: data.name,
+            cnpj: data.cnpj,
+          } 
+        });
+
+        // Prepara os dados das notas
+        const notasData = NOTAS_PADRAO.map(nota => ({
+          companyId: company.id,
+          number: nota.number,
+          title: nota.title,
+          content: nota.content
+        }));
+
+        // Cria todas as notas
+        await tx.notasExplicativas.createMany({
+          data: notasData
+        });
+
+        return company;
+      });
+
+      return result;
+  } catch (error) {
+    console.error('Erro ao criar empresa:', error);
+    if (error instanceof Error) {
+      throw error; // Já é um erro conhecido (como "Empresa já existe")
+    }
+  }
 }
 
 // List Company

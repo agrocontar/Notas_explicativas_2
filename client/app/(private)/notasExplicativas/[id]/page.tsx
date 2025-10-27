@@ -12,9 +12,9 @@ import { Editor } from "primereact/editor";
 
 interface NotaExplicativa {
   id: string;
-  numero: number;
-  titulo: string;
-  conteudo: string;
+  number: number;
+  title: string;
+  content: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,13 +32,13 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
   const [selectedNota, setSelectedNota] = useState<NotaExplicativa | null>(null);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [editTitulo, setEditTitulo] = useState("");
-  const [editConteudo, setEditConteudo] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
 
   const fetchNotas = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/notas/empresa/${params.id}`);
+      const res = await api.get(`/notas/${params.id}`);
 
       if (res.status >= 200 && res.status < 300) {
         setNotas(res.data);
@@ -76,8 +76,9 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
 
   const handleEdit = () => {
     if (selectedNota) {
-      setEditTitulo(selectedNota.titulo);
-      setEditConteudo(selectedNota.conteudo);
+      console.log('Nota selecionada para edição:', selectedNota);
+      setEditTitle(selectedNota.title);
+      setEditContent(selectedNota.content);
       setEditMode(true);
       setDialogVisible(true);
     }
@@ -87,18 +88,28 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
     if (!selectedNota) return;
 
     try {
-      const res = await api.put(`/notas/${params.id}/${selectedNota.numero}`, {
-        titulo: editTitulo,
-        conteudo: editConteudo
+      const res = await api.put(`/notas/${params.id}`, {
+        number: selectedNota.number,
+        title: editTitle,
+        content: editContent
       });
 
       if (res.status >= 200 && res.status < 300) {
-        // Atualiza a lista local
         const updatedNotas = notas.map(nota =>
-          nota.id === selectedNota.id ? { ...nota, titulo: editTitulo, conteudo: editConteudo } : nota
+          nota.id === selectedNota.id ? { 
+            ...nota, 
+            title: editTitle, 
+            content: editContent,
+            updatedAt: new Date().toISOString() 
+          } : nota
         );
         setNotas(updatedNotas);
-        setSelectedNota({ ...selectedNota, titulo: editTitulo, conteudo: editConteudo });
+        setSelectedNota({ 
+          ...selectedNota, 
+          title: editTitle, 
+          content: editContent,
+          updatedAt: new Date().toISOString() 
+        });
 
         toast.current?.show({
           severity: 'success',
@@ -124,8 +135,6 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
   const handleReorder = async (event: any) => {
     setNotas(event.value);
     
-    // Aqui você pode implementar a lógica para salvar a nova ordem no backend
-    // Por enquanto, apenas atualizamos o estado local
     toast.current?.show({
       severity: 'info',
       summary: 'Ordem Alterada',
@@ -137,24 +146,24 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
   const itemTemplate = (nota: NotaExplicativa) => {
     return (
       <div 
-        className={`flex flex-column p-3 border-round cursor-pointer transition-colors transition-duration-200 ${
+        className={`flex flex-column p-2 border-round cursor-pointer transition-colors transition-duration-200 ${
           selectedNota?.id === nota.id ? 'bg-blue-50 border-1 border-blue-200' : 'hover:bg-gray-50'
         }`}
         onClick={() => handleNotaSelect(nota)}
       >
         <div className="flex align-items-center justify-content-between">
-          <div className="flex align-items-center gap-3">
-            <span className="flex-shrink-0 w-2rem h-2rem bg-primary border-circle text-white font-bold flex align-items-center justify-content-center">
-              {nota.numero}
+          <div className="flex align-items-center gap-2 flex-1 min-w-0">
+            <span className="flex-shrink-0 w-2rem h-2rem bg-primary border-circle text-white font-bold flex align-items-center justify-content-center text-sm">
+              {nota.number}
             </span>
-            <div className="flex flex-column">
-              <span className="font-semibold text-lg">{nota.titulo}</span>
-              <span className="text-sm text-color-secondary">
+            <div className="flex flex-column flex-1 min-w-0">
+              <span className="font-semibold text-sm truncate">{nota.title}</span>
+              <span className="text-xs text-color-secondary truncate">
                 Atualizada em: {new Date(nota.updatedAt).toLocaleDateString('pt-BR')}
               </span>
             </div>
           </div>
-          <i className="pi pi-chevron-right text-color-secondary"></i>
+          <i className="pi pi-chevron-right text-color-secondary flex-shrink-0 ml-1 text-xs"></i>
         </div>
       </div>
     );
@@ -162,9 +171,9 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
 
   const headerTemplate = () => {
     return (
-      <div className="flex justify-content-between align-items-center p-3">
-        <span className="text-xl font-bold">Notas Explicativas</span>
-        <span className="text-color-secondary">{notas.length} notas</span>
+      <div className="flex justify-content-between align-items-center p-2">
+        <span className="text-base font-bold truncate">Notas</span>
+        <span className="text-color-secondary flex-shrink-0 ml-1 text-sm">{notas.length} notas</span>
       </div>
     );
   };
@@ -185,12 +194,12 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       <div className="col-12">
         <Toast ref={toast} />
 
-        {/* Cabeçalho */}
-        <div className="card mb-4">
-          <div className="flex justify-content-between align-items-center">
-            <div>
-              <h1 className="text-2xl font-bold m-0">Notas Explicativas</h1>
-              <span className="text-lg text-color-secondary">
+        {/* Cabeçalho mais compacto */}
+        <div className="card mb-3">
+          <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-2">
+            <div className="flex flex-column">
+              <h1 className="text-xl font-bold m-0">Notas Explicativas</h1>
+              <span className="text-sm text-color-secondary">
                 Gerencie as notas explicativas da empresa
               </span>
             </div>
@@ -198,16 +207,16 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
             <Button
               icon="pi pi-refresh"
               label="Atualizar"
-              className="p-button-outlined"
+              className="p-button-outlined flex-shrink-0 p-button-sm"
               onClick={fetchNotas}
             />
           </div>
         </div>
 
         <div className="grid">
-          {/* Lista de Notas */}
-          <div className="col-12 lg:col-4">
-            <div className="card">
+          {/* Lista de Notas - Mais espaço */}
+          <div className="col-12 lg:col-6 xl:col-5">
+            <div className="card h-full">
               <OrderList
                 value={notas}
                 itemTemplate={itemTemplate}
@@ -215,45 +224,50 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
                 dragdrop
                 dataKey="id"
                 onChange={handleReorder}
-                listStyle={{ maxHeight: '600px' }}
+                listStyle={{ 
+                  maxHeight: '65vh',
+                  minHeight: '350px'
+                }}
                 className="w-full"
               />
             </div>
           </div>
 
-          {/* Visualização da Nota Selecionada */}
-          <div className="col-12 lg:col-8">
+          {/* Visualização da Nota Selecionada - Mais compacta */}
+          <div className="col-12 lg:col-6 xl:col-7 mt-3 lg:mt-0">
             <div className="card h-full">
               {selectedNota ? (
                 <div className="flex flex-column h-full">
-                  <div className="flex justify-content-between align-items-center mb-4 pb-3 border-bottom-1 surface-border">
-                    <div>
-                      <h2 className="text-xl font-bold m-0">{selectedNota.titulo}</h2>
-                      <span className="text-color-secondary">
-                        Nota {selectedNota.numero} • 
-                        Criada em: {new Date(selectedNota.createdAt).toLocaleDateString('pt-BR')} • 
-                        Última atualização: {new Date(selectedNota.updatedAt).toLocaleDateString('pt-BR')}
+                  <div className="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center gap-2 mb-3 pb-2 border-bottom-1 surface-border">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-lg font-bold m-0 truncate">{selectedNota.title}</h2>
+                      <span className="text-color-secondary text-xs">
+                        Nota {selectedNota.number} • 
+                        Atualizada: {new Date(selectedNota.updatedAt).toLocaleDateString('pt-BR')}
                       </span>
                     </div>
                     <Button
                       icon="pi pi-pencil"
                       label="Editar"
-                      className="p-button-outlined p-button-secondary"
+                      className="p-button-outlined p-button-secondary flex-shrink-0 p-button-sm"
                       onClick={handleEdit}
                     />
                   </div>
 
                   <div 
-                    className="flex-grow-1 overflow-auto prose max-w-none"
-                    style={{ maxHeight: '500px' }}
-                    dangerouslySetInnerHTML={{ __html: selectedNota.conteudo }}
+                    className="flex-grow-1 overflow-auto prose max-w-none p-1"
+                    style={{ 
+                      maxHeight: '55vh',
+                      minHeight: '250px'
+                    }}
+                    dangerouslySetInnerHTML={{ __html: selectedNota.content }}
                   />
                 </div>
               ) : (
-                <div className="flex flex-column align-items-center justify-content-center text-center p-6" style={{ height: '400px' }}>
-                  <i className="pi pi-file text-6xl text-color-secondary mb-3"></i>
-                  <h3 className="text-xl font-semibold mb-2">Nenhuma nota selecionada</h3>
-                  <p className="text-color-secondary mb-4">
+                <div className="flex flex-column align-items-center justify-content-center text-center p-4" style={{ height: '350px' }}>
+                  <i className="pi pi-file text-4xl text-color-secondary mb-2"></i>
+                  <h3 className="text-lg font-semibold mb-1">Nenhuma nota selecionada</h3>
+                  <p className="text-color-secondary text-sm mb-3">
                     Selecione uma nota na lista ao lado para visualizar seu conteúdo.
                   </p>
                 </div>
@@ -262,21 +276,26 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
           </div>
         </div>
 
-        {/* Dialog de Edição */}
+        {/* Dialog de Edição - Compacto */}
         <Dialog
-          header={`Editar Nota ${selectedNota?.numero}`}
+          header={`Editar Nota ${selectedNota?.number}`}
           visible={dialogVisible}
-          style={{ width: '80vw', height: '80vh' }}
+          style={{ 
+            width: '95vw', 
+            height: '85vh',
+            maxWidth: '1000px'
+          }}
+          className="w-full max-w-4xl"
           onHide={() => {
             setDialogVisible(false);
             setEditMode(false);
           }}
           footer={
-            <div>
+            <div className="flex flex-wrap gap-2 justify-content-end">
               <Button
                 label="Cancelar"
                 icon="pi pi-times"
-                className="p-button-text"
+                className="p-button-text p-button-sm"
                 onClick={() => {
                   setDialogVisible(false);
                   setEditMode(false);
@@ -285,41 +304,44 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
               <Button
                 label="Salvar"
                 icon="pi pi-check"
-                className="p-button-primary"
+                className="p-button-primary p-button-sm"
                 onClick={handleSave}
               />
             </div>
           }
         >
-          <div className="flex flex-column gap-4">
+          <div className="flex flex-column gap-3 h-full">
             <div className="field">
-              <label htmlFor="titulo" className="font-semibold block mb-2">
+              <label htmlFor="title" className="font-semibold block mb-1 text-sm">
                 Título
               </label>
               <InputText
-                id="titulo"
-                value={editTitulo}
-                onChange={(e) => setEditTitulo(e.target.value)}
-                className="w-full"
+                id="title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full p-inputtext-sm"
               />
             </div>
 
-            <div className="field flex-grow-1">
-              <label htmlFor="conteudo" className="font-semibold block mb-2">
+            <div className="field flex-grow-1 flex flex-column">
+              <label htmlFor="content" className="font-semibold block mb-1 text-sm">
                 Conteúdo (HTML)
               </label>
-              <Editor
-                value={editConteudo}
-                onTextChange={(e) => setEditConteudo(e.htmlValue || '')}
-                style={{ height: '400px' }}
-              />
+              <div className="flex-grow-1" style={{ minHeight: '250px' }}>
+                <Editor
+                  value={editContent}
+                  onTextChange={(e) => setEditContent(e.htmlValue || '')}
+                  style={{ height: '100%', minHeight: '250px' }}
+                />
+              </div>
             </div>
 
-            <div className="bg-gray-50 p-3 border-round">
-              <h4 className="font-semibold mb-2">Preview:</h4>
+            <div className="bg-gray-50 p-2 border-round">
+              <h4 className="font-semibold mb-1 text-sm">Preview:</h4>
               <div 
-                className="p-3 border-1 border-round surface-border bg-white"
-                dangerouslySetInnerHTML={{ __html: editConteudo }}
+                className="p-2 border-1 border-round surface-border bg-white max-h-8rem overflow-auto text-sm"
+                style={{ maxHeight: '150px' }}
+                dangerouslySetInnerHTML={{ __html: editContent }}
               />
             </div>
           </div>

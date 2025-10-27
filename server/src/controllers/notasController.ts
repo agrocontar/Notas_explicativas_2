@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import z from "zod";
+import z, { number } from "zod";
 import { handleZodError } from "../utils/handleZodError";
 
 import * as notasService from "../services/notasServices";
@@ -13,6 +13,7 @@ const notasSchema = z.object({
 });
 
 const updateNotasSchema = z.object({
+  number: z.number().int().positive(),
   title: z.string().optional(),
   content: z.string().optional(),
 });
@@ -33,9 +34,8 @@ export const createNota = async (req: Request, res: Response) => {
 export const updateNota = async (req: Request, res: Response) => {
   try {
     const companyId = req.params.companyId;
-    const number = parseInt(req.params.number, 10);
-    const data = req.body;
-    const notaAtualizada = await notasService.updateNota(companyId, number, data);
+    const { number, title, content } = updateNotasSchema.parse(req.body);
+    const notaAtualizada = await notasService.updateNota(companyId, number, { title, content });
     res.json(notaAtualizada);
   } catch (err) {
     if (err instanceof z.ZodError) {

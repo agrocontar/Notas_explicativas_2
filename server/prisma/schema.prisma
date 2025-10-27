@@ -48,6 +48,7 @@ model Company {
   balancetes BalanceteData[]
   config     ConfigCompany[]
   mappings   ConfigMapping[]
+  NotasExplicativas NotasExplicativas[]
 }
 
 /// Dados de balancete enviados pelos clientes, serão normalizados usando o de/para
@@ -149,4 +150,25 @@ enum BalancoGroup {
   PASSIVO_CIRCULANTE
   PASSIVO_NAO_CIRCULANTE
   PATRIMONIO_LIQUIDO
+}
+
+
+model NotasExplicativas {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  number      Int      // Número da nota (1, 2, 3, etc.)
+  title       String   // Título da nota (ex: "Informações Gerais")
+  content     String   // Conteúdo da nota em texto
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Garante que cada empresa tenha apenas uma nota por número
+  @@unique([companyId, number])
+  
+  // Index para otimizar consultas
+  @@index([companyId])
+  @@index([number])
 }

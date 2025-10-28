@@ -165,10 +165,31 @@ model NotasExplicativas {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  tabelas     TabelaDemonstrativa[]
+
   // Garante que cada empresa tenha apenas uma nota por número
   @@unique([companyId, number])
   
   // Index para otimizar consultas
   @@index([companyId])
   @@index([number])
+}
+
+
+model TabelaDemonstrativa {
+  id           String   @id @default(uuid())
+  notaId       String
+  nota         NotasExplicativas @relation(fields: [notaId], references: [id], onDelete: Cascade)
+  
+  conta        String   // Nome da conta
+  anoAnterior  Float?   // Valor do ano anterior
+  anoAtual     Float?   // Valor do ano atual
+  
+  ordem        Int      // Ordem de exibição na tabela
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([notaId])
+  @@index([ordem])
 }

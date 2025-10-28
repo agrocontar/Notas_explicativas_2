@@ -133,3 +133,35 @@ export const listBalanceEspecific = async (companyId: string, year: number, acco
     return error
   }
 }
+
+
+// src/services/balanceteService.ts
+
+export const listContasUnicasBalancete = async (companyId: string) => {
+  try {
+    const contas = await prisma.balanceteData.findMany({
+      where: {
+        companyId: companyId,
+      },
+      distinct: ['accountingAccount', 'accountName'],
+      select: {
+        accountingAccount: true,
+        accountName: true,
+      },
+      orderBy: {
+        accountingAccount: 'asc'
+      }
+    });
+
+    // Formatar para retornar um array de objetos com código e nome
+    const contasFormatadas = contas.map(conta => ({
+      codigo: conta.accountingAccount,
+      nome: conta.accountName
+    }));
+
+    return contasFormatadas;
+  } catch (error) {
+    console.error('Erro ao buscar contas únicas:', error);
+    throw error;
+  }
+};

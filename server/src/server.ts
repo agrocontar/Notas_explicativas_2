@@ -50,7 +50,7 @@ app.use("/balanco", balancoRoutes)
 app.use("/dre", dreRoutes)
 app.use("/config", configRoutes)
 app.use("/notas", notasRoutes)
-app.use("/tabelas", tabelaDemonstrativaRoutes);
+app.use("/demoTables", tabelaDemonstrativaRoutes);
 app.use("/auth", authRoutes)
 
 // Converter PORT para número explicitamente

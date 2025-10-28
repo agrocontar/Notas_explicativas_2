@@ -21,6 +21,14 @@ export default function NotaViewer({ selectedNota, onEdit, onDelete }: NotaViewe
     });
   };
 
+  const formatCurrency = (value: number | null) => {
+    if (value === null || value === undefined) return '-';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   if (!selectedNota) {
     return (
       <div className="col-12 lg:col-6 xl:col-7 mt-3 lg:mt-0">
@@ -69,13 +77,40 @@ export default function NotaViewer({ selectedNota, onEdit, onDelete }: NotaViewe
           </div>
 
           <div 
-            className="flex-grow-1 overflow-auto prose max-w-none p-1"
+            className="flex-grow-1 overflow-auto prose max-w-none p-1 mb-3"
             style={{ 
-              maxHeight: '55vh',
-              minHeight: '250px'
+              maxHeight: '40vh',
+              minHeight: '150px'
             }}
             dangerouslySetInnerHTML={{ __html: selectedNota.content }}
           />
+
+          {/* Tabela Demonstrativa na Visualização */}
+          {selectedNota.tabelas && selectedNota.tabelas.length > 0 && (
+            <div className="border-top-1 surface-border pt-3">
+              <h4 className="font-semibold mb-2">Tabela Demonstrativa</h4>
+              <div className="card">
+                <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr className="border-bottom-1 surface-border">
+                      <th className="text-left p-2 font-semibold bg-gray-50">Conta</th>
+                      <th className="text-right p-2 font-semibold bg-gray-50">Ano Anterior</th>
+                      <th className="text-right p-2 font-semibold bg-gray-50">Ano Atual</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedNota.tabelas.map((linha, index) => (
+                      <tr key={index} className="border-bottom-1 surface-border">
+                        <td className="p-2">{linha.conta || '-'}</td>
+                        <td className="p-2 text-right">{formatCurrency(linha.anoAnterior)}</td>
+                        <td className="p-2 text-right">{formatCurrency(linha.anoAtual)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

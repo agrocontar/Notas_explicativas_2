@@ -4,7 +4,7 @@ import api from "@/app/api/api";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { NotaExplicativa, NotasExplicativasPageProps } from "./types";
+import { NotaExplicativa, NotasExplicativasPageProps, TabelaDemonstrativa } from "./types";
 import NotasHeader from "./components/NotasHeader";
 import NotasList from "./components/NotasList";
 import NotaViewer from "./components/NotaViewer";
@@ -27,7 +27,12 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       const res = await api.get(`/notas/${params.id}`);
 
       if (res.status >= 200 && res.status < 300) {
-        setNotas(res.data);
+        // Certifique-se de que as tabelas estão incluídas na resposta
+        const notasComTabelas = res.data.map((nota: any) => ({
+          ...nota,
+          tabelas: nota.tabelas || []
+        }));
+        setNotas(notasComTabelas);
       } else {
         console.error('Erro ao buscar as notas:', res.statusText);
         toast.current?.show({
@@ -100,7 +105,8 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
     }
   };
 
-  const handleSave = async () => {
+  // Atualize a função handleSave para receber as tabelas
+  const handleSave = async (tabelasAtualizadas?: TabelaDemonstrativa[]) => {
     if (!selectedNota) return;
 
     try {
@@ -111,21 +117,27 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       });
 
       if (res.status >= 200 && res.status < 300) {
-        const updatedNotas = notas.map(nota =>
-          nota.id === selectedNota.id ? { 
-            ...nota, 
-            title: editTitle, 
-            content: editContent,
-            updatedAt: new Date().toISOString() 
-          } : nota
-        );
-        setNotas(updatedNotas);
-        setSelectedNota({ 
-          ...selectedNota, 
-          title: editTitle, 
-          content: editContent,
-          updatedAt: new Date().toISOString() 
+        // Atualiza a nota na lista com as tabelas atualizadas
+        const updatedNotas = notas.map(nota => {
+          if (nota.id === selectedNota.id) {
+            return { 
+              ...nota, 
+              title: editTitle, 
+              content: editContent,
+              tabelas: tabelasAtualizadas || nota.tabelas, // Usa as tabelas atualizadas ou mantém as existentes
+              updatedAt: new Date().toISOString() 
+            };
+          }
+          return nota;
         });
+        
+        setNotas(updatedNotas);
+        
+        // Atualiza a nota selecionada
+        const notaAtualizada = updatedNotas.find(n => n.id === selectedNota.id);
+        if (notaAtualizada) {
+          setSelectedNota(notaAtualizada);
+        }
 
         toast.current?.show({
           severity: 'success',
@@ -201,7 +213,7 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
           editContent={editContent}
           onTitleChange={setEditTitle}
           onContentChange={setEditContent}
-          onSave={handleSave}
+          onSave={handleSave} // Agora passamos a função atualizada
           onHide={handleDialogHide}
         />
       </div>

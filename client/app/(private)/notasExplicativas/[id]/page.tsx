@@ -9,6 +9,7 @@ import NotasHeader from "./components/NotasHeader";
 import NotasList from "./components/NotasList";
 import NotaViewer from "./components/NotaViewer";
 import NotaEditor from "./components/NotaEditor";
+import CriarNotaModal from "./components/CreateNotaModal";
 import LoadingState from "./components/LoadingState";
 import 'react-quill/dist/quill.snow.css';
 
@@ -18,6 +19,7 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
   const [loading, setLoading] = useState(true);
   const [selectedNota, setSelectedNota] = useState<NotaExplicativa | null>(null);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [criarNotaVisible, setCriarNotaVisible] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
 
@@ -27,7 +29,6 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       const res = await api.get(`/notas/${params.id}`);
 
       if (res.status >= 200 && res.status < 300) {
-        // Certifique-se de que as tabelas estão incluídas na resposta
         const notasComTabelas = res.data.map((nota: any) => ({
           ...nota,
           tabelas: nota.tabelas || []
@@ -61,6 +62,69 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
     }
   }, [params.id]);
 
+  // Função para criar nova nota
+  const handleCreateNota = async (titulo: string) => {
+    try {
+      const proximoNumero = calcularProximoNumero();
+      
+      const res = await api.post(`/notas/`, {
+        companyId: params.id,
+        number: proximoNumero,
+        title: titulo,
+        content: "<p></p>" // Conteúdo em branco
+      });
+
+      if (res.status >= 200 && res.status < 300) {
+        const novaNota = {
+          ...res.data,
+          tabelas: []
+        };
+        
+        // Adiciona a nova nota à lista
+        setNotas(prev => [...prev, novaNota]);
+        
+        // Seleciona a nova nota automaticamente
+        setSelectedNota(novaNota);
+
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: `Nota ${proximoNumero} criada com sucesso!`,
+          life: 3000,
+        });
+
+        return res.data;
+      }
+    } catch (err: any) {
+      console.error('Erro ao criar nota:', err);
+      
+      let errorMessage = 'Erro ao criar a nota.';
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erro',
+        detail: errorMessage,
+        life: 4000,
+      });
+      
+      throw err;
+    }
+  };
+
+  // Calcula o próximo número disponível
+  const calcularProximoNumero = () => {
+    if (notas.length === 0) return 1;
+    
+    // Pega o maior número atual e adiciona 1
+    const maiorNumero = Math.max(...notas.map(nota => nota.number));
+    return maiorNumero + 1;
+  };
+
   const handleNotaSelect = (nota: NotaExplicativa) => {
     setSelectedNota(nota);
   };
@@ -78,11 +142,9 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       const res = await api.delete(`/notas/${params.id}/${nota.number}`);
 
       if (res.status >= 200 && res.status < 300) {
-        // Remove a nota da lista
         const updatedNotas = notas.filter(n => n.id !== nota.id);
         setNotas(updatedNotas);
         
-        // Se a nota deletada era a selecionada, limpa a seleção
         if (selectedNota?.id === nota.id) {
           setSelectedNota(null);
         }
@@ -105,7 +167,6 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
     }
   };
 
-  // Atualize a função handleSave para receber as tabelas
   const handleSave = async (tabelasAtualizadas?: TabelaDemonstrativa[]) => {
     if (!selectedNota) return;
 
@@ -117,14 +178,13 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       });
 
       if (res.status >= 200 && res.status < 300) {
-        // Atualiza a nota na lista com as tabelas atualizadas
         const updatedNotas = notas.map(nota => {
           if (nota.id === selectedNota.id) {
             return { 
               ...nota, 
               title: editTitle, 
               content: editContent,
-              tabelas: tabelasAtualizadas || nota.tabelas, // Usa as tabelas atualizadas ou mantém as existentes
+              tabelas: tabelasAtualizadas || nota.tabelas,
               updatedAt: new Date().toISOString() 
             };
           }
@@ -133,7 +193,6 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
         
         setNotas(updatedNotas);
         
-        // Atualiza a nota selecionada
         const notaAtualizada = updatedNotas.find(n => n.id === selectedNota.id);
         if (notaAtualizada) {
           setSelectedNota(notaAtualizada);
@@ -173,12 +232,19 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
     setDialogVisible(false);
   };
 
+  const handleCriarNotaHide = () => {
+    setCriarNotaVisible(false);
+  };
+
   useEffect(() => {
     if (dialogVisible && selectedNota) {
       setEditTitle(selectedNota.title);
       setEditContent(selectedNota.content);
     }
   }, [dialogVisible, selectedNota]);
+
+  // Calcula o próximo número para exibir na modal
+  const proximoNumero = calcularProximoNumero();
 
   if (loading) {
     return <LoadingState />;
@@ -189,7 +255,10 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
       <div className="col-12">
         <Toast ref={toast} />
 
-        <NotasHeader onRefresh={fetchNotas} />
+        <NotasHeader 
+          onRefresh={fetchNotas} 
+          onCreateClick={() => setCriarNotaVisible(true)}
+        />
 
         <div className="grid">
           <NotasList
@@ -213,8 +282,15 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
           editContent={editContent}
           onTitleChange={setEditTitle}
           onContentChange={setEditContent}
-          onSave={handleSave} // Agora passamos a função atualizada
+          onSave={handleSave}
           onHide={handleDialogHide}
+        />
+
+        <CriarNotaModal
+          visible={criarNotaVisible}
+          onHide={handleCriarNotaHide}
+          onCreate={handleCreateNota}
+          proximoNumero={proximoNumero}
         />
       </div>
     </div>

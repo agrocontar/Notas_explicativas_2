@@ -2,9 +2,10 @@ import { Button } from "primereact/button";
 
 interface NotasHeaderProps {
   onRefresh: () => void;
+  onCreateClick: () => void;
 }
 
-export default function NotasHeader({ onRefresh }: NotasHeaderProps) {
+export default function NotasHeader({ onRefresh, onCreateClick }: NotasHeaderProps) {
   return (
     <div className="card mb-3">
       <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-2">
@@ -15,12 +16,20 @@ export default function NotasHeader({ onRefresh }: NotasHeaderProps) {
           </span>
         </div>
 
-        <Button
-          icon="pi pi-refresh"
-          label="Atualizar"
-          className="p-button-outlined flex-shrink-0 p-button-sm"
-          onClick={onRefresh}
-        />
+        <div className="flex gap-2 flex-shrink-0">
+          <Button
+            icon="pi pi-plus"
+            label="Nova Nota"
+            className="p-button-primary p-button-sm"
+            onClick={onCreateClick}
+          />
+          <Button
+            icon="pi pi-refresh"
+            label="Atualizar"
+            className="p-button-outlined p-button-sm"
+            onClick={onRefresh}
+          />
+        </div>
       </div>
     </div>
   );

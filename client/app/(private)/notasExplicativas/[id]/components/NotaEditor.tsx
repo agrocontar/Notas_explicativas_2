@@ -3,7 +3,7 @@ import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import dynamic from 'next/dynamic';
 import { NotaExplicativa, TabelaDemonstrativa } from "../types";
-import TabelaDemonstrativaComponent from "./TabelaDemonstrativa";
+import TabelaDemonstrativaComponent from "./TabelaDemonstrativa/TabelaDemonstrativa";
 import { useState, useEffect } from 'react';
 
 // Carregar ReactQuill dinamicamente
@@ -21,6 +21,7 @@ export interface NotaEditorProps {
   onContentChange: (content: string) => void;
   onSave: (tabelasAtualizadas?: TabelaDemonstrativa[]) => void;
   onHide: () => void;
+  companyId: string; 
 }
 
 // Configuração AVANÇADA do ReactQuill
@@ -129,7 +130,8 @@ export default function NotaEditor({
   onTitleChange,
   onContentChange,
   onSave,
-  onHide
+  onHide,
+  companyId
 }: NotaEditorProps) {
   const [tabelas, setTabelas] = useState<TabelaDemonstrativa[]>([]);
 
@@ -233,6 +235,7 @@ export default function NotaEditor({
               notaId={selectedNota.id}
               tabelas={tabelas}
               onTabelasChange={handleTabelasChange}
+              companyId={companyId} // Adicione esta linha
             />
           </div>
         )}

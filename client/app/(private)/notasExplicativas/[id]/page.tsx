@@ -284,6 +284,7 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
           onContentChange={setEditContent}
           onSave={handleSave}
           onHide={handleDialogHide}
+          companyId={params.id}
         />
 
         <CriarNotaModal

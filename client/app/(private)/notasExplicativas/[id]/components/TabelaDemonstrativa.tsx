@@ -32,7 +32,7 @@ export default function TabelaDemonstrativa({
     
     try {
       setLoading(true);
-      const res = await api.get(`tabelas/nota/${notaId}/tabelas`);
+      const res = await api.get(`demoTable/${notaId}`);
       if (res.status === 200) {
         onTabelasChange(res.data);
       }
@@ -53,7 +53,7 @@ export default function TabelaDemonstrativa({
   try {
     const novaOrdem = tabelas.length > 0 ? Math.max(...tabelas.map(t => t.ordem)) + 1 : 1;
     
-    const res = await api.post(`tabelas/nota/${notaId}/tabelas`, {
+    const res = await api.post(`demoTable/${notaId}`, {
       conta: '',
       anoAnterior: null,
       anoAtual: null,
@@ -90,7 +90,7 @@ const handleDeleteRow = (id: string) => {
     acceptClassName: 'p-button-danger',
     accept: async () => {
       try {
-        await api.delete(`tabelas/tabelas/${id}`);
+        await api.delete(`demoTable/${id}`);
         const updatedTabelas = tabelas.filter(t => t.id !== id);
         onTabelasChange(updatedTabelas); // Chama a função de callback
         toast.current?.show({
@@ -122,7 +122,7 @@ const handleDeleteRow = (id: string) => {
 
       // Debounce para evitar muitas requisições
       setTimeout(async () => {
-        await api.put(`tabelas/tabelas/${id}`, { [field]: value });
+        await api.put(`demoTable/${id}`, { [field]: value });
       }, 500);
     } catch (error) {
       console.error('Erro ao atualizar linha:', error);
@@ -155,7 +155,6 @@ const handleDeleteRow = (id: string) => {
   return (
     <div className="tabela-demonstrativa">
       <Toast ref={toast} />
-      <ConfirmDialog />
 
       <div className="flex justify-content-between align-items-center mb-3">
         <h4 className="font-semibold m-0">Tabela Demonstrativa</h4>

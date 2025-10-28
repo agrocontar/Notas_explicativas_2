@@ -155,13 +155,12 @@ export const deleteNota = async (companyId: string, number: number) => {
         orderBy: {
           number: 'asc'
         },
-        select: {
-          id: true,
-          number: true,
-          title: true,
-          content: true,
-          createdAt: true,
-          updatedAt: true
+        include: {
+          tabelas: {
+            orderBy: {
+              ordem: 'asc'
+            }
+          }
         }
       });
 

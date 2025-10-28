@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import TabelaDemonstrativaController from '../controllers/tbDemoController';
+import * as TabelaDemonstrativaController from '../controllers/demoTableController';
 
 const router = Router();
 
-router.get('/nota/:notaId/tabelas', TabelaDemonstrativaController.getByNota);
-router.post('/nota/:notaId/tabelas', TabelaDemonstrativaController.create);
-router.put('/tabelas/:id', TabelaDemonstrativaController.update);
-router.delete('/tabelas/:id', TabelaDemonstrativaController.delete);
-router.put('/nota/:notaId/tabelas/reorder', TabelaDemonstrativaController.reorder);
+router.get('/:notaId', TabelaDemonstrativaController.getByNota);
+router.post('/:notaId', TabelaDemonstrativaController.create);
+router.put('/:id', TabelaDemonstrativaController.update);
+router.delete('/:id', TabelaDemonstrativaController.deleteDemoTable);
+router.put('/:notaId/reorder', TabelaDemonstrativaController.reorder);
 
 export default router;

@@ -87,16 +87,10 @@ const exportToWord = async (): Promise<void> => {
       const link = document.createElement('a');
       link.href = url;
       
-      // Extrair filename do header ou usar padrão
-      const contentDisposition = response.headers['content-disposition'];
-      let filename = `notas-explicativas-${companyId}.docx`;
-      
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
-        }
-      }
+      // pegar nome da empresa para nome do arquivo
+      const company = await api.get(`/companies/${companyId}`);
+      const companyName = company.data.name
+      const filename = `Notas Explicativas - ${companyName}.docx`;
       
       link.setAttribute('download', filename);
       document.body.appendChild(link);

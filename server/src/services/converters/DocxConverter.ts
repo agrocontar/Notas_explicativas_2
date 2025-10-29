@@ -137,23 +137,6 @@ export class DocxConverter {
 
   private createTabelaSection(tabelas: any[]): any[] {
     const section = [];
-
-    // Título da tabela
-    section.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "Tabela Demonstrativa",
-            bold: true,
-            size: 22,
-            color: "2c5aa0"
-          })
-        ],
-        heading: HeadingLevel.HEADING_3,
-        spacing: { before: 300, after: 200 }
-      })
-    );
-
     // Criar tabela
     const table = this.createTable(tabelas);
     section.push(table);

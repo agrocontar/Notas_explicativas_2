@@ -17,10 +17,16 @@ export class ExportService {
 
   async exportNotasToWord(companyId: string, res: Response): Promise<Buffer> {
     try {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId }
+      });
+      if (!company) {
+        throw new Error('Empresa não encontrada');
+      }
       const notas = await this.fetchNotas(companyId);
       const buffer = await this.docxConverter.convertNotasToDocx(notas);
       
-      this.responseHandler.setDownloadHeaders(res, companyId, buffer.length);
+      this.responseHandler.setDownloadHeaders(res, company.name, buffer.length);
       return buffer;
       
     } catch (error) {

@@ -108,3 +108,13 @@ export const deleteCompany = async (req: Request, res: Response) => {
     res.status(401).json({ error: err instanceof Error ? err.message : err });
   }
 }
+
+export const listUniqueCompany = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const company = await companyService.listUniqueCompany(id)
+    res.json(company)
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : err });
+  }
+}

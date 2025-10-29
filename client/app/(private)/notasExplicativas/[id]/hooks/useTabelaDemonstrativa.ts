@@ -1,7 +1,7 @@
 // src/components/TabelaDemonstrativa/hooks/useTabelaDemonstrativa.ts
 import { useState, useCallback } from 'react';
 import { Toast } from 'primereact/toast';
-import { TabelaDemonstrativa as TabelaType, ContaBalancete, DadosBalancete } from '../../types';
+import { TabelaDemonstrativa as TabelaType, ContaBalancete, DadosBalancete } from '../types';
 import api from '@/app/api/api';
 
 interface UseTabelaDemonstrativaProps {

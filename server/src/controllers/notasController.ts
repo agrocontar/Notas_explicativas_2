@@ -31,6 +31,23 @@ export const createNota = async (req: Request, res: Response) => {
   }
 }
 
+export const reorder = async (req: Request, res: Response) => {
+  try {
+    const { companyId } = req.params;
+    const { novasOrdens } = req.body;
+
+    if (!novasOrdens || !Array.isArray(novasOrdens)) {
+      return res.status(400).json({ error: 'Lista de novas ordens é obrigatória' });
+    }
+
+    const result = await notasService.reorderNotas(companyId, novasOrdens);
+    return res.json(result);
+  } catch (error: any) {
+    console.error('Erro no controller de reordenar notas:', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
 export const updateNota = async (req: Request, res: Response) => {
   try {
     const companyId = req.params.companyId;

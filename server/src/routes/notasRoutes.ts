@@ -8,5 +8,6 @@ router.post("/", authMiddleware, notasController.createNota);
 router.put("/:companyId", authMiddleware, notasController.updateNota);
 router.delete("/:companyId/:number", authMiddleware, notasController.deleteNota);
 router.get("/:companyId", authMiddleware, notasController.listNotasByEmpresa)
+router.patch('/:companyId/reorder', authMiddleware, notasController.reorder);
 
 export default router;

@@ -134,6 +134,43 @@ export const deleteNota = async (companyId: string, number: number) => {
   }
 
   /**
+ * Reordenar as notas - atualiza os números baseado na nova ordem
+ */
+export const reorderNotas = async (companyId: string, novasOrdens: { id: string; number: number }[]) => {
+  try {
+    // Verifica se todas as notas pertencem à mesma empresa
+    const notasIds = novasOrdens.map(item => item.id);
+    const notas = await prisma.notasExplicativas.findMany({
+      where: { 
+        id: { in: notasIds },
+        companyId 
+      },
+      select: { id: true }
+    });
+
+    if (notas.length !== notasIds.length) {
+      throw new Error('Algumas notas não foram encontradas ou não pertencem a esta empresa');
+    }
+
+    // Usa transação para garantir que todas as atualizações sejam atômicas
+    const result = await prisma.$transaction(
+      novasOrdens.map((item) =>
+        prisma.notasExplicativas.update({
+          where: { id: item.id },
+          data: { number: item.number }
+        })
+      )
+    );
+
+    return result;
+  } catch (error) {
+    console.error('Erro ao reordenar notas:', error);
+    throw error;
+  }
+}
+
+
+  /**
    * Listar todas as notas de uma empresa
    */
   export const listNotasByEmpresa = async (companyId: string) => {

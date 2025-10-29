@@ -3,7 +3,6 @@
 import api from "@/app/api/api";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
 import { NotaExplicativa, NotasExplicativasPageProps, TabelaDemonstrativa } from "./types";
 import NotasHeader from "./components/NotasHeader";
 import NotasList from "./components/NotasList";

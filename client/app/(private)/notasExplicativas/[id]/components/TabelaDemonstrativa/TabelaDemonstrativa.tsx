@@ -84,20 +84,7 @@ export default function TabelaDemonstrativa({
         />
       )}
 
-      <InfoBox
-        type="info"
-        icon="pi pi-info-circle"
-        title="Como funciona:"
-        message={
-          <ul className="m-0 pl-3 text-sm">
-            <li>Selecione uma conta do balancete no dropdown</li>
-            <li>Os valores serão automaticamente preenchidos com os saldos atuais do balancete</li>
-            <li>Ano Anterior: Saldo do ano {anoAnterior}</li>
-            <li>Ano Atual: Saldo do ano {anoAtual}</li>
-            <li>Você pode editar manualmente os valores se necessário</li>
-          </ul>
-        }
-      />
+      
     </div>
   );
 }

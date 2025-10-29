@@ -89,8 +89,7 @@ export default function CreateNotaModal({
           </div>
           <ul className="m-0 pl-3">
             <li>Número da nota: <strong>{proximoNumero}</strong> (automático)</li>
-            <li>A nota será criada em branco</li>
-            <li>Você poderá editar o conteúdo posteriormente</li>
+            <li>A nota será criada em branco, você poderá editar o conteúdo posteriormente.</li>
           </ul>
         </div>
       </div>

@@ -99,4 +99,4 @@ async function executeBulkMappings(companyId:string) {
 }
 
 // Para executar: substitua 'sua-company-id-aqui' pelo ID real da empresa
-executeBulkMappings('077b3c6a-9340-45ad-a230-8f24737a68bc');
+executeBulkMappings('8bffacb8-e3ac-4e1d-94eb-a8c045cf9551');

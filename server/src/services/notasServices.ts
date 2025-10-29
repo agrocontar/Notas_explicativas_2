@@ -134,6 +134,56 @@ export const deleteNota = async (companyId: string, number: number) => {
   }
 
   /**
+ * Reordenar as notas - atualiza os números baseado na nova ordem
+ */
+export const reorderNotas = async (companyId: string, novasOrdens: { id: string; number: number }[]) => {
+  try {
+    // Verifica se todas as notas pertencem à mesma empresa
+    const notasIds = novasOrdens.map(item => item.id);
+    const notas = await prisma.notasExplicativas.findMany({
+      where: { 
+        id: { in: notasIds },
+        companyId 
+      },
+      select: { id: true, number: true }
+    });
+
+    if (notas.length !== notasIds.length) {
+      throw new Error('Algumas notas não foram encontradas ou não pertencem a esta empresa');
+    }
+
+    // Estratégia: primeiro atualiza todos os números para valores temporários negativos
+    // para evitar conflitos com a constraint única
+    
+    // Passo 1: Atualizar para números temporários negativos
+    const updatesTemporarios = notasIds.map((id, index) =>
+      prisma.notasExplicativas.update({
+        where: { id },
+        data: { number: -(index + 1) } // Números negativos como temporários
+      })
+    );
+
+    await prisma.$transaction(updatesTemporarios);
+
+    // Passo 2: Atualizar para os números finais
+    const updatesFinais = novasOrdens.map((item) =>
+      prisma.notasExplicativas.update({
+        where: { id: item.id },
+        data: { number: item.number }
+      })
+    );
+
+    const result = await prisma.$transaction(updatesFinais);
+
+    return result;
+  } catch (error) {
+    console.error('Erro ao reordenar notas:', error);
+    throw error;
+  }
+}
+
+
+  /**
    * Listar todas as notas de uma empresa
    */
   export const listNotasByEmpresa = async (companyId: string) => {

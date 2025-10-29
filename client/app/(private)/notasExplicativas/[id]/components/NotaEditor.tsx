@@ -28,11 +28,9 @@ export interface NotaEditorProps {
 const modules = {
   toolbar: {
     container: [
-      [{ 'font': [] }, { 'size': ['small', false, 'large', 'huge'] }], // Font family e tamanhos
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }], // Mais opções de cabeçalho
       ['bold', 'italic', 'underline', 'strike'], // Formatação básica
       [{ 'color': [] }, { 'background': [] }], // Cores do texto e fundo
-      [{ 'script': 'sub'}, { 'script': 'super' }], // Subscrito e sobrescrito
       [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }], // Listas e indentação
       [{ 'direction': 'rtl' }], // Direção do texto
       [{ 'align': [] }], // Alinhamento

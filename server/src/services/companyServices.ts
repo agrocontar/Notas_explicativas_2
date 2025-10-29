@@ -167,3 +167,9 @@ export const deleteCompany = async (companyId: string) => {
     createdAt: company.createdAt
   }
 }
+
+export const listUniqueCompany = async (companyId: string) => {
+  const company = await prisma.company.findUnique({ where: { id: companyId } })
+  if (!company) throw new Error('Empresa não encontrada!')
+  return company
+}

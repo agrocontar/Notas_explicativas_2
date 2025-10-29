@@ -18,10 +18,13 @@
   "packageManager": "pnpm@10.15.0",
   "dependencies": {
     "@prisma/client": "^6.14.0",
+    "@types/html-to-docx": "^1.8.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "docx": "^9.5.1",
     "express": "^5.1.0",
+    "html-to-docx": "^1.8.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.14.0",
     "zod": "^4.1.1"

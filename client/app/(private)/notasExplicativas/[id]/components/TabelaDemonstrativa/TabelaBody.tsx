@@ -48,7 +48,7 @@ export default function TabelaBody({
               {tabelas.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="text-center p-4 text-color-secondary">
-                    Nenhuma linha adicionada. Clique em "Adicionar Linha" para começar.
+                    Nenhuma linha adicionada. Clique em Adicionar Linha para começar.
                   </td>
                 </tr>
               ) : (

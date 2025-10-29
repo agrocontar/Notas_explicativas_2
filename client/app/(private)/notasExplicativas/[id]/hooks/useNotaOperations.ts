@@ -30,7 +30,7 @@ export const useNotaOperations = (
 
   const handleCreateNota = async (titulo: string, proximoNumero: number): Promise<NotaExplicativa> => {
     try {
-      const res = await api.post(`/notas/`, {
+      const res = await api.post(`/notas`, {
         companyId,
         number: proximoNumero,
         title: titulo,
@@ -61,7 +61,7 @@ export const useNotaOperations = (
     setSelectedNota: (nota: NotaExplicativa | null) => void
   ): Promise<void> => {
     try {
-      const res = await api.delete(`/notas/${nota.id}`);
+      const res = await api.delete(`/notas/${companyId}/${nota.id}`);
 
       if (res.status >= 200 && res.status < 300) {
         await refreshNotas();
@@ -87,7 +87,8 @@ export const useNotaOperations = (
     setSelectedNota?: (nota: NotaExplicativa) => void
   ): Promise<void> => {
     try {
-      const res = await api.put(`/notas/${selectedNota.id}`, {
+      const res = await api.put(`/notas/${companyId}`, {
+        number: selectedNota.number,
         title: editTitle,
         content: editContent
       });

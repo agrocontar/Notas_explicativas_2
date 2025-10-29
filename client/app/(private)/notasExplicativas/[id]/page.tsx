@@ -21,9 +21,10 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
   const [criarNotaVisible, setCriarNotaVisible] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
+  const [exportLoading, setExportLoading] = useState(false);
 
   // Hooks personalizados
-  const { notas, loading, error, onReorder, refreshNotas } = useNotas(params.id);
+  const { notas, loading, error, onReorder, refreshNotas, exportToWord} = useNotas(params.id);
   const { 
     handleCreateNota, 
     handleDeleteNota, 
@@ -101,6 +102,40 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
     return <LoadingState />;
   }
 
+  const handleExport = async () => {
+    try {
+      setExportLoading(true);
+      
+      toast.current?.show({
+        severity: 'info',
+        summary: 'Exportando',
+        detail: 'Gerando arquivo Word...',
+        life: 2000,
+      });
+
+      await exportToWord();
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Notas exportadas com sucesso!',
+        life: 3000,
+      });
+      
+    } catch (err: any) {
+      console.error('Erro na exportação:', err);
+      
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erro',
+        detail: err.message || 'Erro ao exportar notas',
+        life: 5000,
+      });
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   return (
     <div className="grid">
       <div className="col-12">
@@ -109,7 +144,9 @@ export default function NotasExplicativasPage({ params }: NotasExplicativasPageP
         <NotasHeader 
           onRefresh={refreshNotas} 
           onCreateClick={() => setCriarNotaVisible(true)}
+          onExportClick={handleExport}
           totalNotas={notas.length}
+          exportLoading={exportLoading}
         />
 
         <div className="grid">

@@ -9,6 +9,7 @@ interface UseNotasReturn {
   error: string | null;
   onReorder: (reorderedNotas: NotaExplicativa[]) => Promise<void>;
   refreshNotas: () => Promise<void>;
+  exportToWord: () => Promise<void>;
 }
 
 export const useNotas = (companyId: string): UseNotasReturn => {
@@ -75,6 +76,41 @@ export const useNotas = (companyId: string): UseNotasReturn => {
   }
 };
 
+const exportToWord = async (): Promise<void> => {
+    try {
+      const response = await api.get(`/export/${companyId}/word`, {
+        responseType: 'blob' // Importante para receber arquivos
+      });
+
+      // Criar URL para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extrair filename do header ou usar padrão
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `notas-explicativas-${companyId}.docx`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+    } catch (err: any) {
+      console.error('Erro ao exportar notas:', err);
+      const errorMessage = err.response?.data?.error || 'Erro ao exportar notas para Word';
+      throw new Error(errorMessage);
+    }
+  };
+
   const refreshNotas = async (): Promise<void> => {
     await fetchNotas();
   };
@@ -90,6 +126,7 @@ export const useNotas = (companyId: string): UseNotasReturn => {
     loading,
     error,
     onReorder: handleReorder,
-    refreshNotas
+    refreshNotas,
+    exportToWord
   };
 };

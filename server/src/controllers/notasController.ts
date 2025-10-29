@@ -30,7 +30,6 @@ export const createNota = async (req: Request, res: Response) => {
     res.status(400).json({ error: err instanceof Error ? err.message : err });
   }
 }
-
 export const reorder = async (req: Request, res: Response) => {
   try {
     const { companyId } = req.params;
@@ -40,7 +39,25 @@ export const reorder = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Lista de novas ordens é obrigatória' });
     }
 
+    // Valida se os números são sequenciais e únicos
+    const numbers = novasOrdens.map(item => item.number);
+    const uniqueNumbers = [...new Set(numbers)];
+    
+    if (uniqueNumbers.length !== numbers.length) {
+      return res.status(400).json({ error: 'Números de nota devem ser únicos' });
+    }
+
+    // Verifica se os números são sequenciais começando de 1
+    const sortedNumbers = [...numbers].sort((a, b) => a - b);
+    const isSequential = sortedNumbers.every((num, index) => num === index + 1);
+    
+    if (!isSequential) {
+      return res.status(400).json({ error: 'Números de nota devem ser sequenciais começando de 1' });
+    }
+
+    // Usa a estratégia com números temporários (mais robusta)
     const result = await notasService.reorderNotas(companyId, novasOrdens);
+    
     return res.json(result);
   } catch (error: any) {
     console.error('Erro no controller de reordenar notas:', error);

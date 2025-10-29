@@ -1,35 +1,40 @@
 import { Button } from "primereact/button";
 
+// src/components/NotasHeader.tsx
 interface NotasHeaderProps {
   onRefresh: () => void;
   onCreateClick: () => void;
+  totalNotas?: number;
 }
 
-export default function NotasHeader({ onRefresh, onCreateClick }: NotasHeaderProps) {
+export default function NotasHeader({ 
+  onRefresh, 
+  onCreateClick,
+  totalNotas 
+}: NotasHeaderProps) {
   return (
-    <div className="card mb-3">
-      <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-2">
-        <div className="flex flex-column">
-          <h1 className="text-xl font-bold m-0">Notas Explicativas</h1>
-          <span className="text-sm text-color-secondary">
-            Gerencie as notas explicativas da empresa
-          </span>
-        </div>
-
-        <div className="flex gap-2 flex-shrink-0">
-          <Button
-            icon="pi pi-plus"
-            label="Nova Nota"
-            className="p-button-primary p-button-sm"
-            onClick={onCreateClick}
-          />
-          <Button
-            icon="pi pi-refresh"
-            label="Atualizar"
-            className="p-button-outlined p-button-sm"
-            onClick={onRefresh}
-          />
-        </div>
+    <div className="flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 className="text-3xl font-bold m-0">Notas Explicativas</h1>
+        {totalNotas !== undefined && (
+          <p className="text-color-secondary m-0 mt-1">
+            {totalNotas} {totalNotas === 1 ? 'nota' : 'notas'} cadastradas
+          </p>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-refresh"
+          className="p-button-outlined p-button-secondary"
+          tooltip="Recarregar notas"
+          onClick={onRefresh}
+        />
+        <Button
+          icon="pi pi-plus"
+          label="Nova Nota"
+          className="p-button-primary"
+          onClick={onCreateClick}
+        />
       </div>
     </div>
   );

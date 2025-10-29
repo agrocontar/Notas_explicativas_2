@@ -7,7 +7,7 @@ import api from '@/app/api/api';
 import TabelaHeader from './TabelaHeader';
 import TabelaBody from './TabelaBody';
 import InfoBox from './InfoBox';
-import { useTabelaDemonstrativa } from './useTabelaDemonstrativa';
+import { useTabelaDemonstrativa } from '../../hooks/useTabelaDemonstrativa';
 
 interface TabelaDemonstrativaProps {
   notaId: string;
